@@ -1,0 +1,8 @@
+.pytest_cache/
+**/.pytest_cache/
+**/pytest-cache-files-*/
+**/__pycache__/
+*.pyc
+backend/schema/supply_chain.db
+.env
+backend/.env

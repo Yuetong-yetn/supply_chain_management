@@ -1,0 +1,782 @@
+[
+  {
+    "order_no": "POEX0001",
+    "supplier_name": "供应商S02",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-28",
+    "expected_arrival_date": "2026-05-02",
+    "status": "confirmed",
+    "remark": "示例采购单 1",
+    "items": [
+      {
+        "product_code": "P0004",
+        "purchase_quantity": 105,
+        "purchase_price": 5.4
+      },
+      {
+        "product_code": "P0005",
+        "purchase_quantity": 115,
+        "purchase_price": 6.4
+      },
+      {
+        "product_code": "P0006",
+        "purchase_quantity": 125,
+        "purchase_price": 7.4
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0002",
+    "supplier_name": "供应商S03",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-25",
+    "expected_arrival_date": "2026-05-03",
+    "status": "partially_arrived",
+    "remark": "示例采购单 2",
+    "items": [
+      {
+        "product_code": "P0007",
+        "purchase_quantity": 110,
+        "purchase_price": 5.8
+      },
+      {
+        "product_code": "P0008",
+        "purchase_quantity": 120,
+        "purchase_price": 6.8
+      },
+      {
+        "product_code": "P0009",
+        "purchase_quantity": 130,
+        "purchase_price": 7.8
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0003",
+    "supplier_name": "供应商S04",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-22",
+    "expected_arrival_date": "2026-05-04",
+    "status": "completed",
+    "remark": "示例采购单 3",
+    "items": [
+      {
+        "product_code": "P0010",
+        "purchase_quantity": 115,
+        "purchase_price": 6.2
+      },
+      {
+        "product_code": "P0011",
+        "purchase_quantity": 125,
+        "purchase_price": 7.2
+      },
+      {
+        "product_code": "P0012",
+        "purchase_quantity": 135,
+        "purchase_price": 8.2
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0004",
+    "supplier_name": "供应商S05",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-19",
+    "expected_arrival_date": "2026-05-05",
+    "status": "cancelled",
+    "remark": "示例采购单 4",
+    "items": [
+      {
+        "product_code": "P0013",
+        "purchase_quantity": 120,
+        "purchase_price": 6.6
+      },
+      {
+        "product_code": "P0014",
+        "purchase_quantity": 130,
+        "purchase_price": 7.6
+      },
+      {
+        "product_code": "P0015",
+        "purchase_quantity": 140,
+        "purchase_price": 8.6
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0005",
+    "supplier_name": "供应商S06",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-16",
+    "expected_arrival_date": "2026-05-06",
+    "status": "pending",
+    "remark": "示例采购单 5",
+    "items": [
+      {
+        "product_code": "P0016",
+        "purchase_quantity": 125,
+        "purchase_price": 7.0
+      },
+      {
+        "product_code": "P0017",
+        "purchase_quantity": 135,
+        "purchase_price": 8.0
+      },
+      {
+        "product_code": "P0018",
+        "purchase_quantity": 145,
+        "purchase_price": 9.0
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0006",
+    "supplier_name": "供应商S07",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-13",
+    "expected_arrival_date": "2026-05-07",
+    "status": "confirmed",
+    "remark": "示例采购单 6",
+    "items": [
+      {
+        "product_code": "P0019",
+        "purchase_quantity": 130,
+        "purchase_price": 7.4
+      },
+      {
+        "product_code": "P0020",
+        "purchase_quantity": 140,
+        "purchase_price": 8.4
+      },
+      {
+        "product_code": "P0021",
+        "purchase_quantity": 150,
+        "purchase_price": 9.4
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0007",
+    "supplier_name": "供应商S08",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-10",
+    "expected_arrival_date": "2026-05-01",
+    "status": "partially_arrived",
+    "remark": "示例采购单 7",
+    "items": [
+      {
+        "product_code": "P0022",
+        "purchase_quantity": 135,
+        "purchase_price": 7.8
+      },
+      {
+        "product_code": "P0023",
+        "purchase_quantity": 145,
+        "purchase_price": 8.8
+      },
+      {
+        "product_code": "P0024",
+        "purchase_quantity": 155,
+        "purchase_price": 9.8
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0008",
+    "supplier_name": "供应商S09",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-07",
+    "expected_arrival_date": "2026-05-02",
+    "status": "completed",
+    "remark": "示例采购单 8",
+    "items": [
+      {
+        "product_code": "P0025",
+        "purchase_quantity": 140,
+        "purchase_price": 8.2
+      },
+      {
+        "product_code": "P0026",
+        "purchase_quantity": 150,
+        "purchase_price": 9.2
+      },
+      {
+        "product_code": "P0027",
+        "purchase_quantity": 160,
+        "purchase_price": 10.2
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0009",
+    "supplier_name": "供应商S10",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-04",
+    "expected_arrival_date": "2026-05-03",
+    "status": "cancelled",
+    "remark": "示例采购单 9",
+    "items": [
+      {
+        "product_code": "P0028",
+        "purchase_quantity": 145,
+        "purchase_price": 8.6
+      },
+      {
+        "product_code": "P0029",
+        "purchase_quantity": 155,
+        "purchase_price": 9.6
+      },
+      {
+        "product_code": "P0030",
+        "purchase_quantity": 165,
+        "purchase_price": 10.6
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0010",
+    "supplier_name": "供应商S11",
+    "created_by_username": "buyer",
+    "created_at": "2026-04-01",
+    "expected_arrival_date": "2026-05-04",
+    "status": "pending",
+    "remark": "示例采购单 10",
+    "items": [
+      {
+        "product_code": "P0031",
+        "purchase_quantity": 150,
+        "purchase_price": 9.0
+      },
+      {
+        "product_code": "P0032",
+        "purchase_quantity": 160,
+        "purchase_price": 10.0
+      },
+      {
+        "product_code": "P0033",
+        "purchase_quantity": 170,
+        "purchase_price": 11.0
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0011",
+    "supplier_name": "供应商S12",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-29",
+    "expected_arrival_date": "2026-05-05",
+    "status": "confirmed",
+    "remark": "示例采购单 11",
+    "items": [
+      {
+        "product_code": "P0034",
+        "purchase_quantity": 155,
+        "purchase_price": 9.4
+      },
+      {
+        "product_code": "P0035",
+        "purchase_quantity": 165,
+        "purchase_price": 10.4
+      },
+      {
+        "product_code": "P0036",
+        "purchase_quantity": 175,
+        "purchase_price": 11.4
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0012",
+    "supplier_name": "供应商S01",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-26",
+    "expected_arrival_date": "2026-05-06",
+    "status": "partially_arrived",
+    "remark": "示例采购单 12",
+    "items": [
+      {
+        "product_code": "P0037",
+        "purchase_quantity": 160,
+        "purchase_price": 9.8
+      },
+      {
+        "product_code": "P0038",
+        "purchase_quantity": 170,
+        "purchase_price": 10.8
+      },
+      {
+        "product_code": "P0039",
+        "purchase_quantity": 180,
+        "purchase_price": 11.8
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0013",
+    "supplier_name": "供应商S02",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-23",
+    "expected_arrival_date": "2026-05-07",
+    "status": "completed",
+    "remark": "示例采购单 13",
+    "items": [
+      {
+        "product_code": "P0040",
+        "purchase_quantity": 165,
+        "purchase_price": 10.2
+      },
+      {
+        "product_code": "P0041",
+        "purchase_quantity": 175,
+        "purchase_price": 11.2
+      },
+      {
+        "product_code": "P0042",
+        "purchase_quantity": 185,
+        "purchase_price": 12.2
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0014",
+    "supplier_name": "供应商S03",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-20",
+    "expected_arrival_date": "2026-05-01",
+    "status": "cancelled",
+    "remark": "示例采购单 14",
+    "items": [
+      {
+        "product_code": "P0043",
+        "purchase_quantity": 170,
+        "purchase_price": 10.6
+      },
+      {
+        "product_code": "P0044",
+        "purchase_quantity": 180,
+        "purchase_price": 11.6
+      },
+      {
+        "product_code": "P0045",
+        "purchase_quantity": 190,
+        "purchase_price": 12.6
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0015",
+    "supplier_name": "供应商S04",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-17",
+    "expected_arrival_date": "2026-05-02",
+    "status": "pending",
+    "remark": "示例采购单 15",
+    "items": [
+      {
+        "product_code": "P0046",
+        "purchase_quantity": 175,
+        "purchase_price": 11.0
+      },
+      {
+        "product_code": "P0047",
+        "purchase_quantity": 185,
+        "purchase_price": 12.0
+      },
+      {
+        "product_code": "P0048",
+        "purchase_quantity": 195,
+        "purchase_price": 13.0
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0016",
+    "supplier_name": "供应商S05",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-14",
+    "expected_arrival_date": "2026-05-03",
+    "status": "confirmed",
+    "remark": "示例采购单 16",
+    "items": [
+      {
+        "product_code": "P0049",
+        "purchase_quantity": 180,
+        "purchase_price": 11.4
+      },
+      {
+        "product_code": "P0050",
+        "purchase_quantity": 190,
+        "purchase_price": 12.4
+      },
+      {
+        "product_code": "P0051",
+        "purchase_quantity": 200,
+        "purchase_price": 13.4
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0017",
+    "supplier_name": "供应商S06",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-11",
+    "expected_arrival_date": "2026-05-04",
+    "status": "partially_arrived",
+    "remark": "示例采购单 17",
+    "items": [
+      {
+        "product_code": "P0052",
+        "purchase_quantity": 185,
+        "purchase_price": 11.8
+      },
+      {
+        "product_code": "P0053",
+        "purchase_quantity": 195,
+        "purchase_price": 12.8
+      },
+      {
+        "product_code": "P0054",
+        "purchase_quantity": 205,
+        "purchase_price": 13.8
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0018",
+    "supplier_name": "供应商S07",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-08",
+    "expected_arrival_date": "2026-05-05",
+    "status": "completed",
+    "remark": "示例采购单 18",
+    "items": [
+      {
+        "product_code": "P0055",
+        "purchase_quantity": 190,
+        "purchase_price": 12.2
+      },
+      {
+        "product_code": "P0056",
+        "purchase_quantity": 200,
+        "purchase_price": 13.2
+      },
+      {
+        "product_code": "P0057",
+        "purchase_quantity": 210,
+        "purchase_price": 14.2
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0019",
+    "supplier_name": "供应商S08",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-05",
+    "expected_arrival_date": "2026-05-06",
+    "status": "cancelled",
+    "remark": "示例采购单 19",
+    "items": [
+      {
+        "product_code": "P0058",
+        "purchase_quantity": 195,
+        "purchase_price": 12.6
+      },
+      {
+        "product_code": "P0059",
+        "purchase_quantity": 205,
+        "purchase_price": 13.6
+      },
+      {
+        "product_code": "P0060",
+        "purchase_quantity": 215,
+        "purchase_price": 14.6
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0020",
+    "supplier_name": "供应商S09",
+    "created_by_username": "buyer",
+    "created_at": "2026-03-02",
+    "expected_arrival_date": "2026-05-07",
+    "status": "pending",
+    "remark": "示例采购单 20",
+    "items": [
+      {
+        "product_code": "P0001",
+        "purchase_quantity": 200,
+        "purchase_price": 13.0
+      },
+      {
+        "product_code": "P0002",
+        "purchase_quantity": 210,
+        "purchase_price": 14.0
+      },
+      {
+        "product_code": "P0003",
+        "purchase_quantity": 220,
+        "purchase_price": 15.0
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0021",
+    "supplier_name": "供应商S10",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-27",
+    "expected_arrival_date": "2026-05-01",
+    "status": "confirmed",
+    "remark": "示例采购单 21",
+    "items": [
+      {
+        "product_code": "P0004",
+        "purchase_quantity": 205,
+        "purchase_price": 13.4
+      },
+      {
+        "product_code": "P0005",
+        "purchase_quantity": 215,
+        "purchase_price": 14.4
+      },
+      {
+        "product_code": "P0006",
+        "purchase_quantity": 225,
+        "purchase_price": 15.4
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0022",
+    "supplier_name": "供应商S11",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-24",
+    "expected_arrival_date": "2026-05-02",
+    "status": "partially_arrived",
+    "remark": "示例采购单 22",
+    "items": [
+      {
+        "product_code": "P0007",
+        "purchase_quantity": 210,
+        "purchase_price": 13.8
+      },
+      {
+        "product_code": "P0008",
+        "purchase_quantity": 220,
+        "purchase_price": 14.8
+      },
+      {
+        "product_code": "P0009",
+        "purchase_quantity": 230,
+        "purchase_price": 15.8
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0023",
+    "supplier_name": "供应商S12",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-21",
+    "expected_arrival_date": "2026-05-03",
+    "status": "completed",
+    "remark": "示例采购单 23",
+    "items": [
+      {
+        "product_code": "P0010",
+        "purchase_quantity": 215,
+        "purchase_price": 14.2
+      },
+      {
+        "product_code": "P0011",
+        "purchase_quantity": 225,
+        "purchase_price": 15.2
+      },
+      {
+        "product_code": "P0012",
+        "purchase_quantity": 235,
+        "purchase_price": 16.2
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0024",
+    "supplier_name": "供应商S01",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-18",
+    "expected_arrival_date": "2026-05-04",
+    "status": "cancelled",
+    "remark": "示例采购单 24",
+    "items": [
+      {
+        "product_code": "P0013",
+        "purchase_quantity": 220,
+        "purchase_price": 14.6
+      },
+      {
+        "product_code": "P0014",
+        "purchase_quantity": 230,
+        "purchase_price": 15.6
+      },
+      {
+        "product_code": "P0015",
+        "purchase_quantity": 240,
+        "purchase_price": 16.6
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0025",
+    "supplier_name": "供应商S02",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-15",
+    "expected_arrival_date": "2026-05-05",
+    "status": "pending",
+    "remark": "示例采购单 25",
+    "items": [
+      {
+        "product_code": "P0016",
+        "purchase_quantity": 225,
+        "purchase_price": 15.0
+      },
+      {
+        "product_code": "P0017",
+        "purchase_quantity": 235,
+        "purchase_price": 16.0
+      },
+      {
+        "product_code": "P0018",
+        "purchase_quantity": 245,
+        "purchase_price": 17.0
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0026",
+    "supplier_name": "供应商S03",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-12",
+    "expected_arrival_date": "2026-05-06",
+    "status": "confirmed",
+    "remark": "示例采购单 26",
+    "items": [
+      {
+        "product_code": "P0019",
+        "purchase_quantity": 230,
+        "purchase_price": 15.4
+      },
+      {
+        "product_code": "P0020",
+        "purchase_quantity": 240,
+        "purchase_price": 16.4
+      },
+      {
+        "product_code": "P0021",
+        "purchase_quantity": 250,
+        "purchase_price": 17.4
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0027",
+    "supplier_name": "供应商S04",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-09",
+    "expected_arrival_date": "2026-05-07",
+    "status": "partially_arrived",
+    "remark": "示例采购单 27",
+    "items": [
+      {
+        "product_code": "P0022",
+        "purchase_quantity": 235,
+        "purchase_price": 15.8
+      },
+      {
+        "product_code": "P0023",
+        "purchase_quantity": 245,
+        "purchase_price": 16.8
+      },
+      {
+        "product_code": "P0024",
+        "purchase_quantity": 255,
+        "purchase_price": 17.8
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0028",
+    "supplier_name": "供应商S05",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-06",
+    "expected_arrival_date": "2026-05-01",
+    "status": "completed",
+    "remark": "示例采购单 28",
+    "items": [
+      {
+        "product_code": "P0025",
+        "purchase_quantity": 240,
+        "purchase_price": 16.2
+      },
+      {
+        "product_code": "P0026",
+        "purchase_quantity": 250,
+        "purchase_price": 17.2
+      },
+      {
+        "product_code": "P0027",
+        "purchase_quantity": 260,
+        "purchase_price": 18.2
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0029",
+    "supplier_name": "供应商S06",
+    "created_by_username": "buyer",
+    "created_at": "2026-02-03",
+    "expected_arrival_date": "2026-05-02",
+    "status": "cancelled",
+    "remark": "示例采购单 29",
+    "items": [
+      {
+        "product_code": "P0028",
+        "purchase_quantity": 245,
+        "purchase_price": 16.6
+      },
+      {
+        "product_code": "P0029",
+        "purchase_quantity": 255,
+        "purchase_price": 17.6
+      },
+      {
+        "product_code": "P0030",
+        "purchase_quantity": 265,
+        "purchase_price": 18.6
+      }
+    ]
+  },
+  {
+    "order_no": "POEX0030",
+    "supplier_name": "供应商S07",
+    "created_by_username": "buyer",
+    "created_at": "2026-01-31",
+    "expected_arrival_date": "2026-05-03",
+    "status": "pending",
+    "remark": "示例采购单 30",
+    "items": [
+      {
+        "product_code": "P0031",
+        "purchase_quantity": 250,
+        "purchase_price": 17.0
+      },
+      {
+        "product_code": "P0032",
+        "purchase_quantity": 260,
+        "purchase_price": 18.0
+      },
+      {
+        "product_code": "P0033",
+        "purchase_quantity": 270,
+        "purchase_price": 19.0
+      }
+    ]
+  }
+]

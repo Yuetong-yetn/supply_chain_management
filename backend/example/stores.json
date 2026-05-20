@@ -1,0 +1,98 @@
+[
+  {
+    "store_code": "STORE-A",
+    "name": "STORE-A 门店",
+    "region": "东区",
+    "address": "东区 商业街 1 号",
+    "longitude": 121.41000000000001,
+    "latitude": 31.21,
+    "contact_person": "店长1",
+    "phone": "13910000001",
+    "business_status": "active",
+    "is_synthetic": false
+  },
+  {
+    "store_code": "STORE-B",
+    "name": "STORE-B 门店",
+    "region": "西区",
+    "address": "西区 商业街 2 号",
+    "longitude": 121.42,
+    "latitude": 31.22,
+    "contact_person": "店长2",
+    "phone": "13910000002",
+    "business_status": "active",
+    "is_synthetic": false
+  },
+  {
+    "store_code": "STORE-C",
+    "name": "STORE-C 门店",
+    "region": "南区",
+    "address": "南区 商业街 3 号",
+    "longitude": 121.43,
+    "latitude": 31.23,
+    "contact_person": "店长3",
+    "phone": "13910000003",
+    "business_status": "active",
+    "is_synthetic": false
+  },
+  {
+    "store_code": "STORE-D",
+    "name": "STORE-D 门店",
+    "region": "北区",
+    "address": "北区 商业街 4 号",
+    "longitude": 121.44000000000001,
+    "latitude": 31.24,
+    "contact_person": "店长4",
+    "phone": "13910000004",
+    "business_status": "active",
+    "is_synthetic": false
+  },
+  {
+    "store_code": "STORE-E",
+    "name": "STORE-E 门店",
+    "region": "中心区",
+    "address": "中心区 商业街 5 号",
+    "longitude": 121.45,
+    "latitude": 31.25,
+    "contact_person": "店长5",
+    "phone": "13910000005",
+    "business_status": "active",
+    "is_synthetic": false
+  },
+  {
+    "store_code": "STORE-F",
+    "name": "STORE-F 门店",
+    "region": "东区",
+    "address": "东区 商业街 6 号",
+    "longitude": 121.46000000000001,
+    "latitude": 31.259999999999998,
+    "contact_person": "店长6",
+    "phone": "13910000006",
+    "business_status": "active",
+    "is_synthetic": false
+  },
+  {
+    "store_code": "STORE-G",
+    "name": "STORE-G 门店",
+    "region": "西区",
+    "address": "西区 商业街 7 号",
+    "longitude": 121.47,
+    "latitude": 31.27,
+    "contact_person": "店长7",
+    "phone": "13910000007",
+    "business_status": "active",
+    "is_synthetic": false
+  },
+  {
+    "store_code": "STORE-H",
+    "name": "STORE-H 门店",
+    "region": "南区",
+    "address": "南区 商业街 8 号",
+    "longitude": 121.48,
+    "latitude": 31.279999999999998,
+    "contact_person": "店长8",
+    "phone": "13910000008",
+    "business_status": "active",
+    "is_synthetic": false
+  }
+]

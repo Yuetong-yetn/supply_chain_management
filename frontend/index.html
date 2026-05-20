@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>供应链库存协同驾驶舱</title>
+    <link rel="stylesheet" href="/ui/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div>
+            <strong>库存协同</strong>
+            <small>Supply Console</small>
+          </div>
+        </div>
+        <nav class="nav-list" aria-label="主导航">
+          <a href="#overview" class="active">总览</a>
+          <a href="#warnings">库存预警</a>
+          <a href="#recommendations">智能补货</a>
+          <a href="#analytics">经营分析</a>
+        </nav>
+        <div class="sidebar-card">
+          <span class="label">系统状态</span>
+          <strong id="systemStatus">连接中</strong>
+          <small id="statusDetail">正在读取后端数据</small>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar" id="overview">
+          <div>
+            <p class="eyebrow">供应链库存协同与智能补货管理系统</p>
+            <h1>运营驾驶舱</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-button" id="refreshBtn" title="刷新数据" aria-label="刷新数据">
+              <span aria-hidden="true">↻</span>
+            </button>
+            <button class="primary-button" id="generateBtn">生成补货建议</button>
+          </div>
+        </header>
+
+        <section class="summary-grid" aria-label="关键指标">
+          <article class="metric-card">
+            <span>商品总数</span>
+            <strong id="productCount">--</strong>
+            <small>启用商品与库存联动</small>
+          </article>
+          <article class="metric-card">
+            <span>供应商</span>
+            <strong id="supplierCount">--</strong>
+            <small>含评分与供货周期</small>
+          </article>
+          <article class="metric-card alert">
+            <span>缺货预警</span>
+            <strong id="stockoutCount">--</strong>
+            <small>低于安全库存</small>
+          </article>
+          <article class="metric-card warm">
+            <span>AI 建议</span>
+            <strong id="recommendationCount">--</strong>
+            <small>待采纳补货方案</small>
+          </article>
+        </section>
+
+        <section class="workbench">
+          <article class="panel span-7">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Inventory</p>
+                <h2>库存结构排行</h2>
+              </div>
+              <span class="pill">Top 10</span>
+            </div>
+            <div id="inventoryBars" class="bar-chart" aria-label="库存结构排行"></div>
+          </article>
+
+          <article class="panel span-5" id="warnings">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Warning</p>
+                <h2>预警概览</h2>
+              </div>
+              <span class="pill danger" id="warningBadge">-- 条</span>
+            </div>
+            <div class="warning-list" id="warningList"></div>
+          </article>
+
+          <article class="panel span-6" id="recommendations">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Replenishment</p>
+                <h2>高风险补货建议</h2>
+              </div>
+              <span class="pill success">规则 + LLM 解释</span>
+            </div>
+            <div class="recommendation-list" id="recommendationList"></div>
+          </article>
+
+          <article class="panel span-6" id="analytics">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Store Demand</p>
+                <h2>门店需求热度</h2>
+              </div>
+              <span class="pill">销售事实</span>
+            </div>
+            <div id="heatmapGrid" class="heatmap-grid" aria-label="门店需求热度"></div>
+          </article>
+
+          <article class="panel span-6">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Supplier</p>
+                <h2>供应商采购排行</h2>
+              </div>
+              <span class="pill">金额</span>
+            </div>
+            <div id="supplierBars" class="bar-chart compact" aria-label="供应商采购排行"></div>
+          </article>
+
+          <article class="panel span-6">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Turnover</p>
+                <h2>商品周转表现</h2>
+              </div>
+              <span class="pill">月均销量</span>
+            </div>
+            <div id="turnoverBars" class="bar-chart compact" aria-label="商品周转表现"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/ui/app.js"></script>
+  </body>
+</html>
