@@ -19,8 +19,8 @@
             <span></span><span></span><span></span><span></span>
           </div>
           <div>
-            <strong>SCM Control</strong>
-            <small>供应链协同中心</small>
+            <strong>Supply Chain</strong>
+            <small>库存 · 流转 · 补货</small>
           </div>
         </div>
 
@@ -51,6 +51,12 @@
           </button>
         </nav>
 
+        <div class="sidebar-manifest" aria-hidden="true">
+          <span>TODAY'S NOTE</span>
+          <strong>别让库存失踪。</strong>
+          <div class="manifest-barcode"></div>
+        </div>
+
         <div class="sidebar-status">
           <div class="status-line">
             <span class="status-dot is-checking" id="globalStatusDot"></span>
@@ -73,13 +79,13 @@
             ☰
           </button>
           <div>
-            <p class="header-kicker">SUPPLY CHAIN COMMAND CENTER</p>
+            <p class="header-kicker">SUPPLY · STOCK · FLOW</p>
             <h1 id="pageTitle">首页看板</h1>
           </div>
           <div class="header-actions">
             <div class="live-chip">
               <span class="pulse-dot"></span>
-              <span>演示环境</span>
+              <span>数据在线</span>
             </div>
             <button class="btn btn-primary app-btn" id="refreshCurrentBtn" type="button">
               <span class="btn-label">刷新当前模块</span>
@@ -93,13 +99,16 @@
           <section class="app-view active" id="view-dashboard" data-title="首页看板">
             <div class="hero-panel">
               <div>
-                <span class="section-tag">LIVE OVERVIEW</span>
-                <h2>供应链运营全景</h2>
-                <p>从库存风险到业务执行，用一张看板掌握当前供应链状态。</p>
+                <span class="section-tag">OVERVIEW / 今日总览</span>
+                <h2>今天，货物都去哪儿了？</h2>
+                <p>把仓库、门店和补货建议摊开来看——每一次库存变化，都有迹可循。</p>
               </div>
               <div class="hero-meta">
                 <span>数据更新时间</span>
                 <strong id="dashboardUpdatedAt">--</strong>
+              </div>
+              <div class="route-markers" aria-hidden="true">
+                <span>供应商</span><i></i><span>仓库</span><i></i><span>门店</span>
               </div>
             </div>
 

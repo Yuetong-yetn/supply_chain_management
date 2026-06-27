@@ -287,8 +287,8 @@
           itemStyle: {
             borderRadius: [0, 7, 7, 0],
             color: new window.echarts.graphic.LinearGradient(0, 0, 1, 0, [
-              { offset: 0, color: "#3157d5" },
-              { offset: 1, color: "#35b7c8" },
+              { offset: 0, color: "#ff6b7a" },
+              { offset: 1, color: "#ffd166" },
             ]),
           },
         },
@@ -570,7 +570,7 @@
           type: "bar",
           data: rankingRows.slice(0, 8).map((item) => item.score),
           barWidth: 13,
-          itemStyle: { color: "#3157d5", borderRadius: [0, 7, 7, 0] },
+          itemStyle: { color: "#52cbb0", borderRadius: [7, 7, 7, 7] },
         },
       ],
     });
@@ -598,9 +598,9 @@
           type: "line",
           smooth: true,
           data: trendRows.map((item) => Number(item.warehouse_sales || 0)),
-          lineStyle: { color: "#35b7c8", width: 3 },
-          itemStyle: { color: "#3157d5" },
-          areaStyle: { color: "rgba(53, 183, 200, .12)" },
+          lineStyle: { color: "#7c5cff", width: 3 },
+          itemStyle: { color: "#ff6b7a" },
+          areaStyle: { color: "rgba(124, 92, 255, .10)" },
         },
       ],
     });
