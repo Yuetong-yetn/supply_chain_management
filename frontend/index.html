@@ -3,144 +3,470 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>供应链库存协同驾驶舱</title>
-    <link rel="stylesheet" href="/ui/styles.css" />
+    <meta name="description" content="供应链库存协同与智能补货管理系统演示页面" />
+    <title>供应链协同中心 · Demo</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/ui/style.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <aside class="sidebar">
+    <div class="demo-shell">
+      <aside class="app-sidebar" id="appSidebar">
         <div class="brand">
-          <div class="brand-mark" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
+          <div class="brand-symbol" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
           </div>
           <div>
-            <strong>库存协同</strong>
-            <small>Supply Console</small>
+            <strong>SCM Control</strong>
+            <small>供应链协同中心</small>
           </div>
         </div>
-        <nav class="nav-list" aria-label="主导航">
-          <a href="#overview" class="active">总览</a>
-          <a href="#warnings">库存预警</a>
-          <a href="#recommendations">智能补货</a>
-          <a href="#analytics">经营分析</a>
+
+        <nav class="side-nav" aria-label="演示模块导航">
+          <button class="nav-item active" type="button" data-view="dashboard">
+            <span class="nav-index">01</span><span>首页看板</span>
+          </button>
+          <button class="nav-item" type="button" data-view="warnings">
+            <span class="nav-index">02</span><span>库存预警</span>
+          </button>
+          <button class="nav-item" type="button" data-view="inbound">
+            <span class="nav-index">03</span><span>采购入库</span>
+          </button>
+          <button class="nav-item" type="button" data-view="fulfillment">
+            <span class="nav-index">04</span><span>补货与出库</span>
+          </button>
+          <button class="nav-item" type="button" data-view="transactions">
+            <span class="nav-index">05</span><span>库存流水</span>
+          </button>
+          <button class="nav-item" type="button" data-view="recommendations">
+            <span class="nav-index">06</span><span>AI 补货建议</span>
+          </button>
+          <button class="nav-item" type="button" data-view="suppliers">
+            <span class="nav-index">07</span><span>供应商与分析</span>
+          </button>
+          <button class="nav-item" type="button" data-view="system">
+            <span class="nav-index">08</span><span>系统状态</span>
+          </button>
         </nav>
-        <div class="sidebar-card">
-          <span class="label">系统状态</span>
-          <strong id="systemStatus">连接中</strong>
-          <small id="statusDetail">正在读取后端数据</small>
+
+        <div class="sidebar-status">
+          <div class="status-line">
+            <span class="status-dot is-checking" id="globalStatusDot"></span>
+            <span id="globalStatusText">正在连接系统</span>
+          </div>
+          <small id="globalStatusDetail">等待健康检查</small>
         </div>
       </aside>
 
-      <main class="main">
-        <header class="topbar" id="overview">
+      <div class="app-main">
+        <header class="app-header">
+          <button
+            class="mobile-menu"
+            id="mobileMenuBtn"
+            type="button"
+            aria-label="展开导航"
+            aria-controls="appSidebar"
+            aria-expanded="false"
+          >
+            ☰
+          </button>
           <div>
-            <p class="eyebrow">供应链库存协同与智能补货管理系统</p>
-            <h1>运营驾驶舱</h1>
+            <p class="header-kicker">SUPPLY CHAIN COMMAND CENTER</p>
+            <h1 id="pageTitle">首页看板</h1>
           </div>
-          <div class="topbar-actions">
-            <button class="icon-button" id="refreshBtn" title="刷新数据" aria-label="刷新数据">
-              <span aria-hidden="true">↻</span>
+          <div class="header-actions">
+            <div class="live-chip">
+              <span class="pulse-dot"></span>
+              <span>演示环境</span>
+            </div>
+            <button class="btn btn-primary app-btn" id="refreshCurrentBtn" type="button">
+              <span class="btn-label">刷新当前模块</span>
             </button>
-            <button class="primary-button" id="generateBtn">生成补货建议</button>
           </div>
         </header>
 
-        <section class="summary-grid" aria-label="关键指标">
-          <article class="metric-card">
-            <span>商品总数</span>
-            <strong id="productCount">--</strong>
-            <small>启用商品与库存联动</small>
-          </article>
-          <article class="metric-card">
-            <span>供应商</span>
-            <strong id="supplierCount">--</strong>
-            <small>含评分与供货周期</small>
-          </article>
-          <article class="metric-card alert">
-            <span>缺货预警</span>
-            <strong id="stockoutCount">--</strong>
-            <small>低于安全库存</small>
-          </article>
-          <article class="metric-card warm">
-            <span>AI 建议</span>
-            <strong id="recommendationCount">--</strong>
-            <small>待采纳补货方案</small>
-          </article>
-        </section>
+        <main class="content-area">
+          <div id="pageAlert" class="page-alert" role="alert" hidden></div>
 
-        <section class="workbench">
-          <article class="panel span-7">
-            <div class="panel-head">
+          <section class="app-view active" id="view-dashboard" data-title="首页看板">
+            <div class="hero-panel">
               <div>
-                <p class="eyebrow">Inventory</p>
-                <h2>库存结构排行</h2>
+                <span class="section-tag">LIVE OVERVIEW</span>
+                <h2>供应链运营全景</h2>
+                <p>从库存风险到业务执行，用一张看板掌握当前供应链状态。</p>
               </div>
-              <span class="pill">Top 10</span>
+              <div class="hero-meta">
+                <span>数据更新时间</span>
+                <strong id="dashboardUpdatedAt">--</strong>
+              </div>
             </div>
-            <div id="inventoryBars" class="bar-chart" aria-label="库存结构排行"></div>
-          </article>
 
-          <article class="panel span-5" id="warnings">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Warning</p>
-                <h2>预警概览</h2>
-              </div>
-              <span class="pill danger" id="warningBadge">-- 条</span>
+            <div class="metric-grid">
+              <article class="metric-card accent-blue">
+                <span class="metric-label">商品数</span>
+                <strong id="metricProducts">--</strong>
+                <small>在管商品</small>
+              </article>
+              <article class="metric-card accent-cyan">
+                <span class="metric-label">供应商数</span>
+                <strong id="metricSuppliers">--</strong>
+                <small>合作伙伴</small>
+              </article>
+              <article class="metric-card accent-violet">
+                <span class="metric-label">仓库 / 门店</span>
+                <strong><span id="metricWarehouses">--</span><i>/</i><span id="metricStores">--</span></strong>
+                <small>履约网络节点</small>
+              </article>
+              <article class="metric-card accent-green">
+                <span class="metric-label">库存总量</span>
+                <strong id="metricInventory">--</strong>
+                <small>当前库存件数</small>
+              </article>
+              <article class="metric-card accent-red">
+                <span class="metric-label">缺货预警</span>
+                <strong id="metricStockout">--</strong>
+                <small>需要优先处理</small>
+              </article>
+              <article class="metric-card accent-amber">
+                <span class="metric-label">积压预警</span>
+                <strong id="metricOverstock">--</strong>
+                <small>库存占用风险</small>
+              </article>
+              <article class="metric-card accent-indigo">
+                <span class="metric-label">近期出库量</span>
+                <strong id="metricOutbound">--</strong>
+                <small>近期履约规模</small>
+              </article>
+              <article class="metric-card accent-pink">
+                <span class="metric-label">AI 建议</span>
+                <strong id="metricRecommendations">--</strong>
+                <small><span id="metricHighRisk">--</span> 条高风险</small>
+              </article>
             </div>
-            <div class="warning-list" id="warningList"></div>
-          </article>
 
-          <article class="panel span-6" id="recommendations">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Replenishment</p>
-                <h2>高风险补货建议</h2>
-              </div>
-              <span class="pill success">规则 + LLM 解释</span>
-            </div>
-            <div class="recommendation-list" id="recommendationList"></div>
-          </article>
+            <div class="layout-grid dashboard-grid">
+              <article class="content-card chart-card">
+                <div class="card-heading">
+                  <div>
+                    <span class="section-tag">INVENTORY RANKING</span>
+                    <h3>商品库存排行</h3>
+                  </div>
+                  <span class="soft-badge">Top 10</span>
+                </div>
+                <div class="chart-box" id="dashboardInventoryChart">
+                  <div class="loading-placeholder">正在加载图表…</div>
+                </div>
+              </article>
 
-          <article class="panel span-6" id="analytics">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Store Demand</p>
-                <h2>门店需求热度</h2>
-              </div>
-              <span class="pill">销售事实</span>
+              <article class="content-card risk-card">
+                <div class="card-heading">
+                  <div>
+                    <span class="section-tag">RISK RADAR</span>
+                    <h3>重点库存风险</h3>
+                  </div>
+                  <button class="text-action" type="button" data-jump="warnings">查看全部 →</button>
+                </div>
+                <div class="compact-list" id="dashboardRiskList">
+                  <div class="empty-block">正在读取预警信息…</div>
+                </div>
+              </article>
             </div>
-            <div id="heatmapGrid" class="heatmap-grid" aria-label="门店需求热度"></div>
-          </article>
+          </section>
 
-          <article class="panel span-6">
-            <div class="panel-head">
+          <section class="app-view" id="view-warnings" data-title="库存查询与预警">
+            <div class="section-intro">
               <div>
-                <p class="eyebrow">Supplier</p>
-                <h2>供应商采购排行</h2>
+                <span class="section-tag">INVENTORY ALERT</span>
+                <h2>库存查询与预警</h2>
+                <p>识别严重缺货、库存不足与库存积压，辅助运营人员快速处置。</p>
               </div>
-              <span class="pill">金额</span>
+              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="warnings">
+                <span class="btn-label">刷新预警</span>
+              </button>
             </div>
-            <div id="supplierBars" class="bar-chart compact" aria-label="供应商采购排行"></div>
-          </article>
 
-          <article class="panel span-6">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Turnover</p>
-                <h2>商品周转表现</h2>
-              </div>
-              <span class="pill">月均销量</span>
+            <div class="warning-summary">
+              <article><span class="risk-icon critical"></span><div><strong id="warningCriticalCount">--</strong><small>严重缺货</small></div></article>
+              <article><span class="risk-icon stockout"></span><div><strong id="warningStockoutCount">--</strong><small>库存不足</small></div></article>
+              <article><span class="risk-icon overstock"></span><div><strong id="warningOverstockCount">--</strong><small>库存积压</small></div></article>
+              <article><span class="risk-icon normal"></span><div><strong id="warningTotalCount">--</strong><small>预警合计</small></div></article>
             </div>
-            <div id="turnoverBars" class="bar-chart compact" aria-label="商品周转表现"></div>
-          </article>
-        </section>
-      </main>
+
+            <article class="content-card">
+              <div class="card-heading">
+                <div>
+                  <span class="section-tag">WARNING LIST</span>
+                  <h3>预警明细</h3>
+                </div>
+                <span class="soft-badge" id="warningResultBadge">0 条记录</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table app-table align-middle">
+                  <thead>
+                    <tr>
+                      <th>风险等级</th><th>商品</th><th>位置</th><th>当前库存</th>
+                      <th>可用库存</th><th>安全 / 最大库存</th><th>预警说明</th>
+                    </tr>
+                  </thead>
+                  <tbody id="warningTableBody"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="app-view" id="view-inbound" data-title="采购入库演示">
+            <div class="section-intro">
+              <div>
+                <span class="section-tag">PURCHASE INBOUND</span>
+                <h2>采购入库演示</h2>
+                <p>完成待入库单后，仓库库存增加，并自动生成可追溯的库存流水。</p>
+              </div>
+              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="inbound">
+                <span class="btn-label">刷新入库单</span>
+              </button>
+            </div>
+
+            <div class="flow-strip" aria-label="采购入库业务流程">
+              <div class="flow-step active"><span>1</span><div><strong>待入库单</strong><small>读取采购到货信息</small></div></div>
+              <i>→</i>
+              <div class="flow-step"><span>2</span><div><strong>完成入库</strong><small>校验状态与明细</small></div></div>
+              <i>→</i>
+              <div class="flow-step"><span>3</span><div><strong>库存增加</strong><small>事务内更新库存</small></div></div>
+              <i>→</i>
+              <div class="flow-step"><span>4</span><div><strong>生成流水</strong><small>保留业务追踪记录</small></div></div>
+            </div>
+
+            <article class="content-card">
+              <div class="card-heading">
+                <div>
+                  <span class="section-tag">INBOUND ORDERS</span>
+                  <h3>入库单列表</h3>
+                </div>
+                <span class="soft-badge" id="inboundResultBadge">0 张单据</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table app-table align-middle">
+                  <thead>
+                    <tr>
+                      <th>入库单号</th><th>采购订单</th><th>供应商</th><th>目标仓库</th>
+                      <th>入库明细</th><th>状态</th><th>入库时间</th><th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inboundTableBody"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="app-view" id="view-fulfillment" data-title="门店补货与出库演示">
+            <div class="section-intro">
+              <div>
+                <span class="section-tag">STORE FULFILLMENT</span>
+                <h2>门店补货与出库演示</h2>
+                <p>从补货申请审核到仓库发货、门店签收，演示完整履约闭环。</p>
+              </div>
+              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="fulfillment">
+                <span class="btn-label">刷新业务单据</span>
+              </button>
+            </div>
+
+            <div class="flow-strip compact-flow" aria-label="门店补货出库业务流程">
+              <div class="flow-step active"><span>1</span><div><strong>申请</strong><small>门店发起</small></div></div><i>→</i>
+              <div class="flow-step"><span>2</span><div><strong>审核</strong><small>状态变为已通过</small></div></div><i>→</i>
+              <div class="flow-step"><span>3</span><div><strong>转出库单</strong><small>关联业务单据</small></div></div><i>→</i>
+              <div class="flow-step"><span>4</span><div><strong>发货</strong><small>校验并扣减库存</small></div></div><i>→</i>
+              <div class="flow-step"><span>5</span><div><strong>签收</strong><small>履约完成</small></div></div>
+            </div>
+
+            <article class="content-card mb-4">
+              <div class="card-heading">
+                <div><span class="section-tag">REQUESTS</span><h3>补货申请</h3></div>
+                <span class="soft-badge" id="requestResultBadge">0 张申请</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table app-table align-middle">
+                  <thead>
+                    <tr>
+                      <th>申请编号</th><th>门店</th><th>商品</th><th>申请数量</th>
+                      <th>申请原因</th><th>审核状态</th><th>关联出库单</th><th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="requestTableBody"></tbody>
+                </table>
+              </div>
+            </article>
+
+            <article class="content-card">
+              <div class="card-heading">
+                <div><span class="section-tag">OUTBOUND</span><h3>出库配送</h3></div>
+                <span class="soft-badge" id="outboundResultBadge">0 张单据</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table app-table align-middle">
+                  <thead>
+                    <tr>
+                      <th>出库单号</th><th>来源仓库</th><th>目标门店</th><th>出库明细</th>
+                      <th>关联申请</th><th>状态</th><th>出库时间</th><th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="outboundTableBody"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="app-view" id="view-transactions" data-title="库存流水追溯">
+            <div class="section-intro">
+              <div>
+                <span class="section-tag">STOCK LEDGER</span>
+                <h2>库存流水追溯</h2>
+                <p>记录每次库存变化的前后数量、关联单据和操作时间，确保全程可查。</p>
+              </div>
+              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="transactions">
+                <span class="btn-label">刷新流水</span>
+              </button>
+            </div>
+
+            <article class="content-card">
+              <div class="card-heading">
+                <div><span class="section-tag">TRANSACTIONS</span><h3>库存变动记录</h3></div>
+                <span class="soft-badge" id="transactionResultBadge">0 条流水</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table app-table align-middle">
+                  <thead>
+                    <tr>
+                      <th>流水编号</th><th>商品</th><th>操作类型</th><th>变动数量</th>
+                      <th>变化前</th><th>变化后</th><th>关联单据</th><th>操作时间</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transactionTableBody"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="app-view" id="view-recommendations" data-title="AI 补货建议">
+            <div class="section-intro">
+              <div>
+                <span class="section-tag">SMART REPLENISHMENT</span>
+                <h2>AI 补货建议</h2>
+                <p>依据当前库存、安全库存和近期销售，生成建议数量、风险等级与推荐理由。</p>
+              </div>
+              <div class="section-actions">
+                <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="recommendations">
+                  <span class="btn-label">刷新列表</span>
+                </button>
+                <button class="btn btn-primary app-btn" id="generateRecommendationBtn" type="button">
+                  <span class="btn-label">生成补货建议</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="recommendation-summary">
+              <div><span>建议总数</span><strong id="recommendationTotal">--</strong></div>
+              <div><span>高风险建议</span><strong id="recommendationHigh">--</strong></div>
+              <div><span>建议补货总量</span><strong id="recommendationQuantity">--</strong></div>
+              <div><span>规则模型可用</span><strong>✓</strong></div>
+            </div>
+
+            <div class="recommendation-grid" id="recommendationGrid"></div>
+          </section>
+
+          <section class="app-view" id="view-suppliers" data-title="供应商排行与统计分析">
+            <div class="section-intro">
+              <div>
+                <span class="section-tag">SUPPLIER & ANALYTICS</span>
+                <h2>供应商排行与统计分析</h2>
+                <p>展示供应商综合评分、商品库存排行与仓库出入库趋势。</p>
+              </div>
+              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="suppliers">
+                <span class="btn-label">刷新分析</span>
+              </button>
+            </div>
+
+            <div class="layout-grid analytics-grid">
+              <article class="content-card chart-card">
+                <div class="card-heading">
+                  <div><span class="section-tag">SUPPLIER SCORE</span><h3>供应商综合评分</h3></div>
+                  <span class="soft-badge">满分 100</span>
+                </div>
+                <div class="chart-box" id="supplierScoreChart"><div class="loading-placeholder">正在加载图表…</div></div>
+              </article>
+              <article class="content-card chart-card">
+                <div class="card-heading">
+                  <div><span class="section-tag">WAREHOUSE TREND</span><h3>仓库出入库趋势</h3></div>
+                  <span class="soft-badge">月度</span>
+                </div>
+                <div class="chart-box" id="warehouseTrendChart"><div class="loading-placeholder">正在加载图表…</div></div>
+              </article>
+            </div>
+
+            <article class="content-card mt-4">
+              <div class="card-heading">
+                <div><span class="section-tag">RANKING DETAILS</span><h3>供应商排行明细</h3></div>
+                <span class="soft-badge" id="supplierResultBadge">0 家供应商</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table app-table align-middle">
+                  <thead><tr><th>排名</th><th>供应商</th><th>综合评分</th><th>评分依据</th><th>评价</th></tr></thead>
+                  <tbody id="supplierTableBody"></tbody>
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <section class="app-view" id="view-system" data-title="系统状态">
+            <div class="section-intro">
+              <div>
+                <span class="section-tag">SYSTEM HEALTH</span>
+                <h2>系统运行状态</h2>
+                <p>检查后端服务、数据库连接和演示数据是否已准备就绪。</p>
+              </div>
+              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="system">
+                <span class="btn-label">重新检查</span>
+              </button>
+            </div>
+
+            <div class="system-grid">
+              <article class="system-card" id="backendHealthCard">
+                <div class="system-icon">API</div>
+                <div><span>后端服务</span><strong id="backendHealthStatus">检查中</strong><small id="backendHealthDetail">等待接口响应</small></div>
+              </article>
+              <article class="system-card" id="databaseHealthCard">
+                <div class="system-icon">DB</div>
+                <div><span>数据库连接</span><strong id="databaseHealthStatus">检查中</strong><small id="databaseHealthDetail">等待接口响应</small></div>
+              </article>
+              <article class="system-card" id="exampleHealthCard">
+                <div class="system-icon">DATA</div>
+                <div><span>演示数据</span><strong id="exampleHealthStatus">检查中</strong><small id="exampleHealthDetail">等待接口响应</small></div>
+              </article>
+            </div>
+
+            <article class="content-card connection-card">
+              <div class="card-heading">
+                <div><span class="section-tag">CONNECTION</span><h3>连接信息</h3></div>
+                <span class="status-badge pending" id="connectionBadge">检查中</span>
+              </div>
+              <dl class="connection-list">
+                <div><dt>应用名称</dt><dd id="systemAppName">--</dd></div>
+                <div><dt>API 地址</dt><dd><code>/api</code></dd></div>
+                <div><dt>数据库类型</dt><dd id="systemDialect">--</dd></div>
+                <div><dt>数据库连接</dt><dd><code id="systemDatabaseUrl">--</code></dd></div>
+              </dl>
+            </article>
+          </section>
+        </main>
+      </div>
     </div>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="toast-container position-fixed end-0 bottom-0 p-3" id="toastContainer" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="/ui/api.js"></script>
     <script src="/ui/app.js"></script>
   </body>
 </html>
