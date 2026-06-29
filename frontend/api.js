@@ -50,6 +50,7 @@
 
   const api = {
     request,
+    login: (credentials) => post("/users/login", credentials),
     getHealth: () => get("/health"),
     getDatabaseHealth: () => get("/health/db"),
     getExampleStatus: () => get("/example/status"),
@@ -75,9 +76,15 @@
     getRecommendations: () => get("/recommendations"),
     getSupplierRanking: () => get("/suppliers/ranking"),
     getProducts: () => get("/products?page=1&page_size=200"),
+    createProduct: (payload) => post("/products", payload),
     getSuppliers: () => get("/suppliers?page=1&page_size=200"),
+    createSupplier: (payload) => post("/suppliers", payload),
     getWarehouses: () => get("/warehouses?page=1&page_size=100"),
+    createWarehouse: (payload) => post("/warehouses", payload),
     getStores: () => get("/stores?page=1&page_size=200"),
+    createStore: (payload) => post("/stores", payload),
+    createInboundOrder: (payload) => post("/inbound-orders", payload),
+    createReplenishmentRequest: (payload) => post("/replenishment-requests", payload),
   };
 
   window.SupplyAPI = Object.freeze(api);

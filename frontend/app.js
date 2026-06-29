@@ -4,6 +4,8 @@
   const API = window.SupplyAPI;
   const state = {
     currentView: "dashboard",
+    currentUser: null,
+    eventsBound: false,
     products: new Map(),
     suppliers: new Map(),
     warehouses: new Map(),
@@ -13,6 +15,7 @@
 
   const viewLoaders = {
     dashboard: loadDashboard,
+    data: loadBaseData,
     warnings: loadWarnings,
     inbound: loadInbound,
     fulfillment: loadFulfillment,
@@ -49,6 +52,14 @@
     inbound_order: "入库单",
     outbound_order: "出库单",
     example_seed: "示例数据",
+  };
+
+  const roleLabels = {
+    admin: "系统管理员",
+    buyer: "采购专员",
+    warehouse_manager: "仓库主管",
+    store_staff: "门店员工",
+    manager: "运营经理",
   };
 
   const $ = (id) => document.getElementById(id);
@@ -212,6 +223,41 @@
       map.clear();
       listItems(result.value).forEach((item) => map.set(Number(item.id), item));
     });
+    populateBusinessSelects();
+  }
+
+  function populateSelect(id, items, placeholder) {
+    const select = $(id);
+    if (!select) return;
+    const currentValue = select.value;
+    select.innerHTML = items.length
+      ? items
+          .map(
+            (item) =>
+              `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`,
+          )
+          .join("")
+      : `<option value="">${escapeHtml(placeholder)}</option>`;
+    if (items.some((item) => String(item.id) === currentValue)) {
+      select.value = currentValue;
+    }
+  }
+
+  function populateBusinessSelects() {
+    const products = [...state.products.values()];
+    populateSelect("inboundSupplier", [...state.suppliers.values()], "暂无供应商");
+    populateSelect("inboundWarehouse", [...state.warehouses.values()], "暂无仓库");
+    populateSelect("inboundProduct", products, "暂无商品");
+    populateSelect("requestStore", [...state.stores.values()], "暂无门店");
+    populateSelect("requestProduct", products, "暂无商品");
+  }
+
+  async function loadBaseData() {
+    await loadLookups();
+    setText("dataProductCount", formatNumber(state.products.size));
+    setText("dataSupplierCount", formatNumber(state.suppliers.size));
+    setText("dataWarehouseCount", formatNumber(state.warehouses.size));
+    setText("dataStoreCount", formatNumber(state.stores.size));
   }
 
   function updateChart(id, option) {
@@ -814,6 +860,138 @@
     );
   }
 
+  function formValues(form) {
+    return Object.fromEntries(new FormData(form).entries());
+  }
+
+  function optionalValue(value) {
+    const normalized = String(value || "").trim();
+    return normalized || null;
+  }
+
+  async function handleBaseDataCreate(form) {
+    const type = form.dataset.createForm;
+    const values = formValues(form);
+    const configurations = {
+      product: {
+        request: () =>
+          API.createProduct({
+            product_code: values.product_code.trim(),
+            name: values.name.trim(),
+            spec: optionalValue(values.spec),
+            unit: values.unit.trim(),
+            default_safety_stock: Number(values.default_safety_stock),
+            is_active: true,
+          }),
+        success: "商品已新增，可在入库单中选择",
+      },
+      supplier: {
+        request: () =>
+          API.createSupplier({
+            name: values.name.trim(),
+            phone: values.phone.trim(),
+            contact_person: optionalValue(values.contact_person),
+            supplier_level: optionalValue(values.supplier_level),
+            address: optionalValue(values.address),
+            cooperation_status: "active",
+            is_active: true,
+          }),
+        success: "供应商已新增",
+      },
+      warehouse: {
+        request: () =>
+          API.createWarehouse({
+            warehouse_code: values.warehouse_code.trim(),
+            name: values.name.trim(),
+            region: optionalValue(values.region),
+            manager_name: optionalValue(values.manager_name),
+            address: optionalValue(values.address),
+            status: "active",
+            is_synthetic: false,
+          }),
+        success: "仓库节点已新增",
+      },
+      store: {
+        request: () =>
+          API.createStore({
+            store_code: values.store_code.trim(),
+            name: values.name.trim(),
+            region: optionalValue(values.region),
+            contact_person: optionalValue(values.contact_person),
+            address: optionalValue(values.address),
+            business_status: "active",
+            is_synthetic: false,
+          }),
+        success: "门店节点已新增",
+      },
+    };
+    const configuration = configurations[type];
+    if (!configuration) return;
+    const button = form.querySelector('[type="submit"]');
+    const result = await runButtonAction(button, configuration.request, {
+      loadingText: "保存中…",
+      successMessage: configuration.success,
+    });
+    if (!result) return;
+    form.reset();
+    await Promise.all([loadBaseData(), loadDashboard()]);
+  }
+
+  async function handleInboundCreate(form) {
+    const values = formValues(form);
+    const button = form.querySelector('[type="submit"]');
+    const result = await runButtonAction(
+      button,
+      () =>
+        API.createInboundOrder({
+          supplier_id: Number(values.supplier_id),
+          warehouse_id: Number(values.warehouse_id),
+          handled_by: Number(state.currentUser?.id || 1),
+          status: "pending",
+          remark: optionalValue(values.remark),
+          items: [
+            {
+              product_id: Number(values.product_id),
+              quantity: Number(values.quantity),
+              batch_no: optionalValue(values.batch_no),
+            },
+          ],
+        }),
+      {
+        loadingText: "创建中…",
+        successMessage: (item) => `入库单 ${item.inbound_no} 已创建`,
+      },
+    );
+    if (!result) return;
+    window.bootstrap.Modal.getOrCreateInstance($("createInboundModal")).hide();
+    form.reset();
+    await loadInbound();
+  }
+
+  async function handleRequestCreate(form) {
+    const values = formValues(form);
+    const button = form.querySelector('[type="submit"]');
+    const result = await runButtonAction(
+      button,
+      () =>
+        API.createReplenishmentRequest({
+          store_id: Number(values.store_id),
+          product_id: Number(values.product_id),
+          request_quantity: Number(values.request_quantity),
+          request_reason: optionalValue(values.request_reason),
+          created_by: Number(state.currentUser?.id || 1),
+        }),
+      {
+        loadingText: "提交中…",
+        successMessage: (item) => `补货申请 ${item.request_no} 已提交`,
+      },
+    );
+    if (!result) return;
+    window.bootstrap.Modal.getOrCreateInstance($("createRequestModal")).hide();
+    form.reset();
+    await loadFulfillment();
+  }
+
   function bindEvents() {
     document.querySelectorAll(".nav-item").forEach((button) => {
       button.addEventListener("click", () => switchView(button.dataset.view));
@@ -843,6 +1021,21 @@
       );
     });
 
+    document.querySelectorAll("[data-create-form]").forEach((form) => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        await handleBaseDataCreate(form);
+      });
+    });
+    $("createInboundForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await handleInboundCreate(event.currentTarget);
+    });
+    $("createRequestForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await handleRequestCreate(event.currentTarget);
+    });
+
     document.addEventListener("click", (event) => {
       const actionButton = event.target.closest(".row-action");
       if (actionButton) handleRowAction(actionButton);
@@ -861,8 +1054,62 @@
     });
   }
 
+  function updateUserIdentity(user) {
+    const displayName = user.real_name || user.username;
+    setText("currentUserName", displayName);
+    setText("currentUserRole", roleLabels[user.role] || user.role);
+    setText("userAvatar", displayName.slice(0, 1));
+  }
+
+  async function enterWorkspace(user) {
+    state.currentUser = user;
+    updateUserIdentity(user);
+    $("loginScreen").hidden = true;
+    $("appShell").hidden = false;
+    if (!state.eventsBound) {
+      bindEvents();
+      state.eventsBound = true;
+    }
+    await initialize();
+  }
+
+  function leaveWorkspace() {
+    window.sessionStorage.removeItem("supplyChainUser");
+    state.currentUser = null;
+    $("appShell").hidden = true;
+    $("loginScreen").hidden = false;
+    $("loginPassword").value = "";
+    $("loginError").hidden = true;
+    $("loginUsername").focus();
+  }
+
+  function bindAuthEvents() {
+    $("loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('[type="submit"]');
+      const errorElement = $("loginError");
+      const values = formValues(form);
+      errorElement.hidden = true;
+      setButtonLoading(button, true, "正在登录…");
+      try {
+        const user = await API.login({
+          username: values.username.trim(),
+          password: values.password,
+        });
+        window.sessionStorage.setItem("supplyChainUser", JSON.stringify(user));
+        await enterWorkspace(user);
+      } catch (error) {
+        errorElement.textContent = error?.message || "登录失败，请稍后重试";
+        errorElement.hidden = false;
+      } finally {
+        setButtonLoading(button, false);
+      }
+    });
+    $("logoutBtn").addEventListener("click", leaveWorkspace);
+  }
+
   async function initialize() {
-    bindEvents();
     clearAlert();
     const requestedView = new URLSearchParams(window.location.search).get("view");
     if (requestedView && viewLoaders[requestedView]) {
@@ -871,6 +1118,7 @@
     await loadLookups();
     const results = await Promise.allSettled([
       loadDashboard(),
+      loadBaseData(),
       loadWarnings(),
       loadInbound(),
       loadFulfillment(),
@@ -885,5 +1133,18 @@
     }
   }
 
-  initialize();
+  async function bootstrap() {
+    bindAuthEvents();
+    const savedUser = window.sessionStorage.getItem("supplyChainUser");
+    if (!savedUser) return;
+    try {
+      await enterWorkspace(JSON.parse(savedUser));
+    } catch (_error) {
+      window.sessionStorage.removeItem("supplyChainUser");
+      $("loginScreen").hidden = false;
+      $("appShell").hidden = true;
+    }
+  }
+
+  bootstrap();
 })();

@@ -12,7 +12,61 @@
     <link rel="stylesheet" href="/ui/style.css" />
   </head>
   <body>
-    <div class="demo-shell">
+    <section class="login-screen" id="loginScreen">
+      <div class="login-visual" aria-hidden="true">
+        <div class="login-brand">
+          <div class="brand-symbol"><span></span><span></span><span></span><span></span></div>
+          <strong>Supply Chain</strong>
+        </div>
+        <div class="login-copy">
+          <span>INVENTORY · FULFILLMENT · INSIGHT</span>
+          <h1>让每一件货物<br />都有清晰的去向</h1>
+          <p>连接采购、仓库与门店，在同一套数据中完成库存协同。</p>
+        </div>
+        <div class="login-route">
+          <span>供应商</span><i></i><span>仓库</span><i></i><span>门店</span>
+        </div>
+      </div>
+      <div class="login-panel">
+        <form class="login-card" id="loginForm">
+          <div>
+            <span class="section-tag">WELCOME BACK</span>
+            <h2>登录协同中心</h2>
+            <p>使用系统账号进入供应链工作台。</p>
+          </div>
+          <label class="form-label" for="loginUsername">用户名</label>
+          <input
+            class="form-control"
+            id="loginUsername"
+            name="username"
+            type="text"
+            autocomplete="username"
+            value="admin"
+            required
+          />
+          <label class="form-label" for="loginPassword">密码</label>
+          <input
+            class="form-control"
+            id="loginPassword"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            value="admin123"
+            required
+          />
+          <p class="login-error" id="loginError" role="alert" hidden></p>
+          <button class="btn btn-primary app-btn login-submit" type="submit">
+            <span class="btn-label">进入工作台</span>
+          </button>
+          <div class="demo-account">
+            <span>演示账号</span>
+            <code>admin / admin123</code>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <div class="demo-shell" id="appShell" hidden>
       <aside class="app-sidebar" id="appSidebar">
         <div class="brand">
           <div class="brand-symbol" aria-hidden="true">
@@ -29,26 +83,29 @@
           <button class="nav-item active" type="button" data-view="dashboard">
             <span class="nav-index">01</span><span>首页看板</span>
           </button>
+          <button class="nav-item" type="button" data-view="data">
+            <span class="nav-index">02</span><span>基础数据录入</span>
+          </button>
           <button class="nav-item" type="button" data-view="warnings">
-            <span class="nav-index">02</span><span>库存预警</span>
+            <span class="nav-index">03</span><span>库存预警</span>
           </button>
           <button class="nav-item" type="button" data-view="inbound">
-            <span class="nav-index">03</span><span>采购入库</span>
+            <span class="nav-index">04</span><span>采购入库</span>
           </button>
           <button class="nav-item" type="button" data-view="fulfillment">
-            <span class="nav-index">04</span><span>补货与出库</span>
+            <span class="nav-index">05</span><span>补货与出库</span>
           </button>
           <button class="nav-item" type="button" data-view="transactions">
-            <span class="nav-index">05</span><span>库存流水</span>
+            <span class="nav-index">06</span><span>库存流水</span>
           </button>
           <button class="nav-item" type="button" data-view="recommendations">
-            <span class="nav-index">06</span><span>AI 补货建议</span>
+            <span class="nav-index">07</span><span>AI 补货建议</span>
           </button>
           <button class="nav-item" type="button" data-view="suppliers">
-            <span class="nav-index">07</span><span>供应商与分析</span>
+            <span class="nav-index">08</span><span>供应商与分析</span>
           </button>
           <button class="nav-item" type="button" data-view="system">
-            <span class="nav-index">08</span><span>系统状态</span>
+            <span class="nav-index">09</span><span>系统状态</span>
           </button>
         </nav>
 
@@ -82,8 +139,15 @@
               <span class="pulse-dot"></span>
               <span>数据在线</span>
             </div>
+            <div class="user-chip">
+              <span class="user-avatar" id="userAvatar">管</span>
+              <span><strong id="currentUserName">系统管理员</strong><small id="currentUserRole">管理员</small></span>
+            </div>
             <button class="btn btn-primary app-btn" id="refreshCurrentBtn" type="button">
               <span class="btn-label">刷新数据</span>
+            </button>
+            <button class="btn btn-outline-secondary app-btn logout-btn" id="logoutBtn" type="button">
+              退出
             </button>
           </div>
         </header>
@@ -181,6 +245,88 @@
             </article>
           </section>
 
+          <section class="app-view" id="view-data" data-title="基础数据录入">
+            <div class="section-intro">
+              <div>
+                <span class="section-tag">MASTER DATA</span>
+                <h2>基础数据录入</h2>
+                <p>新增商品、供应商和履约节点，新数据会立即进入后续业务选择项。</p>
+              </div>
+              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="data">
+                <span class="btn-label">刷新数据概况</span>
+              </button>
+            </div>
+
+            <div class="data-count-grid">
+              <article><span>商品</span><strong id="dataProductCount">--</strong><small>个在册商品</small></article>
+              <article><span>供应商</span><strong id="dataSupplierCount">--</strong><small>家合作伙伴</small></article>
+              <article><span>仓库</span><strong id="dataWarehouseCount">--</strong><small>个仓储节点</small></article>
+              <article><span>门店</span><strong id="dataStoreCount">--</strong><small>个零售节点</small></article>
+            </div>
+
+            <div class="data-form-grid">
+              <form class="content-card data-form" id="productForm" data-create-form="product">
+                <div class="card-heading">
+                  <div><span class="section-tag">PRODUCT</span><h3>新增商品</h3></div>
+                  <span class="form-sequence">01</span>
+                </div>
+                <div class="form-grid">
+                  <label><span>商品编码 *</span><input class="form-control" name="product_code" placeholder="例如 SKU-031" required /></label>
+                  <label><span>商品名称 *</span><input class="form-control" name="name" placeholder="例如 原味酸奶" required /></label>
+                  <label><span>规格</span><input class="form-control" name="spec" placeholder="例如 200g × 12" /></label>
+                  <label><span>计量单位</span><input class="form-control" name="unit" value="piece" required /></label>
+                  <label class="form-span-2"><span>默认安全库存</span><input class="form-control" name="default_safety_stock" type="number" min="0" value="10" required /></label>
+                </div>
+                <button class="btn btn-primary app-btn form-submit" type="submit"><span class="btn-label">保存商品</span></button>
+              </form>
+
+              <form class="content-card data-form" id="supplierForm" data-create-form="supplier">
+                <div class="card-heading">
+                  <div><span class="section-tag">SUPPLIER</span><h3>新增供应商</h3></div>
+                  <span class="form-sequence">02</span>
+                </div>
+                <div class="form-grid">
+                  <label><span>供应商名称 *</span><input class="form-control" name="name" placeholder="例如 华东乳品供应" required /></label>
+                  <label><span>联系电话 *</span><input class="form-control" name="phone" placeholder="例如 021-88886666" required /></label>
+                  <label><span>联系人</span><input class="form-control" name="contact_person" placeholder="联系人姓名" /></label>
+                  <label><span>供应商等级</span><select class="form-select" name="supplier_level"><option value="A">A级</option><option value="B">B级</option><option value="C">C级</option></select></label>
+                  <label class="form-span-2"><span>地址</span><input class="form-control" name="address" placeholder="供应商联系地址" /></label>
+                </div>
+                <button class="btn btn-primary app-btn form-submit" type="submit"><span class="btn-label">保存供应商</span></button>
+              </form>
+
+              <form class="content-card data-form" id="warehouseForm" data-create-form="warehouse">
+                <div class="card-heading">
+                  <div><span class="section-tag">WAREHOUSE</span><h3>新增仓库</h3></div>
+                  <span class="form-sequence">03</span>
+                </div>
+                <div class="form-grid">
+                  <label><span>仓库编码 *</span><input class="form-control" name="warehouse_code" placeholder="例如 WH-EAST" required /></label>
+                  <label><span>仓库名称 *</span><input class="form-control" name="name" placeholder="例如 华东区域仓" required /></label>
+                  <label><span>所在区域</span><input class="form-control" name="region" placeholder="例如 上海" /></label>
+                  <label><span>负责人</span><input class="form-control" name="manager_name" placeholder="负责人姓名" /></label>
+                  <label class="form-span-2"><span>地址</span><input class="form-control" name="address" placeholder="仓库详细地址" /></label>
+                </div>
+                <button class="btn btn-primary app-btn form-submit" type="submit"><span class="btn-label">保存仓库</span></button>
+              </form>
+
+              <form class="content-card data-form" id="storeForm" data-create-form="store">
+                <div class="card-heading">
+                  <div><span class="section-tag">STORE</span><h3>新增门店</h3></div>
+                  <span class="form-sequence">04</span>
+                </div>
+                <div class="form-grid">
+                  <label><span>门店编码 *</span><input class="form-control" name="store_code" placeholder="例如 STORE-031" required /></label>
+                  <label><span>门店名称 *</span><input class="form-control" name="name" placeholder="例如 人民广场店" required /></label>
+                  <label><span>所在区域</span><input class="form-control" name="region" placeholder="例如 上海" /></label>
+                  <label><span>联系人</span><input class="form-control" name="contact_person" placeholder="联系人姓名" /></label>
+                  <label class="form-span-2"><span>地址</span><input class="form-control" name="address" placeholder="门店详细地址" /></label>
+                </div>
+                <button class="btn btn-primary app-btn form-submit" type="submit"><span class="btn-label">保存门店</span></button>
+              </form>
+            </div>
+          </section>
+
           <section class="app-view" id="view-warnings" data-title="库存查询与预警">
             <div class="section-intro">
               <div>
@@ -229,9 +375,14 @@
                 <h2>采购入库演示</h2>
                 <p>完成待入库单后，仓库库存增加，并自动生成可追溯的库存流水。</p>
               </div>
-              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="inbound">
-                <span class="btn-label">刷新入库单</span>
-              </button>
+              <div class="section-actions">
+                <button class="btn btn-primary app-btn" type="button" data-bs-toggle="modal" data-bs-target="#createInboundModal">
+                  新建入库单
+                </button>
+                <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="inbound">
+                  <span class="btn-label">刷新入库单</span>
+                </button>
+              </div>
             </div>
 
             <div class="flow-strip" aria-label="采购入库业务流程">
@@ -273,9 +424,14 @@
                 <h2>门店补货与出库演示</h2>
                 <p>从补货申请审核到仓库发货、门店签收，演示完整履约闭环。</p>
               </div>
-              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="fulfillment">
-                <span class="btn-label">刷新业务单据</span>
-              </button>
+              <div class="section-actions">
+                <button class="btn btn-primary app-btn" type="button" data-bs-toggle="modal" data-bs-target="#createRequestModal">
+                  新建补货申请
+                </button>
+                <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="fulfillment">
+                  <span class="btn-label">刷新业务单据</span>
+                </button>
+              </div>
             </div>
 
             <div class="flow-strip compact-flow" aria-label="门店补货出库业务流程">
@@ -465,6 +621,54 @@
             </article>
           </section>
         </main>
+      </div>
+    </div>
+
+    <div class="modal fade" id="createInboundModal" tabindex="-1" aria-labelledby="createInboundTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content app-modal">
+          <form id="createInboundForm">
+            <div class="modal-header">
+              <div><span class="section-tag">NEW INBOUND</span><h2 class="modal-title" id="createInboundTitle">新建采购入库单</h2></div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body form-grid">
+              <label><span>供应商 *</span><select class="form-select" id="inboundSupplier" name="supplier_id" required></select></label>
+              <label><span>目标仓库 *</span><select class="form-select" id="inboundWarehouse" name="warehouse_id" required></select></label>
+              <label><span>入库商品 *</span><select class="form-select" id="inboundProduct" name="product_id" required></select></label>
+              <label><span>入库数量 *</span><input class="form-control" name="quantity" type="number" min="1" value="10" required /></label>
+              <label><span>批次号</span><input class="form-control" name="batch_no" placeholder="例如 B20260629001" /></label>
+              <label><span>备注</span><input class="form-control" name="remark" placeholder="采购到货入库" /></label>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light app-btn" data-bs-dismiss="modal">取消</button>
+              <button type="submit" class="btn btn-primary app-btn"><span class="btn-label">创建入库单</span></button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="createRequestModal" tabindex="-1" aria-labelledby="createRequestTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content app-modal">
+          <form id="createRequestForm">
+            <div class="modal-header">
+              <div><span class="section-tag">NEW REQUEST</span><h2 class="modal-title" id="createRequestTitle">新建门店补货申请</h2></div>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body form-grid">
+              <label><span>申请门店 *</span><select class="form-select" id="requestStore" name="store_id" required></select></label>
+              <label><span>补货商品 *</span><select class="form-select" id="requestProduct" name="product_id" required></select></label>
+              <label><span>申请数量 *</span><input class="form-control" name="request_quantity" type="number" min="1" value="10" required /></label>
+              <label><span>申请原因</span><input class="form-control" name="request_reason" placeholder="例如 门店库存低于安全线" /></label>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light app-btn" data-bs-dismiss="modal">取消</button>
+              <button type="submit" class="btn btn-primary app-btn"><span class="btn-label">提交补货申请</span></button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 

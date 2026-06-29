@@ -37,6 +37,7 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background: var(--canvas);
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -1399,6 +1400,544 @@ select {
   font-size: 19px;
 }
 
+/* Login */
+
+.login-screen {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(420px, 1.15fr) minmax(420px, 0.85fr);
+  background: #fff;
+}
+
+.login-screen[hidden],
+.demo-shell[hidden] {
+  display: none !important;
+}
+
+.login-visual {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 42px 54px;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(circle at 75% 24%, rgba(139, 92, 246, 0.42), transparent 24%),
+    radial-gradient(circle at 20% 82%, rgba(56, 189, 248, 0.2), transparent 28%),
+    linear-gradient(145deg, #12182b 0%, #18203a 58%, #28315c 100%);
+}
+
+.login-visual::before,
+.login-visual::after {
+  content: "";
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 50%;
+}
+
+.login-visual::before {
+  width: 460px;
+  height: 460px;
+  right: -170px;
+  top: 12%;
+}
+
+.login-visual::after {
+  width: 260px;
+  height: 260px;
+  right: -35px;
+  top: 30%;
+}
+
+.login-brand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 20px;
+}
+
+.login-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: auto 0;
+}
+
+.login-copy > span {
+  color: #aeb8ff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.login-copy h1 {
+  margin: 24px 0 20px;
+  font-size: clamp(44px, 5vw, 72px);
+  font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -0.055em;
+}
+
+.login-copy p {
+  max-width: 520px;
+  margin: 0;
+  color: #b9c1d5;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+.login-route {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #bec7db;
+  font-size: 13px;
+}
+
+.login-route i {
+  width: 58px;
+  height: 1px;
+  background: linear-gradient(90deg, #7783a1, #a6b0ff);
+}
+
+.login-panel {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 48px;
+  background: #fbfbfd;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  padding: 40px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 20px 55px rgba(24, 32, 51, 0.1);
+}
+
+.login-card h2 {
+  margin: 9px 0 7px;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.login-card > div:first-child > p {
+  margin: 0 0 28px;
+  color: var(--muted);
+}
+
+.login-card .form-label {
+  margin: 0 0 8px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.login-card .form-control {
+  min-height: 48px;
+  margin-bottom: 18px;
+  border-color: #dbe0e9;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
+.login-card .form-control:focus,
+.data-form .form-control:focus,
+.data-form .form-select:focus,
+.app-modal .form-control:focus,
+.app-modal .form-select:focus {
+  border-color: #9ca7f4;
+  box-shadow: 0 0 0 3px rgba(86, 103, 232, 0.11);
+}
+
+.login-submit {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+}
+
+.login-error {
+  padding: 10px 12px;
+  margin: -5px 0 15px;
+  border-radius: 7px;
+  color: #a93e49;
+  background: var(--red-soft);
+  font-size: 13px;
+}
+
+.demo-account {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 18px;
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.demo-account code {
+  color: var(--primary-dark);
+}
+
+/* User and data entry */
+
+.user-chip {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 11px 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: #fff;
+  background: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.user-chip strong,
+.user-chip small {
+  display: block;
+  white-space: nowrap;
+}
+
+.user-chip strong {
+  font-size: 11px;
+}
+
+.user-chip small {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.logout-btn {
+  min-width: 56px;
+}
+
+.data-count-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.data-count-grid article {
+  position: relative;
+  min-height: 106px;
+  padding: 19px 20px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.data-count-grid article::after {
+  content: "";
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  right: -18px;
+  bottom: -22px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+}
+
+.data-count-grid span,
+.data-count-grid small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.data-count-grid strong {
+  display: block;
+  margin: 5px 0 2px;
+  font-size: 27px;
+}
+
+.data-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.data-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-sequence {
+  color: #bdc4d1;
+  font-family: "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.form-grid label {
+  min-width: 0;
+}
+
+.form-grid label > span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.form-grid .form-control,
+.form-grid .form-select {
+  min-height: 42px;
+  border-color: #dfe3eb;
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.form-span-2 {
+  grid-column: span 2;
+}
+
+.form-submit {
+  align-self: flex-start;
+  min-width: 124px;
+  margin-top: 19px;
+}
+
+.app-modal {
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 22px 60px rgba(17, 24, 39, 0.18);
+}
+
+.app-modal .modal-header,
+.app-modal .modal-footer {
+  padding: 20px 24px;
+  border-color: var(--line);
+}
+
+.app-modal .modal-title {
+  margin-top: 5px;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.app-modal .modal-body {
+  padding: 24px;
+}
+
+/* Comfortable reading size */
+
+body {
+  font-size: 17px;
+}
+
+.brand strong {
+  font-size: 22px;
+}
+
+.brand small,
+.nav-label,
+.header-kicker,
+.section-tag {
+  font-size: 13px;
+}
+
+.nav-item {
+  min-height: 48px;
+  font-size: 16px;
+}
+
+.nav-index,
+.sidebar-status small {
+  font-size: 12px;
+}
+
+.status-line,
+.live-chip,
+.section-intro p,
+.hero-panel p,
+.metric-card small,
+.card-description {
+  font-size: 15px;
+}
+
+.app-header h1 {
+  font-size: 25px;
+}
+
+.app-btn {
+  min-height: 42px;
+  font-size: 15px;
+}
+
+.app-table {
+  font-size: 15px;
+}
+
+.app-table thead th,
+.cell-subtitle {
+  font-size: 13px;
+}
+
+.status-badge,
+.soft-badge {
+  min-height: 27px;
+  font-size: 13px;
+}
+
+.hero-panel h2 {
+  font-size: 24px;
+}
+
+.hero-meta span,
+.route-markers,
+.secondary-metrics span,
+.metric-label,
+.text-action,
+.loading-placeholder,
+.empty-block {
+  font-size: 14px;
+}
+
+.hero-meta strong {
+  font-size: 20px;
+}
+
+.secondary-metrics strong,
+.card-heading h3 {
+  font-size: 20px;
+}
+
+.metric-card strong {
+  font-size: 34px;
+}
+
+.dashboard-recommendation > div:first-child strong,
+.compact-risk strong {
+  font-size: 14px;
+}
+
+.dashboard-recommendation small,
+.compact-risk small,
+.dashboard-recommendation-quantity span {
+  font-size: 12px;
+}
+
+.dashboard-recommendation-quantity strong {
+  font-size: 19px;
+}
+
+.section-intro h2 {
+  font-size: 27px;
+}
+
+.warning-summary small,
+.recommendation-summary span {
+  font-size: 13px;
+}
+
+.row-action,
+.done-text,
+.table-empty {
+  font-size: 13px;
+}
+
+.flow-step > span {
+  font-size: 13px;
+}
+
+.flow-step strong {
+  font-size: 14px;
+}
+
+.flow-step small {
+  font-size: 12px;
+}
+
+.recommendation-head h3 {
+  font-size: 18px;
+}
+
+.recommendation-number span,
+.recommendation-stats span {
+  font-size: 12px;
+}
+
+.recommendation-stats strong,
+.recommendation-card p {
+  font-size: 14px;
+}
+
+.recommendation-card footer {
+  font-size: 12px;
+}
+
+.system-icon,
+.system-card span,
+.system-card small {
+  font-size: 13px;
+}
+
+.system-card strong {
+  font-size: 19px;
+}
+
+.connection-list dt {
+  font-size: 13px;
+}
+
+.connection-list dd {
+  font-size: 14px;
+}
+
+.app-toast strong {
+  font-size: 14px;
+}
+
+.app-toast div span {
+  font-size: 13px;
+}
+
+.user-chip strong,
+.user-chip small {
+  font-size: 11px;
+}
+
+.form-grid label > span {
+  font-size: 14px;
+}
+
+.form-grid .form-control,
+.form-grid .form-select {
+  font-size: 15px;
+}
+
 /* Responsive */
 
 @media (max-width: 1250px) {
@@ -1413,8 +1952,17 @@ select {
   }
 
   .warning-summary,
-  .recommendation-summary {
+  .recommendation-summary,
+  .data-count-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .header-actions {
+    gap: 7px;
+  }
+
+  .live-chip {
+    display: none;
   }
 }
 
@@ -1454,6 +2002,11 @@ select {
     display: none;
   }
 
+  .user-chip span:last-child,
+  .logout-btn {
+    display: none;
+  }
+
   .app-header h1 {
     font-size: 18px;
   }
@@ -1472,12 +2025,36 @@ select {
 }
 
 @media (max-width: 680px) {
+  .login-screen {
+    grid-template-columns: 1fr;
+  }
+
+  .login-visual {
+    display: none;
+  }
+
+  .login-panel {
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .login-card {
+    padding: 30px 24px;
+  }
+
   .metric-grid,
   .secondary-metrics,
   .warning-summary,
   .recommendation-summary,
-  .recommendation-grid {
+  .recommendation-grid,
+  .data-count-grid,
+  .data-form-grid,
+  .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .form-span-2 {
+    grid-column: auto;
   }
 
   .secondary-metrics > div {

@@ -316,6 +316,46 @@ OceanBase / MySQL 模式示例：
 | `dialect` | 数据库类型 |
 | `database_url_masked` | 数据库连接 |
 
+### 3.3 演示登录
+
+```http
+POST /api/users/login
+```
+
+请求：
+
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+成功响应中的 `data` 为用户对象，不包含密码或密码摘要：
+
+```json
+{
+  "success": true,
+  "message": "登录成功",
+  "data": {
+    "id": 1,
+    "username": "admin",
+    "real_name": "系统管理员",
+    "role": "admin",
+    "location_type": null,
+    "warehouse_id": null,
+    "store_id": null,
+    "phone": "13000000001",
+    "is_active": true,
+    "created_at": "2026-06-27T10:00:00"
+  }
+}
+```
+
+失败时返回 HTTP 401 和统一失败响应，`message` 为 `用户名或密码错误`。
+
+说明：该接口用于课程 Demo 的身份校验和用户信息展示，不签发 Token，也不实现复杂角色权限控制，符合 workplan 中“不做完整登录注册与复杂权限控制”的范围约束。
+
 ---
 
 ## 4. 示例数据接口
@@ -668,6 +708,32 @@ GET /api/stores?page=1&page_size=20&keyword=门店A
   "updated_at": "2026-06-27T10:00:00"
 }
 ```
+
+### 6.10 新增供应商
+
+```http
+POST /api/suppliers
+```
+
+请求字段与 6.7 的供应商字段一致，不传 `id`、`created_at`、`updated_at`。
+
+### 6.11 新增仓库
+
+```http
+POST /api/warehouses
+```
+
+请求字段与 6.8 的仓库字段一致，不传数据库生成字段。必填字段为 `warehouse_code`、`name`。
+
+### 6.12 新增门店
+
+```http
+POST /api/stores
+```
+
+请求字段与 6.9 的门店字段一致，不传数据库生成字段。必填字段为 `store_code`、`name`。
+
+以上新增接口均返回统一成功响应，`data` 为新建后的完整对象。
 
 ---
 

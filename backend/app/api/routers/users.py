@@ -6,8 +6,8 @@ from app.api.deps import get_db_dep
 from app.core.exceptions import BusinessException
 from app.core.response import page_response, success_response
 from app.models.user import User
-from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.utils.hash_utils import hash_password
+from app.schemas.user import UserCreate, UserLogin, UserRead, UserUpdate
+from app.utils.hash_utils import hash_password, verify_password
 from app.utils.pagination import normalize_pagination
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -31,6 +31,19 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db_dep)):
     db.commit()
     db.refresh(user)
     return success_response(UserRead.model_validate(user).model_dump())
+
+
+@router.post("/login")
+def login(payload: UserLogin, db: Session = Depends(get_db_dep)):
+    user = db.scalar(select(User).where(User.username == payload.username))
+    if not user or not verify_password(payload.password, user.password_hash):
+        raise BusinessException("用户名或密码错误", 401)
+    if not user.is_active:
+        raise BusinessException("该账号已停用", 403)
+    return success_response(
+        UserRead.model_validate(user).model_dump(),
+        message="登录成功",
+    )
 
 
 @router.get("/{user_id}")
