@@ -23,7 +23,7 @@
     dashboard: { label: "首页看板" },
     data: { label: "基础数据录入" },
     warnings: { label: "库存查询与预警" },
-    inbound: { label: "采购入库演示" },
+    inbound: { label: "采购入库" },
     fulfillment: { label: "门店补货与出库" },
     transactions: { label: "库存流水追溯" },
     recommendations: { label: "AI 补货建议" },
