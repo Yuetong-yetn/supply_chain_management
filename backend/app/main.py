@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.routers import (
@@ -76,6 +76,15 @@ if FRONTEND_DIR.exists():
     app.mount("/ui", StaticFiles(directory=FRONTEND_DIR, html=True), name="ui")
 
 
+@app.get("/demo", include_in_schema=False)
+def demo_page(request: Request):
+    query = request.url.query
+    target = "/ui/"
+    if query:
+        target = f"{target}?{query}"
+    return RedirectResponse(url=target)
+
+
 @app.get("/")
 def root():
-    return {"app": settings.app_name, "docs": "/docs", "ui": "/ui/"}
+    return {"app": settings.app_name, "docs": "/docs", "ui": "/ui/", "demo": "/demo"}

@@ -1004,6 +1004,12 @@ select {
   font-size: 10px;
 }
 
+.row-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .done-text {
   color: var(--muted);
   font-size: 10px;
@@ -1533,6 +1539,100 @@ select {
   color: var(--muted);
 }
 
+.role-login-card {
+  width: min(720px, 100%);
+}
+
+.role-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.role-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 255, 0.95)),
+    #fff;
+  text-align: left;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.role-card:hover {
+  transform: translateY(-2px);
+  border-color: #b9c2ef;
+  box-shadow: 0 18px 34px rgba(24, 32, 51, 0.1);
+}
+
+.role-card:disabled {
+  opacity: 0.82;
+  cursor: wait;
+}
+
+.role-card-wide {
+  grid-column: 1 / -1;
+}
+
+.role-card-kicker {
+  color: #7e89a1;
+  font-family: "Consolas", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.role-card strong {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.role-card p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.role-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.role-card-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  margin-top: 4px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--navy-900);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.login-note {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
 .login-card .form-label {
   margin: 0 0 8px;
   color: var(--ink-2);
@@ -1548,7 +1648,16 @@ select {
   font-size: 14px;
 }
 
+.login-card .form-select {
+  min-height: 48px;
+  margin-bottom: 18px;
+  border-color: #dbe0e9;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
 .login-card .form-control:focus,
+.login-card .form-select:focus,
 .data-form .form-control:focus,
 .data-form .form-select:focus,
 .app-modal .form-control:focus,
@@ -1588,6 +1697,29 @@ select {
 }
 
 /* User and data entry */
+
+.role-chip {
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.role-chip span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.role-chip strong {
+  font-size: 14px;
+  font-weight: 800;
+}
 
 .user-chip {
   min-height: 40px;
@@ -1630,6 +1762,19 @@ select {
 
 .logout-btn {
   min-width: 56px;
+}
+
+.permission-note {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px dashed #d7bcc0;
+  border-radius: 999px;
+  color: #9a5660;
+  background: rgba(255, 240, 242, 0.9);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .data-count-grid {
@@ -1938,6 +2083,10 @@ body {
   font-size: 15px;
 }
 
+.operations-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
 /* Responsive */
 
 @media (max-width: 1250px) {
@@ -2002,8 +2151,11 @@ body {
     display: none;
   }
 
-  .user-chip span:last-child,
-  .logout-btn {
+  .role-chip {
+    padding: 6px 10px;
+  }
+
+  .role-chip span {
     display: none;
   }
 
@@ -2040,6 +2192,14 @@ body {
 
   .login-card {
     padding: 30px 24px;
+  }
+
+  .role-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .role-card-wide {
+    grid-column: auto;
   }
 
   .metric-grid,

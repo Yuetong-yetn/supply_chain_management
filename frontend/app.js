@@ -2,30 +2,77 @@
   "use strict";
 
   const API = window.SupplyAPI;
-  const state = {
-    currentView: "dashboard",
-    currentUser: null,
-    eventsBound: false,
-    products: new Map(),
-    suppliers: new Map(),
-    warehouses: new Map(),
-    stores: new Map(),
-    charts: new Map(),
-  };
 
-  const viewLoaders = {
-    dashboard: loadDashboard,
-    data: loadBaseData,
-    warnings: loadWarnings,
-    inbound: loadInbound,
-    fulfillment: loadFulfillment,
-    transactions: loadTransactions,
-    recommendations: loadRecommendations,
-    suppliers: loadSupplierAnalytics,
-    system: loadSystemStatus,
-  };
+  const ROLE_LABELS = Object.freeze({
+    admin: "系统管理员",
+    purchaser: "采购人员",
+    warehouse: "仓库人员",
+    store: "门店人员",
+    manager: "业务主管",
+  });
 
-  const statusLabels = {
+  const ROLE_USER_IDS = Object.freeze({
+    admin: 1,
+    purchaser: 2,
+    warehouse: 3,
+    store: 4,
+    manager: 5,
+  });
+
+  const MODULE_DEFINITIONS = Object.freeze({
+    dashboard: { label: "首页看板" },
+    data: { label: "基础数据录入" },
+    warnings: { label: "库存查询与预警" },
+    inbound: { label: "采购入库演示" },
+    fulfillment: { label: "门店补货与出库" },
+    transactions: { label: "库存流水追溯" },
+    recommendations: { label: "AI 补货建议" },
+    analytics: { label: "统计分析" },
+    suppliers: { label: "供应商排行" },
+    system: { label: "系统状态" },
+  });
+
+  const ROLE_MODULES = Object.freeze({
+    admin: [
+      "dashboard",
+      "data",
+      "warnings",
+      "inbound",
+      "fulfillment",
+      "transactions",
+      "recommendations",
+      "analytics",
+      "suppliers",
+      "system",
+    ],
+    purchaser: ["dashboard", "warnings", "inbound", "suppliers", "system"],
+    warehouse: ["dashboard", "warnings", "inbound", "fulfillment", "transactions", "system"],
+    store: ["dashboard", "fulfillment", "recommendations", "system"],
+    manager: [
+      "dashboard",
+      "warnings",
+      "fulfillment",
+      "recommendations",
+      "analytics",
+      "suppliers",
+      "system",
+    ],
+  });
+
+  const ACTION_ROLES = Object.freeze({
+    "create-base-data": ["admin"],
+    "create-inbound": ["admin", "purchaser", "warehouse"],
+    "complete-inbound": ["admin", "purchaser", "warehouse"],
+    "create-replenishment": ["admin", "store"],
+    "approve-request": ["admin", "manager"],
+    "reject-request": ["admin", "manager"],
+    "convert-request": ["admin", "manager"],
+    "ship-outbound": ["admin", "warehouse"],
+    "sign-outbound": ["admin", "store"],
+    "generate-recommendations": ["admin", "store", "manager"],
+  });
+
+  const STATUS_LABELS = {
     pending: "待处理",
     confirmed: "已确认",
     partial_received: "部分到货",
@@ -36,7 +83,7 @@
     shipped: "已发货",
     signed: "已签收",
     cancelled: "已取消",
-    accepted: "已采纳",
+    accepted: "已采用",
     critical_stockout: "严重缺货",
     stockout: "库存不足",
     overstock: "库存积压",
@@ -54,12 +101,31 @@
     example_seed: "示例数据",
   };
 
-  const roleLabels = {
-    admin: "系统管理员",
-    buyer: "采购专员",
-    warehouse_manager: "仓库主管",
-    store_staff: "门店员工",
-    manager: "运营经理",
+  const viewLoaders = {
+    dashboard: loadDashboard,
+    data: loadBaseData,
+    warnings: loadWarnings,
+    inbound: loadInbound,
+    fulfillment: loadFulfillment,
+    transactions: loadTransactions,
+    recommendations: loadRecommendations,
+    analytics: loadAnalytics,
+    suppliers: loadSuppliers,
+    system: loadSystemStatus,
+  };
+
+  const state = {
+    currentRole: null,
+    currentUser: null,
+    currentView: "dashboard",
+    eventsBound: false,
+    lookupsLoaded: false,
+    loadedViews: new Set(),
+    products: new Map(),
+    suppliers: new Map(),
+    warehouses: new Map(),
+    stores: new Map(),
+    charts: new Map(),
   };
 
   const $ = (id) => document.getElementById(id);
@@ -98,7 +164,194 @@
   }
 
   function label(value) {
-    return statusLabels[value] || value || "--";
+    return STATUS_LABELS[value] || value || "--";
+  }
+
+  function setText(id, value) {
+    const element = $(id);
+    if (element) element.textContent = value;
+  }
+
+  function showAlert(message, type = "danger") {
+    const alert = $("pageAlert");
+    if (!alert) return;
+    alert.className = `page-alert ${type}`;
+    alert.textContent = message;
+    alert.hidden = false;
+  }
+
+  function clearAlert() {
+    const alert = $("pageAlert");
+    if (alert) alert.hidden = true;
+  }
+
+  function showToast(message, type = "success") {
+    const container = $("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = `app-toast toast-${type}`;
+    toast.setAttribute("role", "status");
+    toast.innerHTML = `
+      <span class="toast-mark">${type === "success" ? "✓" : "!"}</span>
+      <div><strong>${type === "success" ? "操作成功" : "操作失败"}</strong><span>${escapeHtml(message)}</span></div>
+      <button type="button" aria-label="关闭提示">×</button>
+    `;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add("show"));
+    const close = () => {
+      toast.classList.remove("show");
+      window.setTimeout(() => toast.remove(), 220);
+    };
+    toast.querySelector("button").addEventListener("click", close);
+    window.setTimeout(close, 3600);
+  }
+
+  function setButtonLoading(button, loading, loadingText = "处理中…") {
+    if (!button) return;
+    const labelElement = button.querySelector(".btn-label");
+    if (loading) {
+      button.dataset.originalLabel = labelElement?.textContent || button.textContent;
+      button.disabled = true;
+      button.classList.add("is-loading");
+      if (labelElement) labelElement.textContent = loadingText;
+      else button.textContent = loadingText;
+      return;
+    }
+
+    const original = button.dataset.originalLabel;
+    button.disabled = false;
+    button.classList.remove("is-loading");
+    if (original) {
+      if (labelElement) labelElement.textContent = original;
+      else button.textContent = original;
+    }
+    delete button.dataset.originalLabel;
+  }
+
+  async function runButtonAction(button, action, options = {}) {
+    setButtonLoading(button, true, options.loadingText);
+    try {
+      const result = await action();
+      if (options.successMessage) {
+        const message =
+          typeof options.successMessage === "function"
+            ? options.successMessage(result)
+            : options.successMessage;
+        showToast(message);
+      }
+      return result;
+    } catch (error) {
+      const message = error?.message || "操作失败，请稍后重试";
+      showAlert(message);
+      showToast(message, "error");
+      return null;
+    } finally {
+      setButtonLoading(button, false);
+    }
+  }
+
+  function currentModules() {
+    return ROLE_MODULES[state.currentRole] || [];
+  }
+
+  function moduleLabel(viewName) {
+    return MODULE_DEFINITIONS[viewName]?.label || viewName;
+  }
+
+  function hasModuleAccess(viewName) {
+    return currentModules().includes(viewName);
+  }
+
+  function canDo(action) {
+    const roles = ACTION_ROLES[action];
+    if (!roles) return true;
+    return roles.includes(state.currentRole);
+  }
+
+  function buildDemoUser(role, username = role) {
+    return {
+      id: ROLE_USER_IDS[role] || 1,
+      username,
+      role,
+      real_name: ROLE_LABELS[role] || role,
+    };
+  }
+
+  function defaultViewForRole() {
+    const modules = currentModules();
+    if (modules.includes("dashboard")) return "dashboard";
+    return modules[0] || "dashboard";
+  }
+
+  function updateRoleIdentity() {
+    setText("currentRoleLabel", ROLE_LABELS[state.currentRole] || state.currentRole || "--");
+  }
+
+  function updateHistory(viewName) {
+    const url = new URL(window.location.href);
+    if (viewName) url.searchParams.set("view", viewName);
+    else url.searchParams.delete("view");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+  }
+
+  function renderNavigation() {
+    const sideNav = $("sideNav");
+    if (!sideNav) return;
+    sideNav.innerHTML = currentModules()
+      .map(
+        (viewName, index) => `
+          <button class="nav-item${state.currentView === viewName ? " active" : ""}" type="button" data-view="${viewName}">
+            <span class="nav-index">${String(index + 1).padStart(2, "0")}</span>
+            <span>${escapeHtml(moduleLabel(viewName))}</span>
+          </button>`,
+      )
+      .join("");
+  }
+
+  function syncDashboardVisibility() {
+    document.querySelectorAll("[data-dashboard-module]").forEach((node) => {
+      const required = node.dataset.dashboardModule
+        .split(/\s+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+      node.hidden = required.some((moduleName) => !hasModuleAccess(moduleName));
+    });
+
+    const operationsGrid = $("dashboardOperationsGrid");
+    if (operationsGrid) {
+      const visibleCards = [...operationsGrid.children].filter((child) => !child.hidden).length;
+      operationsGrid.classList.toggle("single-column", visibleCards <= 1);
+    }
+  }
+
+  function applyActionVisibility() {
+    document.querySelectorAll("[data-action-permission]").forEach((node) => {
+      const allowed = canDo(node.dataset.actionPermission);
+      node.hidden = !allowed;
+      if (
+        node instanceof HTMLButtonElement ||
+        node instanceof HTMLInputElement ||
+        node instanceof HTMLSelectElement ||
+        node instanceof HTMLTextAreaElement
+      ) {
+        node.disabled = !allowed;
+      }
+    });
+  }
+
+  function closeMobileMenu() {
+    $("appSidebar").classList.remove("is-open");
+    $("mobileMenuBtn").setAttribute("aria-expanded", "false");
+  }
+
+  function activateView(viewName) {
+    document.querySelectorAll(".app-view").forEach((view) => {
+      view.classList.toggle("active", view.id === `view-${viewName}`);
+    });
+    document.querySelectorAll(".nav-item").forEach((item) => {
+      item.classList.toggle("active", item.dataset.view === viewName);
+    });
+    setText("pageTitle", moduleLabel(viewName));
   }
 
   function nameFrom(map, id, fallback) {
@@ -129,87 +382,16 @@
     return `<tr><td colspan="${colspan}"><div class="table-empty">${escapeHtml(message)}</div></td></tr>`;
   }
 
-  function setText(id, value) {
-    const element = $(id);
-    if (element) element.textContent = value;
+  function permissionNote() {
+    return '<span class="permission-note">当前角色无权限操作</span>';
   }
 
-  function showAlert(message, type = "danger") {
-    const alert = $("pageAlert");
-    alert.className = `page-alert ${type}`;
-    alert.textContent = message;
-    alert.hidden = false;
-  }
-
-  function clearAlert() {
-    $("pageAlert").hidden = true;
-  }
-
-  function showToast(message, type = "success") {
-    const container = $("toastContainer");
-    const toast = document.createElement("div");
-    toast.className = `app-toast toast-${type}`;
-    toast.setAttribute("role", "status");
-    toast.innerHTML = `
-      <span class="toast-mark">${type === "success" ? "✓" : "!"}</span>
-      <div><strong>${type === "success" ? "操作成功" : "操作失败"}</strong><span>${escapeHtml(message)}</span></div>
-      <button type="button" aria-label="关闭提示">×</button>
-    `;
-    container.appendChild(toast);
-    requestAnimationFrame(() => toast.classList.add("show"));
-    const close = () => {
-      toast.classList.remove("show");
-      window.setTimeout(() => toast.remove(), 220);
-    };
-    toast.querySelector("button").addEventListener("click", close);
-    window.setTimeout(close, 3600);
-  }
-
-  function setButtonLoading(button, loading, loadingText = "处理中…") {
-    if (!button) return;
-    const labelElement = button.querySelector(".btn-label");
-    if (loading) {
-      button.dataset.originalLabel = labelElement?.textContent || button.textContent;
-      button.disabled = true;
-      button.classList.add("is-loading");
-      if (labelElement) labelElement.textContent = loadingText;
-      else button.textContent = loadingText;
-    } else {
-      const original = button.dataset.originalLabel;
-      button.disabled = false;
-      button.classList.remove("is-loading");
-      if (original) {
-        if (labelElement) labelElement.textContent = original;
-        else button.textContent = original;
-      }
-      delete button.dataset.originalLabel;
+  async function loadLookups(force = false) {
+    if (state.lookupsLoaded && !force) {
+      populateBusinessSelects();
+      return;
     }
-  }
 
-  async function runButtonAction(button, action, options = {}) {
-    setButtonLoading(button, true, options.loadingText);
-    clearAlert();
-    try {
-      const result = await action();
-      if (options.successMessage) {
-        const message =
-          typeof options.successMessage === "function"
-            ? options.successMessage(result)
-            : options.successMessage;
-        showToast(message);
-      }
-      return result;
-    } catch (error) {
-      const message = error?.message || "操作失败，请稍后重试";
-      showAlert(message);
-      showToast(message, "error");
-      return null;
-    } finally {
-      setButtonLoading(button, false);
-    }
-  }
-
-  async function loadLookups() {
     const tasks = [
       [API.getProducts, state.products],
       [API.getSuppliers, state.suppliers],
@@ -223,6 +405,7 @@
       map.clear();
       listItems(result.value).forEach((item) => map.set(Number(item.id), item));
     });
+    state.lookupsLoaded = true;
     populateBusinessSelects();
   }
 
@@ -253,11 +436,12 @@
   }
 
   async function loadBaseData() {
-    await loadLookups();
+    await loadLookups(true);
     setText("dataProductCount", formatNumber(state.products.size));
     setText("dataSupplierCount", formatNumber(state.suppliers.size));
     setText("dataWarehouseCount", formatNumber(state.warehouses.size));
     setText("dataStoreCount", formatNumber(state.stores.size));
+    state.loadedViews.add("data");
   }
 
   function updateChart(id, option) {
@@ -291,12 +475,19 @@
   }
 
   async function loadDashboard() {
+    syncDashboardVisibility();
+    await loadLookups();
+
+    const showWarnings = hasModuleAccess("warnings");
+    const showRecommendations = hasModuleAccess("recommendations");
+
     const [dashboard, ranking, warnings, recommendations] = await Promise.all([
       API.getDashboard(),
-      API.getInventoryRanking(),
-      API.getWarnings(),
-      API.getRecommendations(),
+      showWarnings ? API.getInventoryRanking() : Promise.resolve([]),
+      showWarnings ? API.getWarnings() : Promise.resolve([]),
+      showRecommendations ? API.getRecommendations() : Promise.resolve([]),
     ]);
+
     setText("metricProducts", formatNumber(dashboard.product_count));
     setText("metricSuppliers", formatNumber(dashboard.supplier_count));
     setText("metricWarehouses", formatNumber(dashboard.warehouse_count));
@@ -313,45 +504,52 @@
     setText("metricHighRisk", formatNumber(dashboard.high_risk_recommendation_count));
     setText("dashboardUpdatedAt", new Date().toLocaleTimeString("zh-CN", { hour12: false }));
 
-    const rankingRows = listItems(ranking).slice(0, 10);
-    updateChart("dashboardInventoryChart", {
-      ...baseChartOption(),
-      xAxis: {
-        type: "value",
-        axisLabel: { color: "#7a879c" },
-        splitLine: { lineStyle: { color: "#edf1f7" } },
-      },
-      yAxis: {
-        type: "category",
-        inverse: true,
-        data: rankingRows.map((item) => item.product_name),
-        axisLabel: { color: "#4d5b70", width: 90, overflow: "truncate" },
-        axisLine: { show: false },
-        axisTick: { show: false },
-      },
-      series: [
-        {
-          name: "库存数量",
-          type: "bar",
-          data: rankingRows.map((item) => Number(item.quantity || 0)),
-          barWidth: 13,
-          itemStyle: {
-            borderRadius: [0, 7, 7, 0],
-            color: new window.echarts.graphic.LinearGradient(0, 0, 1, 0, [
-              { offset: 0, color: "#5667e8" },
-              { offset: 1, color: "#8b7cf6" },
-            ]),
-          },
+    if (showWarnings) {
+      const rankingRows = listItems(ranking).slice(0, 10);
+      updateChart("dashboardInventoryChart", {
+        ...baseChartOption(),
+        xAxis: {
+          type: "value",
+          axisLabel: { color: "#7a879c" },
+          splitLine: { lineStyle: { color: "#edf1f7" } },
         },
-      ],
-    });
+        yAxis: {
+          type: "category",
+          inverse: true,
+          data: rankingRows.map((item) => item.product_name),
+          axisLabel: { color: "#4d5b70", width: 90, overflow: "truncate" },
+          axisLine: { show: false },
+          axisTick: { show: false },
+        },
+        series: [
+          {
+            name: "库存数量",
+            type: "bar",
+            data: rankingRows.map((item) => Number(item.quantity || 0)),
+            barWidth: 13,
+            itemStyle: {
+              borderRadius: [0, 7, 7, 0],
+              color: new window.echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: "#5667e8" },
+                { offset: 1, color: "#8b7cf6" },
+              ]),
+            },
+          },
+        ],
+      });
+      renderDashboardRisks(listItems(warnings));
+    }
 
-    renderDashboardRisks(listItems(warnings));
-    renderDashboardRecommendations(listItems(recommendations));
+    if (showRecommendations) {
+      renderDashboardRecommendations(listItems(recommendations));
+    }
+
+    state.loadedViews.add("dashboard");
   }
 
   function renderDashboardRisks(rows) {
     const target = $("dashboardRiskList");
+    if (!target) return;
     if (!rows.length) {
       target.innerHTML = '<div class="empty-block success-empty">当前没有库存预警</div>';
       return;
@@ -377,6 +575,7 @@
 
   function renderDashboardRecommendations(rows) {
     const target = $("dashboardRecommendationList");
+    if (!target) return;
     if (!rows.length) {
       target.innerHTML = '<div class="empty-block">暂无补货建议</div>';
       return;
@@ -403,6 +602,7 @@
   }
 
   async function loadWarnings() {
+    await loadLookups();
     const rows = listItems(await API.getWarnings());
     const critical = rows.filter((item) => item.warning_type === "critical_stockout").length;
     const stockout = rows.filter((item) => item.warning_type === "stockout").length;
@@ -429,6 +629,7 @@
           )
           .join("")
       : emptyRow(7, "当前没有库存预警");
+    state.loadedViews.add("warnings");
   }
 
   function itemSummary(items) {
@@ -442,6 +643,7 @@
   }
 
   async function loadInbound() {
+    await loadLookups();
     const rows = listItems(await API.getInboundOrders());
     setText("inboundResultBadge", `${rows.length} 张单据`);
     $("inboundTableBody").innerHTML = rows.length
@@ -459,7 +661,9 @@
                 <td>
                   ${
                     item.status === "pending"
-                      ? `<button class="btn btn-sm btn-primary row-action" type="button" data-action="complete-inbound" data-id="${item.id}"><span class="btn-label">完成入库</span></button>`
+                      ? canDo("complete-inbound")
+                        ? `<button class="btn btn-sm btn-primary row-action" type="button" data-action="complete-inbound" data-id="${item.id}"><span class="btn-label">完成入库</span></button>`
+                        : permissionNote()
                       : '<span class="done-text">已处理</span>'
                   }
                 </td>
@@ -467,15 +671,18 @@
           )
           .join("")
       : emptyRow(8, "暂无入库单，请先导入演示数据");
+    state.loadedViews.add("inbound");
   }
 
   async function loadFulfillment() {
+    await loadLookups();
     const [requests, outbounds] = await Promise.all([
       API.getReplenishmentRequests(),
       API.getOutboundOrders(),
     ]);
     renderRequests(listItems(requests));
     renderOutbounds(listItems(outbounds));
+    state.loadedViews.add("fulfillment");
   }
 
   function renderRequests(rows) {
@@ -485,9 +692,25 @@
           .map((item) => {
             let action = '<span class="done-text">无需操作</span>';
             if (item.audit_status === "pending") {
-              action = `<button class="btn btn-sm btn-primary row-action" type="button" data-action="approve-request" data-id="${item.id}"><span class="btn-label">审核通过</span></button>`;
+              action =
+                canDo("approve-request") || canDo("reject-request")
+                  ? `<div class="row-action-group">
+                      ${
+                        canDo("approve-request")
+                          ? `<button class="btn btn-sm btn-primary row-action" type="button" data-action="approve-request" data-id="${item.id}"><span class="btn-label">审核通过</span></button>`
+                          : ""
+                      }
+                      ${
+                        canDo("reject-request")
+                          ? `<button class="btn btn-sm btn-outline-danger row-action" type="button" data-action="reject-request" data-id="${item.id}"><span class="btn-label">拒绝申请</span></button>`
+                          : ""
+                      }
+                    </div>`
+                  : permissionNote();
             } else if (item.audit_status === "approved" && !item.generated_outbound_order_id) {
-              action = `<button class="btn btn-sm btn-primary row-action" type="button" data-action="convert-request" data-id="${item.id}"><span class="btn-label">转出库单</span></button>`;
+              action = canDo("convert-request")
+                ? `<button class="btn btn-sm btn-primary row-action" type="button" data-action="convert-request" data-id="${item.id}"><span class="btn-label">转出库单</span></button>`
+                : permissionNote();
             }
             return `
               <tr>
@@ -512,9 +735,13 @@
           .map((item) => {
             let action = '<span class="done-text">履约完成</span>';
             if (item.status === "pending") {
-              action = `<button class="btn btn-sm btn-primary row-action" type="button" data-action="ship-outbound" data-id="${item.id}"><span class="btn-label">出库发货</span></button>`;
+              action = canDo("ship-outbound")
+                ? `<button class="btn btn-sm btn-primary row-action" type="button" data-action="ship-outbound" data-id="${item.id}"><span class="btn-label">出库发货</span></button>`
+                : permissionNote();
             } else if (item.status === "shipped") {
-              action = `<button class="btn btn-sm btn-primary row-action" type="button" data-action="sign-outbound" data-id="${item.id}"><span class="btn-label">门店签收</span></button>`;
+              action = canDo("sign-outbound")
+                ? `<button class="btn btn-sm btn-primary row-action" type="button" data-action="sign-outbound" data-id="${item.id}"><span class="btn-label">门店签收</span></button>`
+                : permissionNote();
             } else if (item.status === "cancelled") {
               action = '<span class="done-text">已取消</span>';
             }
@@ -535,6 +762,7 @@
   }
 
   async function loadTransactions() {
+    await loadLookups();
     const rows = listItems(await API.getTransactions());
     setText("transactionResultBadge", `${rows.length} 条流水`);
     $("transactionTableBody").innerHTML = rows.length
@@ -556,9 +784,11 @@
           })
           .join("")
       : emptyRow(8, "暂无库存流水");
+    state.loadedViews.add("transactions");
   }
 
   async function loadRecommendations() {
+    await loadLookups();
     const rows = listItems(await API.getRecommendations());
     const highRisk = rows.filter((item) => item.risk_level === "high").length;
     const totalQuantity = rows.reduce(
@@ -588,7 +818,7 @@
                 <div class="recommendation-stats">
                   <div><span>当前库存</span><strong>${formatNumber(item.current_stock)}</strong></div>
                   <div><span>安全库存</span><strong>${formatNumber(item.safety_stock)}</strong></div>
-                  <div><span>近 7 天出库</span><strong>${formatNumber(item.recent_7_sales, 1)}</strong></div>
+                  <div><span>近 7 天销量</span><strong>${formatNumber(item.recent_7_sales, 1)}</strong></div>
                   <div><span>预计缺货</span><strong>${item.days_until_stockout == null ? "--" : `${formatNumber(item.days_until_stockout, 1)} 天`}</strong></div>
                 </div>
                 <p>${escapeHtml(item.reason_enhanced || item.reason || "暂无推荐理由")}</p>
@@ -600,19 +830,17 @@
           )
           .join("")
       : '<div class="empty-block large-empty">暂无补货建议，点击“生成补货建议”开始分析</div>';
+    state.loadedViews.add("recommendations");
   }
 
-  async function loadSupplierAnalytics() {
-    const [ranking, trend] = await Promise.all([
-      API.getSupplierRanking(),
-      API.getWarehouseFlowTrend(),
-    ]);
+  async function loadSuppliers() {
+    await loadLookups();
+    const ranking = await API.getSupplierRanking();
     const rankingRows = listItems(ranking)
       .map((item) => ({ ...item, score: Number(item.score || 0) }))
       .sort((a, b) => b.score - a.score);
-    const trendRows = listItems(trend);
-    setText("supplierResultBadge", `${rankingRows.length} 家供应商`);
 
+    setText("supplierResultBadge", `${rankingRows.length} 家供应商`);
     $("supplierTableBody").innerHTML = rankingRows.length
       ? rankingRows
           .map(
@@ -654,6 +882,59 @@
       ],
     });
 
+    state.loadedViews.add("suppliers");
+  }
+
+  async function loadAnalytics() {
+    const [dashboard, ranking, trend] = await Promise.all([
+      API.getDashboard(),
+      API.getInventoryRanking(),
+      API.getWarehouseFlowTrend(),
+    ]);
+    const rankingRows = listItems(ranking).slice(0, 10);
+    const trendRows = listItems(trend);
+
+    setText(
+      "analyticsWarnings",
+      formatNumber(Number(dashboard.stockout_count || 0) + Number(dashboard.overstock_count || 0)),
+    );
+    setText("analyticsOutbound", formatNumber(dashboard.recent_outbound_quantity));
+    setText("analyticsRecommendations", formatNumber(dashboard.ai_recommendation_count));
+    setText("analyticsProducts", formatNumber(dashboard.product_count));
+    setText("analyticsResultBadge", `Top ${rankingRows.length || 0}`);
+
+    updateChart("analyticsInventoryChart", {
+      ...baseChartOption(),
+      xAxis: {
+        type: "value",
+        axisLabel: { color: "#7a879c" },
+        splitLine: { lineStyle: { color: "#edf1f7" } },
+      },
+      yAxis: {
+        type: "category",
+        inverse: true,
+        data: rankingRows.map((item) => item.product_name),
+        axisLabel: { color: "#4d5b70", width: 90, overflow: "truncate" },
+        axisLine: { show: false },
+        axisTick: { show: false },
+      },
+      series: [
+        {
+          name: "库存数量",
+          type: "bar",
+          data: rankingRows.map((item) => Number(item.quantity || 0)),
+          barWidth: 13,
+          itemStyle: {
+            borderRadius: [0, 7, 7, 0],
+            color: new window.echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              { offset: 0, color: "#ef8b53" },
+              { offset: 1, color: "#f6bd60" },
+            ]),
+          },
+        },
+      ],
+    });
+
     const xLabels = trendRows.map(
       (item) => `${item.year}-${String(item.month).padStart(2, "0")} ${item.warehouse_name}`,
     );
@@ -683,6 +964,8 @@
         },
       ],
     });
+
+    state.loadedViews.add("analytics");
   }
 
   function scoreEvaluation(score) {
@@ -694,6 +977,7 @@
 
   function setSystemCard(cardId, statusId, detailId, ok, status, detail) {
     const card = $(cardId);
+    if (!card) return;
     card.classList.toggle("is-ok", ok);
     card.classList.toggle("is-error", !ok);
     setText(statusId, status);
@@ -732,7 +1016,7 @@
       );
       $("globalStatusDot").className = "status-dot is-offline";
       setText("globalStatusText", "系统连接异常");
-      setText("globalStatusDetail", healthResult.reason?.message || "请启动后端服务");
+      setText("globalStatusDetail", healthResult.reason?.message || "请先启动后端服务");
     }
 
     if (databaseResult.status === "fulfilled") {
@@ -788,47 +1072,86 @@
     const badge = $("connectionBadge");
     badge.className = `status-badge ${allOk ? "status-completed" : "status-pending"}`;
     badge.textContent = allOk ? "全部正常" : "部分功能待就绪";
+    state.loadedViews.add("system");
   }
 
-  function switchView(viewName) {
-    if (!viewLoaders[viewName]) return;
+  async function switchView(viewName, options = {}) {
+    if (!viewLoaders[viewName]) return false;
+    if (!hasModuleAccess(viewName)) {
+      showAlert(`当前角色无权限访问“${moduleLabel(viewName)}”模块`, "warning");
+      return false;
+    }
+
     state.currentView = viewName;
-    document.querySelectorAll(".app-view").forEach((view) => {
-      view.classList.toggle("active", view.id === `view-${viewName}`);
-    });
-    document.querySelectorAll(".nav-item").forEach((item) => {
-      item.classList.toggle("active", item.dataset.view === viewName);
-    });
-    setText("pageTitle", $(`view-${viewName}`).dataset.title);
+    activateView(viewName);
+    renderNavigation();
+    syncDashboardVisibility();
+    applyActionVisibility();
     clearAlert();
     closeMobileMenu();
+    updateHistory(viewName);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }
 
-  function closeMobileMenu() {
-    $("appSidebar").classList.remove("is-open");
-    $("mobileMenuBtn").setAttribute("aria-expanded", "false");
+    if (options.load === false) return true;
+    if (!options.force && state.loadedViews.has(viewName)) return true;
+
+    try {
+      await viewLoaders[viewName]();
+      state.loadedViews.add(viewName);
+      return true;
+    } catch (error) {
+      showAlert(error?.message || `加载${moduleLabel(viewName)}失败`);
+      return false;
+    }
   }
 
   async function refreshView(viewName, button, successMessage = "数据已刷新") {
-    await runButtonAction(button, () => viewLoaders[viewName](), {
-      loadingText: "加载中…",
-      successMessage,
-    });
+    if (!viewLoaders[viewName] || !hasModuleAccess(viewName)) {
+      showAlert("当前角色无权限刷新该模块", "warning");
+      return;
+    }
+    await runButtonAction(
+      button,
+      async () => {
+        await viewLoaders[viewName]();
+        state.loadedViews.add(viewName);
+      },
+      {
+        loadingText: "加载中…",
+        successMessage,
+      },
+    );
   }
 
   async function handleRowAction(button) {
     const id = Number(button.dataset.id);
     const action = button.dataset.action;
+    if (!canDo(action)) {
+      showAlert("当前角色无权限操作", "warning");
+      showToast("当前角色无权限操作", "error");
+      return;
+    }
+
     const configurations = {
       "complete-inbound": {
         request: () => API.completeInbound(id),
         success: "入库完成，库存与流水已更新",
-        reload: () => Promise.all([loadInbound(), loadDashboard(), loadTransactions()]),
+        reload: async () => {
+          await Promise.all([
+            loadInbound(),
+            hasModuleAccess("dashboard") ? loadDashboard() : Promise.resolve(),
+            hasModuleAccess("transactions") ? loadTransactions() : Promise.resolve(),
+          ]);
+        },
       },
       "approve-request": {
         request: () => API.approveReplenishment(id),
         success: "补货申请审核通过",
+        reload: loadFulfillment,
+      },
+      "reject-request": {
+        request: () => API.rejectReplenishment(id),
+        success: "补货申请已拒绝",
         reload: loadFulfillment,
       },
       "convert-request": {
@@ -839,16 +1162,30 @@
       "ship-outbound": {
         request: () => API.shipOutbound(id),
         success: "出库发货成功，库存流水已更新",
-        reload: () => Promise.all([loadFulfillment(), loadDashboard(), loadTransactions()]),
+        reload: async () => {
+          await Promise.all([
+            loadFulfillment(),
+            hasModuleAccess("dashboard") ? loadDashboard() : Promise.resolve(),
+            hasModuleAccess("transactions") ? loadTransactions() : Promise.resolve(),
+          ]);
+        },
       },
       "sign-outbound": {
         request: () => API.signOutbound(id),
         success: "门店签收成功，履约流程完成",
-        reload: () => Promise.all([loadFulfillment(), loadDashboard(), loadTransactions()]),
+        reload: async () => {
+          await Promise.all([
+            loadFulfillment(),
+            hasModuleAccess("dashboard") ? loadDashboard() : Promise.resolve(),
+            hasModuleAccess("transactions") ? loadTransactions() : Promise.resolve(),
+          ]);
+        },
       },
     };
+
     const config = configurations[action];
     if (!config) return;
+
     await runButtonAction(
       button,
       async () => {
@@ -856,7 +1193,10 @@
         await config.reload();
         return result;
       },
-      { loadingText: "处理中…", successMessage: config.success },
+      {
+        loadingText: "处理中…",
+        successMessage: config.success,
+      },
     );
   }
 
@@ -870,6 +1210,11 @@
   }
 
   async function handleBaseDataCreate(form) {
+    if (!canDo("create-base-data")) {
+      showAlert("当前角色无权限操作", "warning");
+      return;
+    }
+
     const type = form.dataset.createForm;
     const values = formValues(form);
     const configurations = {
@@ -927,17 +1272,25 @@
     };
     const configuration = configurations[type];
     if (!configuration) return;
+
     const button = form.querySelector('[type="submit"]');
     const result = await runButtonAction(button, configuration.request, {
       loadingText: "保存中…",
       successMessage: configuration.success,
     });
     if (!result) return;
+
+    state.lookupsLoaded = false;
     form.reset();
-    await Promise.all([loadBaseData(), loadDashboard()]);
+    await Promise.all([loadBaseData(), hasModuleAccess("dashboard") ? loadDashboard() : Promise.resolve()]);
   }
 
   async function handleInboundCreate(form) {
+    if (!canDo("create-inbound")) {
+      showAlert("当前角色无权限操作", "warning");
+      return;
+    }
+
     const values = formValues(form);
     const button = form.querySelector('[type="submit"]');
     const result = await runButtonAction(
@@ -963,12 +1316,18 @@
       },
     );
     if (!result) return;
+
     window.bootstrap.Modal.getOrCreateInstance($("createInboundModal")).hide();
     form.reset();
     await loadInbound();
   }
 
   async function handleRequestCreate(form) {
+    if (!canDo("create-replenishment")) {
+      showAlert("当前角色无权限操作", "warning");
+      return;
+    }
+
     const values = formValues(form);
     const button = form.querySelector('[type="submit"]');
     const result = await runButtonAction(
@@ -987,18 +1346,136 @@
       },
     );
     if (!result) return;
+
     window.bootstrap.Modal.getOrCreateInstance($("createRequestModal")).hide();
     form.reset();
     await loadFulfillment();
   }
 
+  function showLoginError(message) {
+    const errorElement = $("loginError");
+    if (!errorElement) return;
+    errorElement.textContent = message;
+    errorElement.hidden = false;
+  }
+
+  function clearLoginError() {
+    const errorElement = $("loginError");
+    if (!errorElement) return;
+    errorElement.hidden = true;
+    errorElement.textContent = "";
+  }
+
+  async function enterWorkspace(role, username = role) {
+    state.currentRole = role;
+    state.currentUser = buildDemoUser(role, username);
+    state.currentView = defaultViewForRole();
+    state.lookupsLoaded = false;
+    state.loadedViews.clear();
+
+    updateRoleIdentity();
+    renderNavigation();
+    syncDashboardVisibility();
+    applyActionVisibility();
+
+    window.localStorage.setItem("currentRole", role);
+    window.localStorage.setItem("currentLoginName", username);
+    $("loginScreen").hidden = true;
+    $("appShell").hidden = false;
+
+    await initialize();
+  }
+
+  function leaveWorkspace() {
+    window.localStorage.removeItem("currentRole");
+    window.localStorage.removeItem("currentLoginName");
+    state.currentRole = null;
+    state.currentUser = null;
+    state.currentView = "dashboard";
+    state.lookupsLoaded = false;
+    state.loadedViews.clear();
+    clearAlert();
+    updateHistory("");
+    closeMobileMenu();
+    $("appShell").hidden = true;
+    $("loginScreen").hidden = false;
+    clearLoginError();
+    if ($("loginPassword")) $("loginPassword").value = "demo123";
+  }
+
+  async function initialize() {
+    renderNavigation();
+    syncDashboardVisibility();
+    applyActionVisibility();
+    clearAlert();
+
+    const requestedView = new URLSearchParams(window.location.search).get("view");
+    let deniedMessage = "";
+    let initialView = defaultViewForRole();
+
+    if (requestedView && viewLoaders[requestedView]) {
+      if (hasModuleAccess(requestedView)) {
+        initialView = requestedView;
+      } else {
+        deniedMessage = `当前角色无权限访问“${moduleLabel(requestedView)}”模块`;
+      }
+    }
+
+    await switchView(initialView, { force: true });
+    if (initialView !== "system") {
+      loadSystemStatus().catch(() => {});
+    }
+    if (deniedMessage) {
+      showAlert(deniedMessage, "warning");
+    }
+  }
+
+  async function handleLoginSubmit(form) {
+    const values = formValues(form);
+    const button = form.querySelector('[type="submit"]');
+    const username = String(values.username || "").trim();
+    const password = String(values.password || "").trim();
+    const role = String(values.role || "").trim();
+
+    clearLoginError();
+    if (!username) {
+      showLoginError("请输入用户名");
+      return;
+    }
+    if (!ROLE_LABELS[role]) {
+      showLoginError("请选择登录角色");
+      return;
+    }
+    if (password !== "demo123") {
+      showLoginError("演示密码统一为 demo123");
+      return;
+    }
+
+    setButtonLoading(button, true, "登录中…");
+    try {
+      await enterWorkspace(role, username);
+    } catch (error) {
+      showLoginError(error?.message || "登录失败，请稍后重试");
+    } finally {
+      setButtonLoading(button, false);
+    }
+  }
+
   function bindEvents() {
-    document.querySelectorAll(".nav-item").forEach((button) => {
-      button.addEventListener("click", () => switchView(button.dataset.view));
+    if (state.eventsBound) return;
+
+    $("sideNav").addEventListener("click", async (event) => {
+      const button = event.target.closest(".nav-item");
+      if (!button) return;
+      await switchView(button.dataset.view);
     });
+
     document.querySelectorAll("[data-jump]").forEach((button) => {
-      button.addEventListener("click", () => switchView(button.dataset.jump));
+      button.addEventListener("click", async () => {
+        await switchView(button.dataset.jump);
+      });
     });
+
     document.querySelectorAll(".module-refresh").forEach((button) => {
       button.addEventListener("click", () => refreshView(button.dataset.loader, button));
     });
@@ -1006,12 +1483,21 @@
     $("refreshCurrentBtn").addEventListener("click", (event) =>
       refreshView(state.currentView, event.currentTarget),
     );
+
     $("generateRecommendationBtn").addEventListener("click", async (event) => {
+      if (!canDo("generate-recommendations")) {
+        showAlert("当前角色无权限操作", "warning");
+        showToast("当前角色无权限操作", "error");
+        return;
+      }
       await runButtonAction(
         event.currentTarget,
         async () => {
           const result = await API.generateRecommendations();
-          await Promise.all([loadRecommendations(), loadDashboard()]);
+          await Promise.all([
+            loadRecommendations(),
+            hasModuleAccess("dashboard") ? loadDashboard() : Promise.resolve(),
+          ]);
           return result;
         },
         {
@@ -1024,13 +1510,15 @@
     document.querySelectorAll("[data-create-form]").forEach((form) => {
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        await handleBaseDataCreate(form);
+        await handleBaseDataCreate(event.currentTarget);
       });
     });
+
     $("createInboundForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       await handleInboundCreate(event.currentTarget);
     });
+
     $("createRequestForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       await handleRequestCreate(event.currentTarget);
@@ -1038,7 +1526,9 @@
 
     document.addEventListener("click", (event) => {
       const actionButton = event.target.closest(".row-action");
-      if (actionButton) handleRowAction(actionButton);
+      if (actionButton) {
+        handleRowAction(actionButton);
+      }
     });
 
     $("mobileMenuBtn").addEventListener("click", () => {
@@ -1048,99 +1538,35 @@
       $("mobileMenuBtn").setAttribute("aria-expanded", String(willOpen));
     });
 
+    $("logoutBtn").addEventListener("click", leaveWorkspace);
+    $("loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await handleLoginSubmit(event.currentTarget);
+    });
+
     window.addEventListener("resize", () => {
       state.charts.forEach((chart) => chart.resize());
       if (window.innerWidth > 900) closeMobileMenu();
     });
-  }
 
-  function updateUserIdentity(user) {
-    const displayName = user.real_name || user.username;
-    setText("currentUserName", displayName);
-    setText("currentUserRole", roleLabels[user.role] || user.role);
-    setText("userAvatar", displayName.slice(0, 1));
-  }
-
-  async function enterWorkspace(user) {
-    state.currentUser = user;
-    updateUserIdentity(user);
-    $("loginScreen").hidden = true;
-    $("appShell").hidden = false;
-    if (!state.eventsBound) {
-      bindEvents();
-      state.eventsBound = true;
-    }
-    await initialize();
-  }
-
-  function leaveWorkspace() {
-    window.sessionStorage.removeItem("supplyChainUser");
-    state.currentUser = null;
-    $("appShell").hidden = true;
-    $("loginScreen").hidden = false;
-    $("loginPassword").value = "";
-    $("loginError").hidden = true;
-    $("loginUsername").focus();
-  }
-
-  function bindAuthEvents() {
-    $("loginForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const form = event.currentTarget;
-      const button = form.querySelector('[type="submit"]');
-      const errorElement = $("loginError");
-      const values = formValues(form);
-      errorElement.hidden = true;
-      setButtonLoading(button, true, "正在登录…");
-      try {
-        const user = await API.login({
-          username: values.username.trim(),
-          password: values.password,
-        });
-        window.sessionStorage.setItem("supplyChainUser", JSON.stringify(user));
-        await enterWorkspace(user);
-      } catch (error) {
-        errorElement.textContent = error?.message || "登录失败，请稍后重试";
-        errorElement.hidden = false;
-      } finally {
-        setButtonLoading(button, false);
-      }
-    });
-    $("logoutBtn").addEventListener("click", leaveWorkspace);
-  }
-
-  async function initialize() {
-    clearAlert();
-    const requestedView = new URLSearchParams(window.location.search).get("view");
-    if (requestedView && viewLoaders[requestedView]) {
-      switchView(requestedView);
-    }
-    await loadLookups();
-    const results = await Promise.allSettled([
-      loadDashboard(),
-      loadBaseData(),
-      loadWarnings(),
-      loadInbound(),
-      loadFulfillment(),
-      loadTransactions(),
-      loadRecommendations(),
-      loadSupplierAnalytics(),
-      loadSystemStatus(),
-    ]);
-    const failed = results.filter((result) => result.status === "rejected");
-    if (failed.length) {
-      showAlert(`有 ${failed.length} 个模块暂未加载成功，可进入对应模块重试。`, "warning");
-    }
+    state.eventsBound = true;
   }
 
   async function bootstrap() {
-    bindAuthEvents();
-    const savedUser = window.sessionStorage.getItem("supplyChainUser");
-    if (!savedUser) return;
+    bindEvents();
+    const savedRole = window.localStorage.getItem("currentRole");
+    const savedName = window.localStorage.getItem("currentLoginName") || "demo";
+    if (!savedRole || !ROLE_LABELS[savedRole]) {
+      $("loginScreen").hidden = false;
+      $("appShell").hidden = true;
+      return;
+    }
+
     try {
-      await enterWorkspace(JSON.parse(savedUser));
+      await enterWorkspace(savedRole, savedName);
     } catch (_error) {
-      window.sessionStorage.removeItem("supplyChainUser");
+      window.localStorage.removeItem("currentRole");
+      window.localStorage.removeItem("currentLoginName");
       $("loginScreen").hidden = false;
       $("appShell").hidden = true;
     }

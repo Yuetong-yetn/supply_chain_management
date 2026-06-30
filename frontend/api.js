@@ -50,7 +50,6 @@
 
   const api = {
     request,
-    login: (credentials) => post("/users/login", credentials),
     getHealth: () => get("/health"),
     getDatabaseHealth: () => get("/health/db"),
     getExampleStatus: () => get("/example/status"),
@@ -64,6 +63,8 @@
     getReplenishmentRequests: () => get("/replenishment-requests?page=1&page_size=100"),
     approveReplenishment: (requestId) =>
       post(`/replenishment-requests/${requestId}/approve?audited_by=1`),
+    rejectReplenishment: (requestId) =>
+      post(`/replenishment-requests/${requestId}/reject?audited_by=1`),
     convertReplenishment: (requestId) =>
       post(
         `/replenishment-requests/${requestId}/convert-to-outbound?source_warehouse_id=1&handled_by=1`,
