@@ -140,17 +140,17 @@
 
           <section class="app-view active" id="view-dashboard" data-title="首页看板">
             <div class="hero-panel">
-              <div>
+              <div class="hero-copy">
                 <span class="section-tag">OVERVIEW</span>
-                <h2>核心库存与业务指标总览</h2>
-                <p>统一查看库存规模、预警风险、近期出库与智能补货建议。</p>
+                <h2>智能供应链协同中心</h2>
+                <p>实时感知库存风险 · 自动协同补货出库 · 支撑门店运营决策</p>
               </div>
               <div class="hero-meta">
                 <span>数据更新时间</span>
                 <strong id="dashboardUpdatedAt">--</strong>
               </div>
               <div class="route-markers" aria-hidden="true">
-                <span>实时监控</span><i></i><span>风险发现</span><i></i><span>智能建议</span><i></i><span>业务协同</span>
+                <span>实时感知</span><i></i><span>风险识别</span><i></i><span>协同执行</span><i></i><span>经营支撑</span>
               </div>
             </div>
 
@@ -183,6 +183,29 @@
               <div><span>库存总量</span><strong id="metricInventory">--</strong></div>
               <div><span>近期出库量</span><strong id="metricOutbound">--</strong></div>
             </div>
+
+            <article class="content-card business-mainline-card">
+              <div class="card-heading">
+                <div>
+                  <span class="section-tag">BUSINESS FLOW</span>
+                  <h3>业务协同主线</h3>
+                </div>
+                <span class="soft-badge">演示主流程</span>
+              </div>
+              <div class="flow-strip dashboard-flow" aria-label="业务协同主线">
+                <div class="flow-step active"><span>1</span><div><strong>采购入库</strong><small>采购到货后入仓</small></div></div>
+                <i>→</i>
+                <div class="flow-step"><span>2</span><div><strong>仓库库存</strong><small>形成可用库存池</small></div></div>
+                <i>→</i>
+                <div class="flow-step"><span>3</span><div><strong>门店补货申请</strong><small>门店提交需求</small></div></div>
+                <i>→</i>
+                <div class="flow-step"><span>4</span><div><strong>自动分仓出库</strong><small>系统分配来源仓库</small></div></div>
+                <i>→</i>
+                <div class="flow-step"><span>5</span><div><strong>门店签收</strong><small>签收后库存入店</small></div></div>
+                <i>→</i>
+                <div class="flow-step"><span>6</span><div><strong>智能补货建议</strong><small>生成后续补货参考</small></div></div>
+              </div>
+            </article>
 
             <div class="layout-grid operations-grid" id="dashboardOperationsGrid">
               <article class="content-card risk-card" data-dashboard-module="warnings">
@@ -367,6 +390,7 @@
                   </div>
                   <span class="soft-badge" id="inventoryOverviewResultBadge">0 条记录</span>
                 </div>
+                <p class="card-description section-note">按“商品 + 位置”查看当前库存、冻结库存、可用库存、安全库存和最大库存，方便演示库存分布与异常判断。</p>
 
                 <div class="inventory-filter-bar">
                   <label class="filter-field">
@@ -493,6 +517,7 @@
                 </div>
                 <span class="soft-badge" id="inboundResultBadge">0 张单据</span>
               </div>
+              <p class="card-description section-note">完成入库后，系统会同步增加目标仓库库存，并在库存流水中生成对应追溯记录。</p>
               <div class="table-responsive">
                 <table class="table app-table align-middle">
                   <thead>
@@ -543,6 +568,7 @@
                 <div><span class="section-tag">REQUESTS</span><h3>补货申请</h3></div>
                 <span class="soft-badge" id="requestResultBadge">0 张申请</span>
               </div>
+              <p class="card-description section-note">清楚展示门店申请、审核状态，以及系统分配的来源仓库 / 分仓结果。</p>
               <div class="table-responsive">
                 <table class="table app-table align-middle">
                   <thead>
@@ -568,6 +594,7 @@
                 <div><span class="section-tag">OUTBOUND</span><h3>出库配送</h3></div>
                 <span class="soft-badge" id="outboundResultBadge">0 张单据</span>
               </div>
+              <p class="card-description section-note">出库单会明确记录来源仓库、目标门店和出库明细，方便演示自动分仓与履约过程。</p>
               <div class="table-responsive">
                 <table class="table app-table align-middle">
                   <thead>
@@ -663,12 +690,12 @@
             </article>
           </section>
 
-          <section class="app-view" id="view-recommendations" data-title="AI 补货建议">
+          <section class="app-view" id="view-recommendations" data-title="智能补货建议">
             <div class="section-intro">
               <div>
                 <span class="section-tag">SMART REPLENISHMENT</span>
-                <h2>AI 补货建议</h2>
-                <p>依据当前库存、安全库存和近期销量，生成建议数量、风险等级与推荐理由。</p>
+                <h2>智能补货建议</h2>
+                <p>基于库存、安全库存和近期需求规则，生成建议数量、风险等级与推荐理由。</p>
               </div>
               <div class="section-actions">
                 <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="recommendations">
@@ -684,7 +711,7 @@
               <div><span>建议总数</span><strong id="recommendationTotal">--</strong></div>
               <div><span>高风险建议</span><strong id="recommendationHigh">--</strong></div>
               <div><span>建议补货总量</span><strong id="recommendationQuantity">--</strong></div>
-              <div><span>规则模型可用</span><strong>√</strong></div>
+              <div><span>规则引擎状态</span><strong>可用</strong></div>
             </div>
 
             <div class="recommendation-grid" id="recommendationGrid"></div>
@@ -705,7 +732,7 @@
             <div class="recommendation-summary analytics-summary">
               <div><span>预警总数</span><strong id="analyticsWarnings">--</strong></div>
               <div><span>近期出库量</span><strong id="analyticsOutbound">--</strong></div>
-              <div><span>AI 建议数</span><strong id="analyticsRecommendations">--</strong></div>
+              <div><span>智能建议数</span><strong id="analyticsRecommendations">--</strong></div>
               <div><span>商品总数</span><strong id="analyticsProducts">--</strong></div>
             </div>
 

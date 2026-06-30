@@ -26,7 +26,7 @@
     inbound: { label: "采购入库" },
     fulfillment: { label: "门店补货与出库" },
     transactions: { label: "库存流水追溯" },
-    recommendations: { label: "AI 补货建议" },
+    recommendations: { label: "智能补货建议" },
     analytics: { label: "统计分析" },
     suppliers: { label: "供应商排行" },
     system: { label: "系统状态" },
@@ -983,11 +983,11 @@
             <span class="risk-bar ${escapeHtml(item.warning_type)}"></span>
             <div>
               <strong>${escapeHtml(item.product_name || productName(item.product_id))}</strong>
-              <small>${escapeHtml(item.location_name || label(item.location_type))}</small>
+              <small>${escapeHtml(item.location_name || label(item.location_type))} · ${escapeHtml(label(item.warning_type))}</small>
             </div>
             <div class="risk-value">
               <strong>${formatNumber(item.available_quantity ?? item.current_quantity)}</strong>
-              <small>安全 ${formatNumber(item.safety_stock)}</small>
+              <small>安全库存 ${formatNumber(item.safety_stock)}</small>
             </div>
           </div>`,
       )
@@ -1011,10 +1011,10 @@
             <div>
               ${statusBadge(item.risk_level)}
               <strong>${escapeHtml(productName(item.product_id))}</strong>
-              <small>${escapeHtml(storeName(item.store_id))}</small>
+              <small>${escapeHtml(storeName(item.store_id))} · 规则型智能补货建议</small>
             </div>
             <div class="dashboard-recommendation-quantity">
-              <span>建议补货</span>
+              <span>建议补货量</span>
               <strong>${formatNumber(item.recommended_quantity)}</strong>
             </div>
           </div>`,
@@ -1218,8 +1218,8 @@
                 <td class="number-cell">${formatNumber(item.request_quantity)}</td>
                 <td class="message-cell">${escapeHtml(item.request_reason || "--")}</td>
                 <td>${statusBadge(item.audit_status)}</td>
-                <td>${escapeHtml(assignedWarehouse)}</td>
-                <td>${escapeHtml(outboundLabel)}</td>
+                <td>${escapeHtml(assignedWarehouse)}<small class="cell-subtitle">${item.audit_status === "approved" ? "审核后已进入分仓阶段" : "系统将按可用库存分配来源仓库"}</small></td>
+                <td>${escapeHtml(outboundLabel)}<small class="cell-subtitle">${item.generated_outbound_order_id ? "已生成出库单" : "待生成出库单"}</small></td>
                 <td>${action}</td>
               </tr>`;
           })
@@ -1247,8 +1247,8 @@
             return `
               <tr>
                 <td><strong>${escapeHtml(item.outbound_no)}</strong><small class="cell-subtitle">ID ${escapeHtml(item.id)}</small></td>
-                <td>${escapeHtml(item.source_warehouse_name || warehouseName(item.source_warehouse_id))}</td>
-                <td>${escapeHtml(item.target_store_name || storeName(item.target_store_id))}</td>
+                <td>${escapeHtml(item.source_warehouse_name || warehouseName(item.source_warehouse_id))}<small class="cell-subtitle">系统分配来源仓库</small></td>
+                <td>${escapeHtml(item.target_store_name || storeName(item.target_store_id))}<small class="cell-subtitle">目标门店</small></td>
                 <td>${escapeHtml(itemSummary(item.items))}</td>
                 <td>${item.source_request_id ? `RR #${escapeHtml(item.source_request_id)}` : "--"}</td>
                 <td>${statusBadge(item.status)}</td>
@@ -1805,7 +1805,7 @@
     const configurations = {
       "complete-inbound": {
         request: () => API.completeInbound(id),
-        success: "入库完成，库存与流水已更新",
+        success: "入库完成，目标仓库库存已增加，并已生成库存流水",
         reload: async () => {
           await Promise.all([
             loadInbound(),
@@ -1816,23 +1816,23 @@
       },
       "approve-request": {
         request: () => API.approveReplenishment(id),
-        success: "补货申请审核通过",
+        success: "补货申请审核通过，可继续自动分仓生成出库单",
         reload: loadFulfillment,
       },
       "reject-request": {
         request: () => API.rejectReplenishment(id),
-        success: "补货申请已拒绝",
+        success: "补货申请已拒绝，系统未生成出库单",
         reload: loadFulfillment,
       },
       "convert-request": {
         request: () => API.convertReplenishment(id),
         success: (result) =>
-          `已生成出库单 ${result.outbound_no || `#${result.outbound_order_id}`}，系统分配发货仓库：${result.source_warehouse_name || warehouseName(result.source_warehouse_id)}`,
+          `已生成出库单 ${result.outbound_no || `#${result.outbound_order_id}`}，系统已分配来源仓库：${result.source_warehouse_name || warehouseName(result.source_warehouse_id)}`,
         reload: loadFulfillment,
       },
       "ship-outbound": {
         request: () => API.shipOutbound(id),
-        success: "出库发货成功，库存流水已更新",
+        success: "出库发货成功，仓库库存已扣减并写入库存流水",
         reload: async () => {
           await Promise.all([
             loadFulfillment(),
@@ -1843,7 +1843,7 @@
       },
       "sign-outbound": {
         request: () => API.signOutbound(id),
-        success: "门店签收成功，履约流程完成",
+        success: "门店签收成功，门店库存已增加，履约流程完成",
         reload: async () => {
           await Promise.all([
             loadFulfillment(),
