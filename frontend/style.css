@@ -1964,6 +1964,28 @@ select {
   line-height: 1.7;
 }
 
+#registerIdentityHint {
+  margin: -8px 0 18px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+#registerIdentityHint[data-state="success"] {
+  color: #17603a;
+  background: #eaf8ee;
+}
+
+#registerIdentityHint[data-state="warning"] {
+  color: #8a5a13;
+  background: #fff4da;
+}
+
+#registerIdentityHint[data-state="error"] {
+  color: #a93e49;
+  background: var(--red-soft);
+}
+
 .login-card .form-label {
   margin: 0 0 8px;
   color: var(--ink-2);

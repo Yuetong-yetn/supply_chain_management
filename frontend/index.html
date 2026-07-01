@@ -44,9 +44,10 @@
             name="username"
             type="text"
             autocomplete="username"
-            value="demo"
+            value="A1001"
             required
           />
+          <div class="login-note" id="registerIdentityHint" hidden></div>
           <label class="form-label" for="registerRealName" id="registerRealNameLabel" hidden>姓名</label>
           <input
             class="form-control"
@@ -65,6 +66,15 @@
             autocomplete="tel"
             hidden
           />
+          <label class="form-label" for="registerVerificationCode" id="registerVerificationCodeLabel" hidden>验证码</label>
+          <input
+            class="form-control"
+            id="registerVerificationCode"
+            name="verification_code"
+            type="text"
+            autocomplete="one-time-code"
+            hidden
+          />
           <label class="form-label" for="loginPassword">密码</label>
           <input
             class="form-control"
@@ -72,7 +82,7 @@
             name="password"
             type="password"
             autocomplete="current-password"
-            value="demo123"
+            value="admin123"
             required
           />
           <label class="form-label" for="registerConfirmPassword" id="registerConfirmPasswordLabel" hidden>确认密码</label>

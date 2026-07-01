@@ -110,7 +110,9 @@ CREATE TABLE supplier_score_snapshots (
 CREATE TABLE users (
 	id INTEGER NOT NULL, 
 	username VARCHAR(50) NOT NULL, 
+	employee_no VARCHAR(50) NOT NULL, 
 	password_hash VARCHAR(255) NOT NULL, 
+	verification_code_hash VARCHAR(255) NOT NULL, 
 	real_name VARCHAR(100), 
 	role VARCHAR(50) NOT NULL, 
 	location_type VARCHAR(20), 
@@ -118,9 +120,11 @@ CREATE TABLE users (
 	store_id INTEGER, 
 	phone VARCHAR(50), 
 	is_active BOOLEAN NOT NULL, 
+	is_verified BOOLEAN NOT NULL, 
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, 
 	PRIMARY KEY (id), 
 	UNIQUE (username), 
+	UNIQUE (employee_no), 
 	FOREIGN KEY(warehouse_id) REFERENCES warehouses (id), 
 	FOREIGN KEY(store_id) REFERENCES stores (id)
 );

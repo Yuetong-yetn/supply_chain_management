@@ -1,7 +1,7 @@
-def test_demo_login_with_valid_credentials(api_client):
+def test_demo_login_with_valid_employee_no_credentials(api_client):
     response = api_client.post(
         "/api/users/login",
-        json={"username": "admin", "password": "admin123"},
+        json={"username": "A1001", "password": "admin123"},
     )
 
     assert response.status_code == 200
@@ -9,78 +9,101 @@ def test_demo_login_with_valid_credentials(api_client):
     assert body["success"] is True
     assert body["message"] == "登录成功"
     assert body["data"]["username"] == "admin"
+    assert body["data"]["employee_no"] == "A1001"
     assert body["data"]["role"] == "admin"
+    assert body["data"]["is_verified"] is True
     assert "password_hash" not in body["data"]
 
 
 def test_demo_login_rejects_invalid_password(api_client):
     response = api_client.post(
         "/api/users/login",
-        json={"username": "admin", "password": "wrong-password", "role": "admin"},
+        json={"username": "A1001", "password": "wrong-password"},
     )
 
     assert response.status_code == 401
     body = response.json()
     assert body == {
         "success": False,
-        "message": "用户名或密码错误",
+        "message": "工号或密码错误",
         "data": None,
     }
 
 
-def test_demo_login_rejects_role_mismatch(api_client):
+def test_demo_login_rejects_unverified_employee(api_client):
     response = api_client.post(
         "/api/users/login",
-        json={"username": "buyer", "password": "buyer123", "role": "manager"},
+        json={"username": "S2001", "password": "pending123"},
     )
 
     assert response.status_code == 403
     body = response.json()
     assert body == {
         "success": False,
-        "message": "所选角色与账号身份不匹配",
+        "message": "该工号尚未完成账号激活，请先注册验证",
         "data": None,
     }
 
 
-def test_register_user_normalizes_role_and_defaults_location(api_client):
+def test_get_user_identity_preview_by_employee_no(api_client):
+    response = api_client.get("/api/users/identity/S2001")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    assert body["data"]["employee_no"] == "S2001"
+    assert body["data"]["role"] == "store_staff"
+    assert body["data"]["location_type"] == "store"
+    assert body["data"]["is_verified"] is False
+    assert body["data"]["store_id"] is not None
+
+
+def test_register_user_activates_preloaded_employee(api_client):
     response = api_client.post(
-        "/api/users",
+        "/api/users/register",
         json={
-            "username": "new_store_user",
+            "employee_no": "S2001",
+            "real_name": "王敏",
+            "phone": "13000002001",
+            "verification_code": "246810",
             "password": "secret123",
-            "real_name": "门店新用户",
-            "role": "store",
-            "phone": "13800000000",
-            "is_active": True,
         },
     )
 
     assert response.status_code == 200
     body = response.json()
     assert body["success"] is True
-    assert body["data"]["username"] == "new_store_user"
+    assert body["message"] == "注册成功"
+    assert body["data"]["username"] == "store_pending_a"
+    assert body["data"]["employee_no"] == "S2001"
     assert body["data"]["role"] == "store_staff"
     assert body["data"]["location_type"] == "store"
+    assert body["data"]["is_verified"] is True
     assert "password_hash" not in body["data"]
 
+    login_response = api_client.post(
+        "/api/users/login",
+        json={"username": "S2001", "password": "secret123"},
+    )
+    assert login_response.status_code == 200
 
-def test_register_user_rejects_duplicate_username(api_client):
+
+def test_register_user_rejects_wrong_verification_code(api_client):
     response = api_client.post(
-        "/api/users",
+        "/api/users/register",
         json={
-            "username": "admin",
+            "employee_no": "W2001",
+            "real_name": "李峰",
+            "phone": "13000002002",
+            "verification_code": "000000",
             "password": "secret123",
-            "real_name": "重复用户",
-            "role": "admin",
-            "is_active": True,
         },
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 403
     body = response.json()
     assert body == {
         "success": False,
-        "message": "用户名已存在，请更换后重试",
+        "message": "验证码错误，请联系管理员重新获取",
         "data": None,
     }

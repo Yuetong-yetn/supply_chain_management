@@ -180,6 +180,15 @@ def generate_example_data() -> dict[str, int]:
         {"username": "store", "password": "store123", "real_name": "门店员工", "role": "store_staff", "location_type": "store", "warehouse_code": None, "store_code": "STORE-A", "phone": "13000000004", "is_active": True},
         {"username": "manager", "password": "manager123", "real_name": "运营经理", "role": "manager", "location_type": None, "warehouse_code": None, "store_code": None, "phone": "13000000005", "is_active": True},
     ]
+    users = [
+        {"username": "admin", "employee_no": "A1001", "password": "admin123", "verification_code": "246810", "real_name": "系统管理员", "role": "admin", "location_type": None, "warehouse_code": None, "store_code": None, "phone": "13000000001", "is_active": True, "is_verified": True},
+        {"username": "buyer", "employee_no": "P1001", "password": "buyer123", "verification_code": "135790", "real_name": "采购专员", "role": "buyer", "location_type": None, "warehouse_code": None, "store_code": None, "phone": "13000000002", "is_active": True, "is_verified": True},
+        {"username": "warehouse", "employee_no": "W1001", "password": "warehouse123", "verification_code": "975310", "real_name": "仓库主管", "role": "warehouse_manager", "location_type": "warehouse", "warehouse_code": "WH-CENTRAL", "store_code": None, "phone": "13000000003", "is_active": True, "is_verified": True},
+        {"username": "store", "employee_no": "S1001", "password": "store123", "verification_code": "864200", "real_name": "门店员工", "role": "store_staff", "location_type": "store", "warehouse_code": None, "store_code": "STORE-A", "phone": "13000000004", "is_active": True, "is_verified": True},
+        {"username": "manager", "employee_no": "M1001", "password": "manager123", "verification_code": "112233", "real_name": "运营经理", "role": "manager", "location_type": None, "warehouse_code": None, "store_code": None, "phone": "13000000005", "is_active": True, "is_verified": True},
+        {"username": "store_pending_a", "employee_no": "S2001", "password": "pending123", "verification_code": "246810", "real_name": "王敏", "role": "store_staff", "location_type": "store", "warehouse_code": None, "store_code": "STORE-A", "phone": "13000002001", "is_active": True, "is_verified": False},
+        {"username": "warehouse_pending_e", "employee_no": "W2001", "password": "pending123", "verification_code": "135790", "real_name": "李峰", "role": "warehouse_manager", "location_type": "warehouse", "warehouse_code": "WH-EAST", "store_code": None, "phone": "13000002002", "is_active": True, "is_verified": False},
+    ]
     inventory_seed = []
     warehouse_codes = [item["warehouse_code"] for item in warehouses]
     for idx, product in enumerate(products, start=1):
@@ -541,7 +550,9 @@ def load_example_data(db: Session) -> dict[str, int]:
     for item in users:
         user = User(
             username=item["username"],
+            employee_no=item["employee_no"],
             password_hash=hash_password(item["password"]),
+            verification_code_hash=hash_password(item["verification_code"]),
             real_name=item["real_name"],
             role=item["role"],
             location_type=item["location_type"],
@@ -549,6 +560,7 @@ def load_example_data(db: Session) -> dict[str, int]:
             store_id=store_map[item["store_code"]].id if item.get("store_code") else None,
             phone=item["phone"],
             is_active=item["is_active"],
+            is_verified=item["is_verified"],
         )
         db.add(user)
         db.flush()

@@ -2951,18 +2951,225 @@
     state.eventsBound = true;
   }
 
+  function setRegisterIdentityHint(message = "", state = "success") {
+    const hint = $("registerIdentityHint");
+    if (!hint) return;
+    hint.textContent = message;
+    hint.hidden = !message || currentAuthMode() !== "register";
+    if (message) hint.dataset.state = state;
+    else delete hint.dataset.state;
+  }
+
+  async function loadRegisterIdentityHint(employeeNo) {
+    const normalizedEmployeeNo = String(employeeNo || "").trim().toUpperCase();
+    if (!normalizedEmployeeNo || currentAuthMode() !== "register") {
+      setRegisterIdentityHint("");
+      return null;
+    }
+
+    try {
+      const identity = await API.getUserIdentityByEmployeeNo(normalizedEmployeeNo);
+      const frontendRole = frontendRoleFromBackend(identity?.role);
+      const roleLabel = ROLE_LABELS[frontendRole] || identity?.role || "未知角色";
+      const locationText = identity?.location_name ? ` · ${identity.location_name}` : "";
+      const statusText = identity?.is_verified ? "该工号已激活，可直接登录" : "验证通过后将自动绑定该身份";
+      setRegisterIdentityHint(`已识别：${roleLabel}${locationText} · ${statusText}`, identity?.is_verified ? "warning" : "success");
+      return identity;
+    } catch (error) {
+      setRegisterIdentityHint(error?.message || "工号识别失败", "error");
+      return null;
+    }
+  }
+
+  function setAuthMode(mode = "login") {
+    const form = $("loginForm");
+    if (!form) return;
+
+    const isRegister = mode === "register";
+    form.dataset.mode = isRegister ? "register" : "login";
+
+    const title = form.querySelector("div:first-child h2");
+    const description = form.querySelector("div:first-child p");
+    const submitLabel = form.querySelector(".login-submit .btn-label");
+    const usernameLabel = document.querySelector('label[for="loginUsername"]');
+    const passwordLabel = document.querySelector('label[for="loginPassword"]');
+    const roleLabel = document.querySelector('label[for="loginRole"]');
+
+    if ($("authTag")) $("authTag").textContent = isRegister ? "CREATE ACCOUNT" : "WELCOME BACK";
+    if (title) title.textContent = isRegister ? "激活员工账号" : "工号登录";
+    if (description) {
+      description.textContent = isRegister
+        ? "通过工号、姓名、手机号和验证码完成激活，系统会自动绑定角色与所属门店或仓库。"
+        : "输入工号和密码后进入系统，角色与门店或仓库归属会自动识别。";
+    }
+    if (submitLabel) submitLabel.textContent = isRegister ? "注册并进入" : "进入系统";
+    if (usernameLabel) usernameLabel.textContent = "工号";
+    if (passwordLabel) passwordLabel.textContent = "密码";
+    if (roleLabel) roleLabel.hidden = true;
+
+    if ($("authHelperText")) {
+      $("authHelperText").textContent = isRegister
+        ? "先输入工号识别身份，再填写姓名、手机号和验证码完成安全校验。"
+        : "已激活账号可直接登录，未激活账号请先完成注册验证。";
+      $("authHelperText").hidden = false;
+    }
+
+    [
+      ["registerRealNameLabel", "registerRealName", true],
+      ["registerPhoneLabel", "registerPhone", true],
+      ["registerVerificationCodeLabel", "registerVerificationCode", true],
+      ["registerConfirmPasswordLabel", "registerConfirmPassword", true],
+    ].forEach(([labelId, inputId, required]) => {
+      const label = $(labelId);
+      const input = $(inputId);
+      if (label) label.hidden = !isRegister;
+      if (input) {
+        input.hidden = !isRegister;
+        input.required = isRegister && required;
+        if (!isRegister) input.value = "";
+      }
+    });
+
+    if ($("loginPassword")) {
+      $("loginPassword").value = "";
+      $("loginPassword").setAttribute("autocomplete", isRegister ? "new-password" : "current-password");
+    }
+
+    if ($("loginRole")) {
+      $("loginRole").hidden = true;
+      $("loginRole").required = false;
+      $("loginRole").value = "";
+    }
+
+    const panel = $("authModePanel");
+    if (panel) {
+      panel.innerHTML = isRegister
+        ? '<span>已有账号？</span><button class="btn btn-link p-0 text-decoration-none" id="authModeToggle" type="button">返回登录</button>'
+        : '<span>还没有账号？</span><button class="btn btn-link p-0 text-decoration-none" id="authModeToggle" type="button">立即注册</button>';
+    }
+
+    setRegisterIdentityHint("");
+    clearLoginError();
+  }
+
+  async function handleRegisterSubmit(form) {
+    const values = formValues(form);
+    const button = form.querySelector('[type="submit"]');
+    const employeeNo = String(values.username || "").trim().toUpperCase();
+    const realName = String(values.real_name || "").trim();
+    const phone = String(values.phone || "").trim();
+    const verificationCode = String(values.verification_code || "").trim();
+    const password = String(values.password || "").trim();
+    const confirmPassword = String(values.confirm_password || "").trim();
+
+    clearLoginError();
+    if (!employeeNo) {
+      showLoginError("请输入工号");
+      return;
+    }
+    if (!realName) {
+      showLoginError("请输入姓名");
+      return;
+    }
+    if (!phone) {
+      showLoginError("请输入手机号");
+      return;
+    }
+    if (!verificationCode) {
+      showLoginError("请输入验证码");
+      return;
+    }
+    if (password.length < 6) {
+      showLoginError("密码至少需要 6 位");
+      return;
+    }
+    if (password !== confirmPassword) {
+      showLoginError("两次输入的密码不一致");
+      return;
+    }
+
+    setButtonLoading(button, true, "注册中...");
+    try {
+      await loadRegisterIdentityHint(employeeNo);
+      const user = await API.registerUser({
+        employee_no: employeeNo,
+        real_name: realName,
+        phone,
+        verification_code: verificationCode,
+        password,
+      });
+      const authenticatedRole = frontendRoleFromBackend(user?.role);
+      if (!authenticatedRole) {
+        throw new Error("当前工号未绑定可用身份");
+      }
+      await enterWorkspace(authenticatedRole, user);
+    } catch (error) {
+      showLoginError(error?.message || "注册失败，请稍后重试");
+    } finally {
+      setButtonLoading(button, false);
+    }
+  }
+
+  async function handleLoginSubmit(form) {
+    const values = formValues(form);
+    const button = form.querySelector('[type="submit"]');
+    const username = String(values.username || "").trim().toUpperCase();
+    const password = String(values.password || "").trim();
+
+    clearLoginError();
+    if (!username) {
+      showLoginError("请输入工号");
+      return;
+    }
+    if (!password) {
+      showLoginError("请输入密码");
+      return;
+    }
+
+    setButtonLoading(button, true, "登录中...");
+    try {
+      const user = await API.loginUser({
+        username,
+        password,
+      });
+      const authenticatedRole = frontendRoleFromBackend(user?.role);
+      if (!authenticatedRole) {
+        throw new Error("当前工号未绑定可用身份");
+      }
+      await enterWorkspace(authenticatedRole, user);
+    } catch (error) {
+      showLoginError(error?.message || "登录失败，请稍后重试");
+    } finally {
+      setButtonLoading(button, false);
+    }
+  }
+
+  async function handleAuthSubmit(form) {
+    if (currentAuthMode() === "register") {
+      await handleRegisterSubmit(form);
+      return;
+    }
+    await handleLoginSubmit(form);
+  }
+
   async function bootstrap() {
     bindEvents();
-    const savedRole = window.localStorage.getItem("currentRole");
     const savedName = window.localStorage.getItem("currentLoginName") || "";
     $("loginScreen").hidden = false;
     $("appShell").hidden = true;
     setAuthMode("login");
-    if ($("loginUsername")) $("loginUsername").value = savedName;
+    if ($("loginUsername")) $("loginUsername").value = savedName || "A1001";
     if ($("loginPassword")) $("loginPassword").value = "";
 
-    if (savedRole && ROLE_LABELS[savedRole]) {
-      if ($("loginRole")) $("loginRole").value = savedRole;
+    const loginUsername = $("loginUsername");
+    if (loginUsername && !loginUsername.dataset.identityBound) {
+      const refreshIdentity = async () => {
+        if (currentAuthMode() !== "register") return;
+        await loadRegisterIdentityHint(loginUsername.value);
+      };
+      loginUsername.addEventListener("change", refreshIdentity);
+      loginUsername.addEventListener("blur", refreshIdentity);
+      loginUsername.dataset.identityBound = "true";
     }
   }
 

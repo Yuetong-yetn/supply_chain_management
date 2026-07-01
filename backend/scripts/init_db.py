@@ -26,17 +26,20 @@ def export_schema_sql(schema_path: Path) -> None:
 
 def export_seed_sql(seed_path: Path) -> None:
     users = [
-        ("admin", "admin123", "系统管理员", "admin"),
-        ("buyer", "buyer123", "采购专员", "buyer"),
-        ("warehouse", "warehouse123", "仓库主管", "warehouse_manager"),
-        ("store", "store123", "门店员工", "store_staff"),
-        ("manager", "manager123", "运营经理", "manager"),
+        ("admin", "A1001", "admin123", "246810", "系统管理员", "admin", True),
+        ("buyer", "P1001", "buyer123", "135790", "采购专员", "buyer", True),
+        ("warehouse", "W1001", "warehouse123", "975310", "仓库主管", "warehouse_manager", True),
+        ("store", "S1001", "store123", "864200", "门店员工", "store_staff", True),
+        ("manager", "M1001", "manager123", "112233", "运营经理", "manager", True),
     ]
     lines = []
-    for username, password, real_name, role in users:
+    for username, employee_no, password, verification_code, real_name, role, is_verified in users:
         lines.append(
-            "INSERT INTO users (username, password_hash, real_name, role, is_active) VALUES "
-            f"('{username}', '{hash_password(password)}', '{real_name}', '{role}', 1);"
+            "INSERT INTO users "
+            "(username, employee_no, password_hash, verification_code_hash, real_name, role, is_active, is_verified) "
+            "VALUES "
+            f"('{username}', '{employee_no}', '{hash_password(password)}', '{hash_password(verification_code)}', "
+            f"'{real_name}', '{role}', 1, {1 if is_verified else 0});"
         )
     seed_path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -61,21 +64,64 @@ def init_db(rebuild: bool = False) -> None:
     try:
         existing = {row.username for row in session.query(User).all()}
         seed_users = [
-            {"username": "admin", "password": "admin123", "real_name": "系统管理员", "role": "admin"},
-            {"username": "buyer", "password": "buyer123", "real_name": "采购专员", "role": "buyer"},
-            {"username": "warehouse", "password": "warehouse123", "real_name": "仓库主管", "role": "warehouse_manager"},
-            {"username": "store", "password": "store123", "real_name": "门店员工", "role": "store_staff"},
-            {"username": "manager", "password": "manager123", "real_name": "运营经理", "role": "manager"},
+            {
+                "username": "admin",
+                "employee_no": "A1001",
+                "password": "admin123",
+                "verification_code": "246810",
+                "real_name": "系统管理员",
+                "role": "admin",
+                "is_verified": True,
+            },
+            {
+                "username": "buyer",
+                "employee_no": "P1001",
+                "password": "buyer123",
+                "verification_code": "135790",
+                "real_name": "采购专员",
+                "role": "buyer",
+                "is_verified": True,
+            },
+            {
+                "username": "warehouse",
+                "employee_no": "W1001",
+                "password": "warehouse123",
+                "verification_code": "975310",
+                "real_name": "仓库主管",
+                "role": "warehouse_manager",
+                "is_verified": True,
+            },
+            {
+                "username": "store",
+                "employee_no": "S1001",
+                "password": "store123",
+                "verification_code": "864200",
+                "real_name": "门店员工",
+                "role": "store_staff",
+                "is_verified": True,
+            },
+            {
+                "username": "manager",
+                "employee_no": "M1001",
+                "password": "manager123",
+                "verification_code": "112233",
+                "real_name": "运营经理",
+                "role": "manager",
+                "is_verified": True,
+            },
         ]
         for item in seed_users:
             if item["username"] not in existing:
                 session.add(
                     User(
                         username=item["username"],
+                        employee_no=item["employee_no"],
                         password_hash=hash_password(item["password"]),
+                        verification_code_hash=hash_password(item["verification_code"]),
                         real_name=item["real_name"],
                         role=item["role"],
                         is_active=True,
+                        is_verified=item["is_verified"],
                     )
                 )
         session.commit()

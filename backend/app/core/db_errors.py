@@ -14,6 +14,8 @@ def _integrity_error_text(exc: IntegrityError) -> str:
 def map_integrity_error_message(exc: IntegrityError) -> str:
     message = _integrity_error_text(exc)
     if any(token in message for token in ("duplicate entry", "unique constraint failed", "is not unique", "1062")):
+        if "employee_no" in message:
+            return "工号已存在，请勿重复创建"
         if "username" in message:
             return "用户名已存在，请更换后重试"
         return "数据保存失败，存在重复数据"

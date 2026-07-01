@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -7,6 +8,8 @@ from fastapi.testclient import TestClient
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+os.environ["DATABASE_URL"] = f"sqlite:///{(ROOT / 'schema' / 'test_suite.db').as_posix()}"
 
 from app.core.cache import cache
 from app.core.config import get_settings

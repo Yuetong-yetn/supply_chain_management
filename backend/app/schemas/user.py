@@ -39,8 +39,16 @@ def normalize_text(value: str | None) -> str | None:
     return normalized or None
 
 
+def normalize_employee_no(value: str | None) -> str | None:
+    normalized = normalize_text(value)
+    if normalized is None:
+        return None
+    return normalized.upper()
+
+
 class UserBase(BaseModel):
     username: str
+    employee_no: str
     real_name: str | None = None
     role: str
     location_type: str | None = None
@@ -48,6 +56,7 @@ class UserBase(BaseModel):
     store_id: int | None = None
     phone: str | None = None
     is_active: bool = True
+    is_verified: bool = False
 
     @field_validator("username")
     @classmethod
@@ -55,6 +64,14 @@ class UserBase(BaseModel):
         normalized = normalize_text(value)
         if not normalized:
             raise ValueError("用户名不能为空")
+        return normalized
+
+    @field_validator("employee_no")
+    @classmethod
+    def validate_employee_no(cls, value: str) -> str:
+        normalized = normalize_employee_no(value)
+        if not normalized:
+            raise ValueError("工号不能为空")
         return normalized
 
     @field_validator("real_name", "phone")
@@ -101,6 +118,39 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=6, max_length=128)
+    verification_code: str = Field(min_length=4, max_length=32)
+
+    @field_validator("verification_code")
+    @classmethod
+    def validate_verification_code(cls, value: str) -> str:
+        normalized = normalize_text(value)
+        if not normalized:
+            raise ValueError("验证码不能为空")
+        return normalized
+
+
+class UserRegister(BaseModel):
+    employee_no: str
+    real_name: str
+    phone: str
+    verification_code: str = Field(min_length=4, max_length=32)
+    password: str = Field(min_length=6, max_length=128)
+
+    @field_validator("employee_no")
+    @classmethod
+    def validate_employee_no(cls, value: str) -> str:
+        normalized = normalize_employee_no(value)
+        if not normalized:
+            raise ValueError("工号不能为空")
+        return normalized
+
+    @field_validator("real_name", "phone", "verification_code")
+    @classmethod
+    def validate_required_text(cls, value: str) -> str:
+        normalized = normalize_text(value)
+        if not normalized:
+            raise ValueError("必填字段不能为空")
+        return normalized
 
 
 class UserLogin(BaseModel):
@@ -113,7 +163,7 @@ class UserLogin(BaseModel):
     def validate_username(cls, value: str) -> str:
         normalized = normalize_text(value)
         if not normalized:
-            raise ValueError("用户名不能为空")
+            raise ValueError("登录标识不能为空")
         return normalized
 
     @field_validator("role")
@@ -123,6 +173,8 @@ class UserLogin(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    username: str | None = None
+    employee_no: str | None = None
     real_name: str | None = None
     role: str | None = None
     location_type: str | None = None
@@ -130,12 +182,19 @@ class UserUpdate(BaseModel):
     store_id: int | None = None
     phone: str | None = None
     is_active: bool | None = None
+    is_verified: bool | None = None
     password: str | None = Field(default=None, min_length=6, max_length=128)
+    verification_code: str | None = Field(default=None, min_length=4, max_length=32)
 
-    @field_validator("real_name", "phone")
+    @field_validator("username", "real_name", "phone", "verification_code")
     @classmethod
     def strip_optional_text(cls, value: str | None) -> str | None:
         return normalize_text(value)
+
+    @field_validator("employee_no")
+    @classmethod
+    def validate_employee_no(cls, value: str | None) -> str | None:
+        return normalize_employee_no(value)
 
     @field_validator("role")
     @classmethod
@@ -152,6 +211,16 @@ class UserUpdate(BaseModel):
         if lowered not in {"warehouse", "store"}:
             raise ValueError("location_type 仅支持 warehouse 或 store")
         return lowered
+
+
+class UserIdentityRead(BaseModel):
+    employee_no: str
+    role: str
+    location_type: str | None = None
+    warehouse_id: int | None = None
+    store_id: int | None = None
+    location_name: str | None = None
+    is_verified: bool
 
 
 class UserRead(UserBase, ORMBase):
