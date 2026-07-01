@@ -113,6 +113,8 @@
     getRecommendations: () => get("/recommendations"),
     getSupplierRanking: () => get("/suppliers/ranking"),
     getUsers: () => get("/users?page=1&page_size=200"),
+    loginUser: (payload) => post("/users/login", payload),
+    registerUser: (payload) => post("/users", payload),
     getProducts: () => get("/products?page=1&page_size=200"),
     createProduct: (payload) => post("/products", payload),
     getSuppliers: () => get("/suppliers?page=1&page_size=200"),

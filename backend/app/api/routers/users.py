@@ -20,7 +20,10 @@ def list_users(page: int = 1, page_size: int = 20, keyword: str | None = None, d
     if keyword:
         query = query.where(or_(User.username.contains(keyword), User.real_name.contains(keyword)))
     total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
-    items = [UserRead.model_validate(item).model_dump() for item in db.scalars(query.offset((page - 1) * page_size).limit(page_size))]
+    items = [
+        UserRead.model_validate(item).model_dump()
+        for item in db.scalars(query.offset((page - 1) * page_size).limit(page_size))
+    ]
     return page_response(items, total, page, page_size)
 
 
@@ -40,6 +43,8 @@ def login(payload: UserLogin, db: Session = Depends(get_db_dep)):
         raise BusinessException("用户名或密码错误", 401)
     if not user.is_active:
         raise BusinessException("该账号已停用", 403)
+    if payload.role and payload.role != user.role:
+        raise BusinessException("所选角色与账号身份不匹配", 403)
     return success_response(
         UserRead.model_validate(user).model_dump(),
         message="登录成功",

@@ -366,6 +366,67 @@ def test_convert_to_outbound_splits_request_across_multiple_warehouses():
         session.close()
 
 
+def test_convert_to_outbound_api_returns_multiple_orders_for_split_request(api_client):
+    session = SessionLocal()
+    try:
+        request, product, _store, user = _create_approved_request(session, quantity=13)
+        warehouse_a, warehouse_b = _ensure_warehouses(session)
+        _set_inventory(
+            session,
+            product_id=product.id,
+            location_type="warehouse",
+            warehouse_id=warehouse_a.id,
+            current_quantity=10,
+            frozen_quantity=0,
+        )
+        _set_inventory(
+            session,
+            product_id=product.id,
+            location_type="warehouse",
+            warehouse_id=warehouse_b.id,
+            current_quantity=3,
+            frozen_quantity=0,
+        )
+        request_id = request.id
+        user_id = user.id
+        warehouse_names = {warehouse_a.name, warehouse_b.name}
+        session.commit()
+    finally:
+        session.close()
+
+    response = api_client.post(
+        f"/api/replenishment-requests/{request_id}/convert-to-outbound?handled_by={user_id}"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()["data"]
+    assert payload["outbound_order_count"] == 2
+    assert payload["split_from_multiple_warehouses"] is True
+    assert payload["allocated_quantity"] == 13
+    assert set(payload["source_warehouse_names"]) == warehouse_names
+    assert len(payload["outbound_orders"]) == 2
+    assert sorted(item["quantity"] for item in payload["outbound_orders"]) == [3, 10]
+
+    detail_response = api_client.get(f"/api/replenishment-requests/{request_id}")
+    assert detail_response.status_code == 200
+    detail_payload = detail_response.json()["data"]
+    assert detail_payload["outbound_order_count"] == 2
+    assert detail_payload["split_from_multiple_warehouses"] is True
+    assert detail_payload["allocated_quantity"] == 13
+    assert set(detail_payload["source_warehouse_names"]) == warehouse_names
+    assert len(detail_payload["outbound_orders"]) == 2
+
+    list_response = api_client.get("/api/replenishment-requests?page=1&page_size=500")
+    assert list_response.status_code == 200
+    rows = list_response.json()["data"]["items"]
+    request_row = next(item for item in rows if item["id"] == request_id)
+    assert request_row["outbound_order_count"] == 2
+    assert request_row["split_from_multiple_warehouses"] is True
+    assert request_row["allocated_quantity"] == 13
+    assert set(request_row["source_warehouse_names"]) == warehouse_names
+    assert len(request_row["outbound_orders"]) == 2
+
+
 def test_convert_to_outbound_api_invalidates_request_when_auto_assignment_fails(api_client):
     session = SessionLocal()
     try:

@@ -47,6 +47,25 @@ def group_outbounds_by_request(outbound_map: dict[int, OutboundOrder]) -> dict[i
     return grouped
 
 
+def summarize_related_outbounds(related_outbounds: list[OutboundOrder]) -> dict:
+    warehouse_ids: list[int] = []
+    warehouse_names: list[str] = []
+    allocated_quantity = 0
+    for current in related_outbounds:
+        if current.source_warehouse_id and current.source_warehouse_id not in warehouse_ids:
+            warehouse_ids.append(current.source_warehouse_id)
+            warehouse_name = current.source_warehouse.name if current.source_warehouse else None
+            if warehouse_name:
+                warehouse_names.append(warehouse_name)
+        allocated_quantity += sum(detail.quantity for detail in current.items)
+    return {
+        "source_warehouse_ids": warehouse_ids,
+        "source_warehouse_names": warehouse_names,
+        "split_from_multiple_warehouses": len(warehouse_ids) > 1,
+        "allocated_quantity": allocated_quantity,
+    }
+
+
 def serialize_replenishment_request(
     item: ReplenishmentRequest,
     outbound_map: dict[int, OutboundOrder] | None = None,
@@ -86,6 +105,7 @@ def serialize_replenishment_request(
         }
         for current in related_outbounds
     ]
+    data.update(summarize_related_outbounds(related_outbounds))
     return data
 
 
@@ -151,6 +171,7 @@ def convert(
         for item in items:
             db.refresh(item)
         primary = items[0]
+        summary = summarize_related_outbounds(items)
         return success_response(
             {
                 "outbound_order_id": primary.id,
@@ -175,6 +196,7 @@ def convert(
                     }
                     for item in items
                 ],
+                **summary,
             }
         )
     except Exception:
