@@ -409,3 +409,72 @@ def test_convert_to_outbound_api_invalidates_request_when_auto_assignment_fails(
     finally:
         verify_session.rollback()
         verify_session.close()
+
+
+def test_convert_to_outbound_api_allows_retry_after_invalidated_request_is_restocked(api_client):
+    session = SessionLocal()
+    try:
+        request, product, _store, user = _create_approved_request(session, quantity=80)
+        warehouse_a, warehouse_b = _ensure_warehouses(session)
+        _set_inventory(
+            session,
+            product_id=product.id,
+            location_type="warehouse",
+            warehouse_id=warehouse_a.id,
+            current_quantity=30,
+            frozen_quantity=0,
+        )
+        _set_inventory(
+            session,
+            product_id=product.id,
+            location_type="warehouse",
+            warehouse_id=warehouse_b.id,
+            current_quantity=20,
+            frozen_quantity=0,
+        )
+        request_id = request.id
+        product_id = product.id
+        user_id = user.id
+        expected_warehouse_id = warehouse_a.id
+        session.commit()
+    finally:
+        session.close()
+
+    first_response = api_client.post(
+        f"/api/replenishment-requests/{request_id}/convert-to-outbound?handled_by={user_id}"
+    )
+    assert first_response.status_code == 400
+
+    restock_session = SessionLocal()
+    try:
+        _set_inventory(
+            restock_session,
+            product_id=product_id,
+            location_type="warehouse",
+            warehouse_id=expected_warehouse_id,
+            current_quantity=120,
+            frozen_quantity=0,
+        )
+        restock_session.commit()
+    finally:
+        restock_session.close()
+
+    second_response = api_client.post(
+        f"/api/replenishment-requests/{request_id}/convert-to-outbound?handled_by={user_id}"
+    )
+
+    assert second_response.status_code == 200
+    payload = second_response.json()["data"]
+    assert payload["outbound_order_id"] is not None
+    assert payload["source_warehouse_id"] == expected_warehouse_id
+    assert payload["status"] == "pending"
+
+    verify_session = SessionLocal()
+    try:
+        refreshed = verify_session.get(ReplenishmentRequest, request_id)
+        assert refreshed is not None
+        assert refreshed.audit_status == "converted"
+        assert refreshed.generated_outbound_order_id == payload["outbound_order_id"]
+    finally:
+        verify_session.rollback()
+        verify_session.close()

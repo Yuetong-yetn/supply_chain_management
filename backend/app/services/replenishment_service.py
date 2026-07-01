@@ -83,7 +83,9 @@ def convert_to_outbound(
     request = db.get(ReplenishmentRequest, request_id)
     if not request:
         raise BusinessException("request not found", 404)
-    if request.audit_status != "approved":
+    if request.generated_outbound_order_id is not None or request.audit_status == "converted":
+        raise BusinessException("request has already been converted")
+    if request.audit_status not in {"approved", "invalidated"}:
         raise BusinessException("only approved request can be converted")
 
     if source_warehouse_id is None:
