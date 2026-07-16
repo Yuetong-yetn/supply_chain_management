@@ -46,7 +46,7 @@ All commands run from `backend/` with `.venv` activated.
 - Primary: OceanBase (MySQL-compatible via PyMySQL). SQLite as automatic fallback.
 - Runtime fallback detection is **module-level** in `app/core/database.py` — happens once at import time.
 - `backend/app/core/config.py` uses `pydantic-settings` with `lru_cache`; tests clear the cache via `get_settings.cache_clear()`.
-- `.env` lives in `backend/` (not root). Root `.env` is ignored.
+- `.env` lives in `backend/`. Root `.env` is ignored.
 
 ## API conventions
 
