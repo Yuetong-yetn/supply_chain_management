@@ -21,6 +21,6 @@ python scripts/load_example_data.py
 
 ## Important
 
-- `--rebuild` is destructive — it drops all existing tables
+- `--rebuild` is destructive. It drops all existing tables
 - If OceanBase is unreachable, system auto-falls-back to SQLite
 - Run `pytest` afterward to verify the setup works

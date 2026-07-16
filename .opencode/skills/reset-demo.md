@@ -1,6 +1,6 @@
 # reset-demo — Reset demo data to initial state
 
-Reset the system to a clean demo state with fresh example data.
+Reset the system to a clean demo state.
 
 ## Steps
 ```bash

@@ -1,6 +1,6 @@
 # run-dev — Start the backend development server
 
-Start the FastAPI development server with auto-reload for this project.
+Start the FastAPI development server for this project.
 
 ## Prerequisites
 - Python virtual environment exists at `backend/.venv`

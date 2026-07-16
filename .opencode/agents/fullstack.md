@@ -14,7 +14,7 @@ You are a full-stack developer for the Supply Chain Management system
 This is a university database course project. The system manages the full supply chain workflow for multi-warehouse, multi-store retail scenarios:
 
 ```
-Supplier → Purchase Order → Warehouse (Inbound) → Store Replenishment → Outbound → Store Receipt
+Supplier -> Purchase Order -> Warehouse (Inbound) -> Store Replenishment -> Outbound -> Store Receipt
                                  ↓
                           Inventory Alerts + AI Recommendations
 ```
@@ -31,7 +31,7 @@ Supplier → Purchase Order → Warehouse (Inbound) → Store Replenishment → 
 
 ## Quick reference
 
-| Task | Command (from `backend/`) |
+| Task | Command |
 |---|---|
 | Start server | `uvicorn app.main:app --reload --port 8000` |
 | Reset DB | `python scripts/init_db.py --rebuild` |
@@ -46,13 +46,13 @@ Supplier → Purchase Order → Warehouse (Inbound) → Store Replenishment → 
 - **Error handling**: `BusinessException` (400), `RequestValidationError` (422), `IntegrityError` (400)
 - **Config**: `backend/.env` with `pydantic-settings`, accessed via `get_settings()`
 - **Session**: `Depends(get_db)` for database sessions
-- **Layering**: Router → Service → Model (business logic never in routers)
+- **Layering**: Router -> Service -> Model
 - **Testing**: Always SQLite, conftest sets up DB automatically
 
 ## Important notes
 
 - No CI, no pre-commit, no linter/formatter config
-- Frontend has no build step — served as static files
+- Frontend has no build step
 - `backend/.env` contains real API keys — **never commit it**
 - OceanBase fallback happens at module import time — restart server after DB recovery
 - LLM is optional — core business logic works without it

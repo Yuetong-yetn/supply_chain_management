@@ -25,7 +25,7 @@ pytest --cov=app --cov-report=term-missing
 ```
 
 ## Test architecture
-- Tests always use SQLite (`backend/schema/test_suite.db`) — `conftest.py` overrides `DATABASE_URL` before any import
+- Tests always use SQLite (`backend/schema/test_suite.db`). `conftest.py` overrides `DATABASE_URL` before any import
 - `pytest_sessionstart` hook rebuilds DB and loads seed + example data automatically
 - The `api_client` fixture provides `fastapi.testclient.TestClient(app)`
 - `clear_settings_cache` fixture resets config and cache between tests

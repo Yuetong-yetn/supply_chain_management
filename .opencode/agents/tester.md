@@ -28,7 +28,7 @@ You write and maintain automated tests for the Supply Chain Management backend.
 
 - File name: `test_<feature>.py`
 - Function name: `test_<what_it_tests>`
-- Always use `api_client` fixture and don't import TestClient directly
+- Use `api_client` fixture and don't import TestClient directly
 - Import app after conftest has set DATABASE_URL and don't import at module level unless it's safe
 - Assert `response.status_code` first, then `response.json()["success"]`
 
@@ -46,7 +46,7 @@ def test_login_success(api_client):
     assert "token" in data["data"]  # or whatever the field is
 ```
 
-## Existing tests (11 files)
+## Existing tests
 - `test_health.py`, `test_login.py`, `test_api_fixes.py`
 - `test_inventory_transaction.py`, `test_outbound_stock_check.py`
 - `test_replenishment_auto_assignment.py`, `test_recommendation.py`
@@ -57,7 +57,7 @@ def test_login_success(api_client):
 
 1. Create `backend/tests/test_<feature>.py`
 2. Use existing fixtures from `conftest.py`
-3. Test happy path + error cases (invalid input, missing fields, business rule violations)
+3. Tests should cover both successful scenarios and various failure and error cases(invalid input, missing fields, business rule violations).
 4. Verify the response envelope: `success`, `message`, `data` fields
 5. For DB-dependent tests, the data from `pytest_sessionstart` is available
 6. Run with `pytest tests/test_<feature>.py -v`

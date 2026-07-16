@@ -1504,14 +1504,14 @@
       item.target_store_id,
     );
     if (item.transaction_type === "store_outbound" && source && target) {
-      return `${source} → 在途（发往 ${target}）`;
+      return `${source} -> 在途（发往 ${target}）`;
     }
     if (item.transaction_type === "store_inbound" && source && target) {
-      return `在途（来自 ${source}） → ${target}`;
+      return `在途（来自 ${source}） -> ${target}`;
     }
-    if (source && target) return `${source} → ${target}`;
-    if (source) return `${source} → 外部`;
-    if (target) return `外部 → ${target}`;
+    if (source && target) return `${source} -> ${target}`;
+    if (source) return `${source} -> 外部`;
+    if (target) return `外部 -> ${target}`;
     return "系统内部调整";
   }
 

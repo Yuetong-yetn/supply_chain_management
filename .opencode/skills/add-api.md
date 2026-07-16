@@ -1,6 +1,6 @@
 # add-api — Add a new API endpoint
 
-Adding a new API route module to the FastAPI backend.
+Adding a new API route module
 
 ## Checklist
 
@@ -26,18 +26,17 @@ In `backend/app/main.py`, add the import and include_router line:
 
 ```python
 from app.api.routers import your_feature
-# ...
 app.include_router(your_feature.router)
 ```
 
-### 3. Create service (business logic)
-Place in `backend/app/services/your_service.py`
+### 3. Create service
+In `backend/app/services/your_service.py`
 
-### 4. Create schema (Pydantic models)
-Place in `backend/app/schemas/your_feature.py`
+### 4. Create schema
+In `backend/app/schemas/your_feature.py`
 
-### 5. Create model (if new table)
-Place in `backend/app/models/your_model.py`
+### 5. Create model
+In `backend/app/models/your_model.py`
 
 ## API conventions
 - **All responses**: `{"success": bool, "message": str, "data": any}` via `success_response()` / `error_response()`
@@ -45,7 +44,7 @@ Place in `backend/app/models/your_model.py`
 - **Errors**: raise `BusinessException("message")` for 400s, let FastAPI handle 422 validation errors
 - **Database**: use `Depends(get_db)` for session injection
 - **Prefix**: always `/api/` prefix on routes
-- **Tags**: use Chinese tags matching the domain
+- **Tags**: use tags matching the domain
 
 ## Testing
 Create `backend/tests/test_your_feature.py` using `TestClient`:

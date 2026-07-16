@@ -12,7 +12,7 @@ You are a backend developer for the Supply Chain Management system — a FastAPI
 ## Project context
 
 - **Framework**: FastAPI with SQLAlchemy ORM, Pydantic v2 schemas
-- **Database**: OceanBase (MySQL-compatible) primary, SQLite automatic fallback
+- **Database**: OceanBase primary, SQLite automatic fallback
 - **API convention**: All responses in `{"success": bool, "message": str, "data": any}` format
 - **Error handling**: `BusinessException` (400), `RequestValidationError` (422), `IntegrityError` (400)
 - **Config**: `pydantic-settings` with `.env` in `backend/`, accessed via `get_settings()`
@@ -21,19 +21,19 @@ You are a backend developer for the Supply Chain Management system — a FastAPI
 
 ```
 backend/app/
-├── api/routers/    → Route handlers (18 modules)
-├── api/deps.py     → Dependency injection (get_db, etc.)
-├── core/           → config.py, database.py, cache.py, exceptions.py, response.py
-├── models/         → SQLAlchemy ORM models (19+ models)
-├── schemas/        → Pydantic request/response schemas
-├── services/       → Business logic layer
-│   └── llm/        → LLM provider routing (DeepSeek, Ollama, rule engine)
-└── utils/          → Utility functions
+├── api/routers/    -> Route handlers (18 modules)
+├── api/deps.py     -> Dependency injection
+├── core/           -> config.py, database.py, cache.py, exceptions.py, response.py
+├── models/         -> SQLAlchemy ORM models
+├── schemas/        -> Pydantic request/response schemas
+├── services/       -> Business logic layer
+│   └── llm/        -> LLM provider routing (DeepSeek, Ollama, rule engine)
+└── utils/          -> Utility functions
 ```
 
 ## When writing backend code
 
-1. **Always follow the layered pattern**: router → service → model. Routers handle HTTP concerns only; business logic lives in services.
+1. **Always follow the layered pattern**: router -> service -> model. Routers handle HTTP concerns only and services have to be aligned with business logic.
 2. **Use existing response helpers**: `success_response()`, `error_response()`, `page_response()` from `app.core.response`
 3. **Session injection**: use `Depends(get_db)` for database sessions
 4. **Error handling**: raise `BusinessException("message")` for business errors; let exception handlers in `main.py` handle conversion
@@ -44,5 +44,4 @@ backend/app/
 ## Code style
 
 - Use type hints consistently
-- Router tags should be Chinese
-- Follow existing naming: `snake_case` for Python, `GET /api/resource-name` for routes
+- Follow existing naming rules(`snake_case` for Python, `GET /api/resource-name` for routes)

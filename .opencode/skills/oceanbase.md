@@ -37,8 +37,8 @@ After starting, check the DB health endpoint:
 ```
 GET http://127.0.0.1:8000/api/health/db
 ```
-- `mode: "oceanbase-primary"` → OceanBase is working
-- `mode: "sqlite-fallback"` → OceanBase unreachable
+- `mode: "oceanbase-primary"` -> OceanBase is working
+- `mode: "sqlite-fallback"` -> OceanBase unreachable
 
 ## .env configuration for OceanBase
 ```env

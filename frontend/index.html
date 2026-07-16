@@ -232,15 +232,15 @@
               </div>
               <div class="flow-strip dashboard-flow" aria-label="业务协同主线">
                 <div class="flow-step active"><span>1</span><div><strong>采购入库</strong><small>采购到货后入仓</small></div></div>
-                <i>→</i>
+                <i>-></i>
                 <div class="flow-step"><span>2</span><div><strong>仓库库存</strong><small>形成可用库存池</small></div></div>
-                <i>→</i>
+                <i>-></i>
                 <div class="flow-step"><span>3</span><div><strong>门店补货申请</strong><small>门店提交需求</small></div></div>
-                <i>→</i>
+                <i>-></i>
                 <div class="flow-step"><span>4</span><div><strong>自动分仓出库</strong><small>系统分配来源仓库</small></div></div>
-                <i>→</i>
+                <i>-></i>
                 <div class="flow-step"><span>5</span><div><strong>门店签收</strong><small>签收后库存入店</small></div></div>
-                <i>→</i>
+                <i>-></i>
                 <div class="flow-step"><span>6</span><div><strong>智能补货建议</strong><small>生成后续补货参考</small></div></div>
               </div>
             </article>
@@ -252,7 +252,7 @@
                     <span class="section-tag">INVENTORY ALERTS</span>
                     <h3>当前库存异常警告</h3>
                   </div>
-                  <button class="text-action" type="button" data-jump="warnings" data-jump-tab="alerts">查看完整预警清单 →</button>
+                  <button class="text-action" type="button" data-jump="warnings" data-jump-tab="alerts">查看完整预警清单 -></button>
                 </div>
                 <p class="card-description">自动检测库存量与安全线偏离，优先展示需要处理的商品。</p>
                 <div class="compact-list" id="dashboardRiskList">
@@ -266,7 +266,7 @@
                     <span class="section-tag">SMART REPLENISHMENT</span>
                     <h3>核心补货协同建议</h3>
                   </div>
-                  <button class="text-action" type="button" data-jump="recommendations">进入智能补货中心 →</button>
+                  <button class="text-action" type="button" data-jump="recommendations">进入智能补货中心 -></button>
                 </div>
                 <p class="card-description">依据库存、安全线与近期出库量，给出优先补货对象与数量。</p>
                 <div class="dashboard-recommendation-list" id="dashboardRecommendationList">
@@ -551,11 +551,11 @@
 
             <div class="flow-strip" aria-label="采购入库业务流程">
               <div class="flow-step active"><span>1</span><div><strong>待入库单</strong><small>读取采购到货信息</small></div></div>
-              <i>→</i>
+              <i>-></i>
               <div class="flow-step"><span>2</span><div><strong>完成入库</strong><small>校验状态与明细</small></div></div>
-              <i>→</i>
+              <i>-></i>
               <div class="flow-step"><span>3</span><div><strong>库存增加</strong><small>事务内更新库存</small></div></div>
-              <i>→</i>
+              <i>-></i>
               <div class="flow-step"><span>4</span><div><strong>生成流水</strong><small>保留业务追踪记录</small></div></div>
             </div>
 
@@ -606,10 +606,10 @@
             </div>
 
             <div class="flow-strip compact-flow" aria-label="门店补货出库业务流程">
-              <div class="flow-step active"><span>1</span><div><strong>申请</strong><small>门店发起</small></div></div><i>→</i>
-              <div class="flow-step"><span>2</span><div><strong>审核</strong><small>状态变为已通过</small></div></div><i>→</i>
-              <div class="flow-step"><span>3</span><div><strong>自动分仓</strong><small>生成来源仓库明确的出库单</small></div></div><i>→</i>
-              <div class="flow-step"><span>4</span><div><strong>发货</strong><small>校验并扣减库存</small></div></div><i>→</i>
+              <div class="flow-step active"><span>1</span><div><strong>申请</strong><small>门店发起</small></div></div><i>-></i>
+              <div class="flow-step"><span>2</span><div><strong>审核</strong><small>状态变为已通过</small></div></div><i>-></i>
+              <div class="flow-step"><span>3</span><div><strong>自动分仓</strong><small>生成来源仓库明确的出库单</small></div></div><i>-></i>
+              <div class="flow-step"><span>4</span><div><strong>发货</strong><small>校验并扣减库存</small></div></div><i>-></i>
               <div class="flow-step"><span>5</span><div><strong>签收</strong><small>履约完成</small></div></div>
             </div>
 

@@ -14,18 +14,18 @@ You are a frontend developer for the Supply Chain Management.
 - **Stack**: HTML5 + CSS3 + ES6+ JavaScript
 - **UI framework**: Bootstrap 5.3.3
 - **Charts**: ECharts 5.5.0
-- **Entry point**: `frontend/index.html` → loads `app.js` + `api.js` + `style.css`
+- **Entry point**: `frontend/index.html` -> loads `app.js` + `api.js` + `style.css`
 - **Served by**: FastAPI static files middleware at `/ui`
 
 ## File structure
 
 ```
 frontend/
-├── index.html    → Main HTML structure
-├── app.js        → Application logic
-├── api.js        → API client wrapper 
-├── style.css     → Main stylesheet
-└── styles.css    → Legacy/fallback styles
+├── index.html    -> Main HTML structure
+├── app.js        -> Application logic
+├── api.js        -> API client wrapper 
+├── style.css     -> Main stylesheet
+└── styles.css    -> Legacy/fallback styles
 ```
 
 ## Key conventions

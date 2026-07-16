@@ -16,7 +16,6 @@ LLM_MAX_RETRIES=2
 ```
 
 ### Ollama
-Requires Ollama running locally:
 ```env
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://127.0.0.1:11434
@@ -29,7 +28,6 @@ LLM_PROVIDER=rule
 ```
 
 ## Verify configuration
-After restarting backend:
 ```
 GET http://127.0.0.1:8000/api/llm/status
 ```
@@ -53,6 +51,6 @@ POST http://127.0.0.1:8000/api/recommendations/generate?enhance_with_llm=true
 - Prompt templates: `backend/app/services/llm/prompt_templates.py`
 
 ## Important
-- **Never commit `backend/.env`** — it contains real API keys
+- **Never commit `backend/.env`**. It contains real API keys
 - LLM only enhances replenishment reasons, core logic (quantities, risk levels) runs on rule engine regardless
-- If LLM call fails, the system returns rule-based reasons without crashing
+- If LLM call fails, the system returns rule-based reasons

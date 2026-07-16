@@ -1,6 +1,6 @@
-# demo-flow — Run the full demo verification flow
+# demo-flow
 
-Walk through the complete business flow to verify all system features are working.
+Run the complete business flow to verify all system features are working.
 
 ## Prerequisites
 - Database initialized with example data
@@ -10,8 +10,8 @@ Walk through the complete business flow to verify all system features are workin
 
 ### 1. System health
 ```
-GET /api/health        → {"success": true, ...}
-GET /api/health/db     → mode should be "oceanbase-primary" or "sqlite-fallback"
+GET /api/health        -> {"success": true, ...}
+GET /api/health/db     -> "oceanbase-primary" or "sqlite-fallback"
 ```
 
 ### 2. Frontend login
@@ -28,17 +28,17 @@ Verify summary metrics appear:
 - Total inventory, alert count, recommendation count
 - ECharts inventory ranking chart renders
 
-### 5. Purchase → Inbound flow
+### 5. Purchase -> Inbound flow
 1. Create a purchase order
 2. View inbound orders list
-3. Complete an inbound order → warehouse inventory increases
+3. Complete an inbound order -> warehouse inventory increases
 4. Check stock transaction log shows the inbound record
 
-### 6. Replenishment → Outbound flow
+### 6. Replenishment -> Outbound flow
 1. Create a store replenishment request
-2. Approve the request → auto-generates outbound orders
-3. Ship the outbound order → warehouse stock decreases
-4. Confirm receipt at store → store inventory increases
+2. Approve the request -> auto-generates outbound orders
+3. Ship the outbound order -> warehouse stock decreases
+4. Confirm receipt at store -> store inventory increases
 5. Check stock transaction log for all movements
 
 ### 7. AI recommendations
