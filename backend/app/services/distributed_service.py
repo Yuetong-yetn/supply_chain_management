@@ -16,7 +16,7 @@ from app.services.inventory_service import complete_cross_warehouse_transfer, cr
 from app.utils.datetime_utils import now_local
 
 
-def overview(db: Session) -> dict:
+def get_distributed_inventory_overview(db: Session) -> dict:
     runtime_profile = get_database_runtime_profile(db)
     warehouses = list(db.scalars(select(Warehouse)))
     stores = list(db.scalars(select(Store)))
@@ -101,13 +101,13 @@ def get_sync_logs(db: Session) -> list[DistributedSyncLog]:
     return list(db.scalars(select(DistributedSyncLog).order_by(DistributedSyncLog.started_at.desc())))
 
 
-def create_transfer(db: Session, payload: dict):
+def create_distributed_transfer(db: Session, payload: dict):
     order = create_cross_warehouse_transfer(db, payload)
     db.flush()
     return order
 
 
-def complete_transfer(db: Session, transfer_id: int):
+def complete_distributed_transfer(db: Session, transfer_id: int):
     order = complete_cross_warehouse_transfer(db, transfer_id)
     invalidate_business_cache()
     return order

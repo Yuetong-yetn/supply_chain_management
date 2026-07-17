@@ -12,7 +12,15 @@ def test_demo_login_with_valid_employee_no_credentials(api_client):
     assert body["data"]["employee_no"] == "A1001"
     assert body["data"]["role"] == "admin"
     assert body["data"]["is_verified"] is True
+    assert body["data"]["token_type"] == "bearer"
+    assert body["data"]["access_token"]
     assert "password_hash" not in body["data"]
+
+
+def test_business_api_requires_login(unauthenticated_client):
+    response = unauthenticated_client.get("/api/inventory")
+    assert response.status_code == 401
+    assert response.json()["success"] is False
 
 
 def test_demo_login_rejects_invalid_password(api_client):
@@ -107,3 +115,28 @@ def test_register_user_rejects_wrong_verification_code(api_client):
         "message": "验证码错误，请联系管理员重新获取",
         "data": None,
     }
+
+
+def test_send_registration_verification_code(api_client):
+    response = api_client.post(
+        "/api/users/verification-code",
+        json={"employee_no": "W2001", "phone": "13000002002"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    assert body["message"] == "验证码已生成"
+    assert body["data"]["masked_phone"] == "130****2002"
+    assert body["data"]["verification_code"].isdigit()
+    assert len(body["data"]["verification_code"]) == 6
+
+
+def test_send_registration_verification_code_rejects_wrong_phone(api_client):
+    response = api_client.post(
+        "/api/users/verification-code",
+        json={"employee_no": "W2001", "phone": "13000009999"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["message"] == "手机号与工号档案不匹配"

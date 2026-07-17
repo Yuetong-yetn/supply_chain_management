@@ -46,29 +46,6 @@
     manager: "manager",
   });
 
-  const AUTH_MODE_COPY = Object.freeze({
-    login: {
-      tag: "WELCOME BACK",
-      title: "登录协同中心",
-      description: "输入账号和密码后进入系统。",
-      submit: "进入系统",
-      helper: "",
-      togglePrefix: "还没有账号？",
-      toggleAction: "立即注册",
-      passwordAutocomplete: "current-password",
-    },
-    register: {
-      tag: "CREATE ACCOUNT",
-      title: "注册新账号",
-      description: "创建账号后将直接进入系统，页面布局与现有登录界面保持一致。",
-      submit: "注册并进入",
-      helper: "用户名需唯一，密码至少 6 位。仓库和门店角色会自动绑定对应类型。",
-      togglePrefix: "已有账号？",
-      toggleAction: "返回登录",
-      passwordAutocomplete: "new-password",
-    },
-  });
-
   const MODULE_DEFINITIONS = Object.freeze({
     dashboard: { label: "首页看板" },
     data: { label: "基础数据录入" },
@@ -180,6 +157,8 @@
     inventoryOverviewRows: [],
     inventoryWarningRows: [],
     transactionsRows: [],
+    verificationCodeTimer: null,
+    verificationCodeRemaining: 0,
     products: new Map(),
     suppliers: new Map(),
     supplierProductsBySupplier: new Map(),
@@ -346,6 +325,7 @@
     return {
       id: Number(user.id || 0) || null,
       username: user.username || fallbackUsername,
+      employee_no: user.employee_no || null,
       role,
       backend_role: user.role || backendRoleFromFrontend(role),
       real_name: user.real_name || ROLE_LABELS[role] || role,
@@ -1048,7 +1028,9 @@
       chart = window.echarts.init(target);
       state.charts.set(id, chart);
     }
+    chart.resize();
     chart.setOption(option, true);
+    window.requestAnimationFrame(() => chart.resize());
   }
 
   function baseChartOption() {
@@ -1061,7 +1043,7 @@
         borderWidth: 0,
         textStyle: { color: "#fff" },
       },
-      grid: { left: 18, right: 26, top: 20, bottom: 12, containLabel: true },
+      grid: { left: 18, right: 32, top: 20, bottom: 28, containLabel: true },
     };
   }
 
@@ -1099,16 +1081,17 @@
       const rankingRows = listItems(ranking).slice(0, 10);
       updateChart("dashboardInventoryChart", {
         ...baseChartOption(),
+        grid: { left: 130, right: 42, top: 20, bottom: 34 },
         xAxis: {
           type: "value",
-          axisLabel: { color: "#7a879c" },
+          axisLabel: { color: "#7a879c", hideOverlap: true },
           splitLine: { lineStyle: { color: "#edf1f7" } },
         },
         yAxis: {
           type: "category",
           inverse: true,
           data: rankingRows.map((item) => item.product_name),
-          axisLabel: { color: "#4d5b70", width: 90, overflow: "truncate" },
+          axisLabel: { color: "#4d5b70", width: 118, overflow: "truncate", align: "right", margin: 12 },
           axisLine: { show: false },
           axisTick: { show: false },
         },
@@ -1796,16 +1779,17 @@
 
     updateChart("analyticsInventoryChart", {
       ...baseChartOption(),
+      grid: { left: 130, right: 42, top: 20, bottom: 34 },
       xAxis: {
         type: "value",
-        axisLabel: { color: "#7a879c" },
+        axisLabel: { color: "#7a879c", hideOverlap: true },
         splitLine: { lineStyle: { color: "#edf1f7" } },
       },
       yAxis: {
         type: "category",
         inverse: true,
         data: rankingRows.map((item) => item.product_name),
-        axisLabel: { color: "#4d5b70", width: 90, overflow: "truncate" },
+        axisLabel: { color: "#4d5b70", width: 118, overflow: "truncate", align: "right", margin: 12 },
         axisLine: { show: false },
         axisTick: { show: false },
       },
@@ -2358,85 +2342,6 @@
     return $("loginForm")?.dataset.mode || "login";
   }
 
-  function setAuthMode(mode = "login") {
-    const form = $("loginForm");
-    if (!form) return;
-
-    const nextMode = AUTH_MODE_COPY[mode] ? mode : "login";
-    const copy = AUTH_MODE_COPY[nextMode];
-    const isRegister = nextMode === "register";
-
-    form.dataset.mode = nextMode;
-
-    const title = form.querySelector("div:first-child h2");
-    const description = form.querySelector("div:first-child p");
-    const submitLabel = form.querySelector(".login-submit .btn-label");
-
-    if ($("authTag")) $("authTag").textContent = copy.tag;
-    if (title) title.textContent = copy.title;
-    if (description) description.textContent = copy.description;
-    if (submitLabel) submitLabel.textContent = copy.submit;
-    if ($("authHelperText")) {
-      $("authHelperText").textContent = copy.helper;
-      $("authHelperText").hidden = !copy.helper;
-    }
-
-    const fieldToggles = [
-      ["registerRealNameLabel", "registerRealName", true],
-      ["registerPhoneLabel", "registerPhone", false],
-      ["registerConfirmPasswordLabel", "registerConfirmPassword", true],
-    ];
-    fieldToggles.forEach(([labelId, inputId, required]) => {
-      const label = $(labelId);
-      const input = $(inputId);
-      if (label) label.hidden = !isRegister;
-      if (input) {
-        input.hidden = !isRegister;
-        input.required = isRegister && required;
-        if (!isRegister) input.value = "";
-      }
-    });
-
-    if ($("loginPassword")) {
-      $("loginPassword").value = "";
-      $("loginPassword").setAttribute("autocomplete", copy.passwordAutocomplete);
-    }
-
-    const usernameLabel = document.querySelector('label[for="loginUsername"]');
-    const passwordLabel = document.querySelector('label[for="loginPassword"]');
-    const roleLabel = document.querySelector('label[for="loginRole"]');
-    if (usernameLabel) usernameLabel.textContent = "用户名";
-    if (passwordLabel) passwordLabel.textContent = "密码";
-    if (roleLabel) roleLabel.textContent = "角色";
-
-    const roleSelect = $("loginRole");
-    if (roleSelect) {
-      roleSelect.hidden = !isRegister;
-      roleSelect.required = isRegister;
-      const roleText = {
-        admin: "系统管理员",
-        purchaser: "采购人员",
-        warehouse: "仓库人员",
-        store: "门店人员",
-        manager: "业务主管",
-      };
-      [...roleSelect.options].forEach((option) => {
-        option.textContent = roleText[option.value] || option.value;
-      });
-    }
-    if (roleLabel) roleLabel.hidden = !isRegister;
-
-    const panel = $("authModePanel");
-    if (panel) {
-      panel.innerHTML =
-        nextMode === "login"
-          ? '<span>还没有账号？</span><button class="btn btn-link p-0 text-decoration-none" id="authModeToggle" type="button">立即注册</button>'
-          : '<span>已有账号？</span><button class="btn btn-link p-0 text-decoration-none" id="authModeToggle" type="button">返回登录</button>';
-    }
-
-    clearLoginError();
-  }
-
   function showLoginError(message) {
     const errorElement = $("loginError");
     if (!errorElement) return;
@@ -2476,10 +2381,11 @@
   }
 
   async function enterWorkspace(role, userOrUsername = role) {
+    clearAlert();
     state.currentRole = role;
     state.currentUser =
       typeof userOrUsername === "object" && userOrUsername
-        ? buildCurrentUser(role, userOrUsername, userOrUsername.username || role)
+        ? buildCurrentUser(role, userOrUsername, userOrUsername.employee_no || userOrUsername.username || role)
         : await resolveCurrentUser(role, userOrUsername);
     state.currentView = defaultViewForRole();
     state.inventoryTab = "overview";
@@ -2503,14 +2409,19 @@
     applyActionVisibility();
 
     window.localStorage.setItem("currentRole", role);
-    window.localStorage.setItem("currentLoginName", state.currentUser?.username || String(userOrUsername || role));
+    window.localStorage.setItem(
+      "currentLoginName",
+      state.currentUser?.employee_no || state.currentUser?.username || String(userOrUsername || role),
+    );
     $("loginScreen").hidden = true;
     $("appShell").hidden = false;
 
     await initialize();
+    clearAlert();
   }
 
   function leaveWorkspace() {
+    API.clearAccessToken();
     window.localStorage.removeItem("currentRole");
     window.localStorage.removeItem("currentLoginName");
     state.currentRole = null;
@@ -2564,178 +2475,6 @@
     if (deniedMessage) {
       showAlert(deniedMessage, "warning");
     }
-  }
-
-  async function handleLoginSubmit(form) {
-    const values = formValues(form);
-    const button = form.querySelector('[type="submit"]');
-    const username = String(values.username || "").trim();
-    const password = String(values.password || "").trim();
-    const role = String(values.role || "").trim();
-
-    clearLoginError();
-    if (!username) {
-      showLoginError("请输入用户名");
-      return;
-    }
-    if (!ROLE_LABELS[role]) {
-      showLoginError("请选择登录角色");
-      return;
-    }
-    if (password !== "demo123") {
-      showLoginError("演示密码统一为 demo123");
-      return;
-    }
-
-    setButtonLoading(button, true, "登录中…");
-    try {
-      await enterWorkspace(role, username);
-    } catch (error) {
-      showLoginError(error?.message || "登录失败，请稍后重试");
-    } finally {
-      setButtonLoading(button, false);
-    }
-  }
-
-  async function handleLoginSubmit(form) {
-    const values = formValues(form);
-    const button = form.querySelector('[type="submit"]');
-    const username = String(values.username || "").trim();
-    const password = String(values.password || "").trim();
-    const role = String(values.role || "").trim();
-
-    clearLoginError();
-    if (!username) {
-      showLoginError("请输入用户名");
-      return;
-    }
-    if (!ROLE_LABELS[role]) {
-      showLoginError("请选择登录角色");
-      return;
-    }
-    if (!password) {
-      showLoginError("请输入密码");
-      return;
-    }
-
-    setButtonLoading(button, true, "登录中...");
-    try {
-      const user = await API.loginUser({
-        username,
-        password,
-        role,
-      });
-      const authenticatedRole = frontendRoleFromBackend(user?.role);
-      if (!authenticatedRole || authenticatedRole !== role) {
-        throw new Error("登录账号与所选角色不匹配");
-      }
-      await enterWorkspace(authenticatedRole, user);
-    } catch (error) {
-      showLoginError(error?.message || "登录失败，请稍后重试");
-    } finally {
-      setButtonLoading(button, false);
-    }
-  }
-
-  async function handleRegisterSubmit(form) {
-    const values = formValues(form);
-    const button = form.querySelector('[type="submit"]');
-    const username = String(values.username || "").trim();
-    const realName = String(values.real_name || "").trim();
-    const password = String(values.password || "").trim();
-    const confirmPassword = String(values.confirm_password || "").trim();
-    const role = String(values.role || "").trim();
-
-    clearLoginError();
-    if (!username) {
-      showLoginError("请输入用户名");
-      return;
-    }
-    if (!realName) {
-      showLoginError("请输入姓名");
-      return;
-    }
-    if (!ROLE_LABELS[role]) {
-      showLoginError("请选择注册角色");
-      return;
-    }
-    if (password.length < 6) {
-      showLoginError("密码至少需要 6 位");
-      return;
-    }
-    if (password !== confirmPassword) {
-      showLoginError("两次输入的密码不一致");
-      return;
-    }
-
-    const backendRole = backendRoleFromFrontend(role);
-    const payload = {
-      username,
-      password,
-      real_name: realName,
-      role: backendRole,
-      phone: optionalValue(values.phone),
-      is_active: true,
-    };
-
-    if (backendRole === "warehouse_manager") {
-      payload.location_type = "warehouse";
-    } else if (backendRole === "store_staff") {
-      payload.location_type = "store";
-    }
-
-    setButtonLoading(button, true, "注册中...");
-    try {
-      const user = await API.registerUser(payload);
-      const authenticatedRole = frontendRoleFromBackend(user?.role) || role;
-      await enterWorkspace(authenticatedRole, user);
-    } catch (error) {
-      showLoginError(error?.message || "注册失败，请稍后重试");
-    } finally {
-      setButtonLoading(button, false);
-    }
-  }
-
-  async function handleLoginSubmit(form) {
-    const values = formValues(form);
-    const button = form.querySelector('[type="submit"]');
-    const username = String(values.username || "").trim();
-    const password = String(values.password || "").trim();
-
-    clearLoginError();
-    if (!username) {
-      showLoginError("请输入用户名");
-      return;
-    }
-    if (!password) {
-      showLoginError("请输入密码");
-      return;
-    }
-
-    setButtonLoading(button, true, "登录中...");
-    try {
-      const user = await API.loginUser({
-        username,
-        password,
-      });
-      const authenticatedRole = frontendRoleFromBackend(user?.role);
-      if (!authenticatedRole) {
-        throw new Error("当前账号未绑定可用身份");
-      }
-      await enterWorkspace(authenticatedRole, user);
-    } catch (error) {
-      showLoginError(error?.message || "登录失败，请稍后重试");
-    } finally {
-      setButtonLoading(button, false);
-    }
-  }
-
-  async function handleAuthSubmit(form) {
-    if (currentAuthMode() === "register") {
-      await handleRegisterSubmit(form);
-      return;
-    }
-    await handleLoginSubmit(form);
   }
 
   function bindEvents() {
@@ -2942,6 +2681,7 @@
       event.preventDefault();
       await handleAuthSubmit(event.currentTarget);
     });
+    $("sendVerificationCodeBtn")?.addEventListener("click", sendRegistrationVerificationCode);
 
     window.addEventListener("resize", () => {
       state.charts.forEach((chart) => chart.resize());
@@ -2958,6 +2698,54 @@
     hint.hidden = !message || currentAuthMode() !== "register";
     if (message) hint.dataset.state = state;
     else delete hint.dataset.state;
+  }
+
+  function setVerificationCodeHint(message = "", stateValue = "success") {
+    const hint = $("verificationCodeHint");
+    if (!hint) return;
+    hint.textContent = message;
+    hint.hidden = !message || currentAuthMode() !== "register";
+    if (message) hint.dataset.state = stateValue;
+    else delete hint.dataset.state;
+  }
+
+  function stopVerificationCodeCountdown() {
+    if (state.verificationCodeTimer) {
+      window.clearInterval(state.verificationCodeTimer);
+      state.verificationCodeTimer = null;
+    }
+    state.verificationCodeRemaining = 0;
+    const button = $("sendVerificationCodeBtn");
+    if (button) {
+      button.disabled = false;
+      button.textContent = "发送验证码";
+    }
+  }
+
+  function updateVerificationCodeCountdown() {
+    const button = $("sendVerificationCodeBtn");
+    if (!button) return;
+    if (state.verificationCodeRemaining > 0) {
+      button.disabled = true;
+      button.textContent = `${state.verificationCodeRemaining}s`;
+      return;
+    }
+    if (state.verificationCodeTimer) {
+      window.clearInterval(state.verificationCodeTimer);
+      state.verificationCodeTimer = null;
+    }
+    button.disabled = false;
+    button.textContent = "重新发送";
+  }
+
+  function startVerificationCodeCountdown(seconds = 60) {
+    if (state.verificationCodeTimer) window.clearInterval(state.verificationCodeTimer);
+    state.verificationCodeRemaining = seconds;
+    updateVerificationCodeCountdown();
+    state.verificationCodeTimer = window.setInterval(() => {
+      state.verificationCodeRemaining -= 1;
+      updateVerificationCodeCountdown();
+    }, 1000);
   }
 
   async function loadRegisterIdentityHint(employeeNo) {
@@ -2998,9 +2786,8 @@
     if ($("authTag")) $("authTag").textContent = isRegister ? "CREATE ACCOUNT" : "WELCOME BACK";
     if (title) title.textContent = isRegister ? "激活员工账号" : "工号登录";
     if (description) {
-      description.textContent = isRegister
-        ? "通过工号、姓名、手机号和验证码完成激活，系统会自动绑定角色与所属门店或仓库。"
-        : "输入工号和密码后进入系统，角色与门店或仓库归属会自动识别。";
+      description.textContent = "";
+      description.hidden = true;
     }
     if (submitLabel) submitLabel.textContent = isRegister ? "注册并进入" : "进入系统";
     if (usernameLabel) usernameLabel.textContent = "工号";
@@ -3008,16 +2795,13 @@
     if (roleLabel) roleLabel.hidden = true;
 
     if ($("authHelperText")) {
-      $("authHelperText").textContent = isRegister
-        ? "先输入工号识别身份，再填写姓名、手机号和验证码完成安全校验。"
-        : "已激活账号可直接登录，未激活账号请先完成注册验证。";
-      $("authHelperText").hidden = false;
+      $("authHelperText").textContent = "";
+      $("authHelperText").hidden = true;
     }
 
     [
       ["registerRealNameLabel", "registerRealName", true],
       ["registerPhoneLabel", "registerPhone", true],
-      ["registerVerificationCodeLabel", "registerVerificationCode", true],
       ["registerConfirmPasswordLabel", "registerConfirmPassword", true],
     ].forEach(([labelId, inputId, required]) => {
       const label = $(labelId);
@@ -3029,6 +2813,19 @@
         if (!isRegister) input.value = "";
       }
     });
+
+    if ($("registerVerificationCodeField")) {
+      $("registerVerificationCodeField").hidden = !isRegister;
+    }
+    if ($("registerVerificationCode")) {
+      $("registerVerificationCode").hidden = false;
+      $("registerVerificationCode").required = isRegister;
+      if (!isRegister) $("registerVerificationCode").value = "";
+    }
+    if (!isRegister) {
+      setVerificationCodeHint("");
+      stopVerificationCodeCountdown();
+    }
 
     if ($("loginPassword")) {
       $("loginPassword").value = "";
@@ -3049,7 +2846,44 @@
     }
 
     setRegisterIdentityHint("");
+    setVerificationCodeHint("");
     clearLoginError();
+  }
+
+  async function sendRegistrationVerificationCode() {
+    const button = $("sendVerificationCodeBtn");
+    const employeeNo = String($("loginUsername")?.value || "").trim().toUpperCase();
+    const phone = String($("registerPhone")?.value || "").trim();
+
+    clearLoginError();
+    if (state.verificationCodeRemaining > 0) return;
+    if (!employeeNo) {
+      showLoginError("请先输入工号");
+      return;
+    }
+    if (!phone) {
+      setVerificationCodeHint("请先输入手机号", "error");
+      return;
+    }
+
+    setButtonLoading(button, true, "发送中...");
+    try {
+      const result = await API.sendRegistrationVerificationCode({ employee_no: employeeNo, phone });
+      const maskedPhone = result.masked_phone || phone;
+      const demoCode = result.verification_code ? `，演示验证码：${result.verification_code}` : "";
+      setVerificationCodeHint(`验证码已发送至 ${maskedPhone}${demoCode}`, "success");
+      setButtonLoading(button, false);
+      startVerificationCodeCountdown(60);
+    } catch (error) {
+      const message = error?.message || "验证码发送失败，请稍后重试";
+      if (message.includes("工号")) {
+        setRegisterIdentityHint(message, "error");
+        setVerificationCodeHint("");
+      } else {
+        setVerificationCodeHint(message, "error");
+      }
+      setButtonLoading(button, false);
+    }
   }
 
   async function handleRegisterSubmit(form) {
@@ -3158,7 +2992,7 @@
     $("loginScreen").hidden = false;
     $("appShell").hidden = true;
     setAuthMode("login");
-    if ($("loginUsername")) $("loginUsername").value = savedName || "A1001";
+    if ($("loginUsername")) $("loginUsername").value = /^[A-Z]\d{4,}$/i.test(savedName) ? savedName : "A1001";
     if ($("loginPassword")) $("loginPassword").value = "";
 
     const loginUsername = $("loginUsername");

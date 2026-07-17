@@ -7,7 +7,7 @@ from app.core.exceptions import BusinessException
 from app.core.response import page_response, success_response
 from app.models.outbound import OutboundOrder
 from app.schemas.outbound import OutboundOrderCreate, OutboundOrderRead
-from app.services.outbound_service import cancel_outbound_order, create_outbound_order, ship_outbound_order, sign_outbound_order
+from app.services.outbound_service import cancel_outbound_order, create_outbound_order as create_outbound_order_service, ship_outbound_order, sign_outbound_order
 from app.utils.pagination import normalize_pagination
 
 router = APIRouter(prefix="/api/outbound-orders", tags=["outbound-orders"])
@@ -21,8 +21,8 @@ def serialize_outbound_order(item: OutboundOrder) -> dict:
 
 
 @router.post("")
-def create(payload: OutboundOrderCreate, db: Session = Depends(get_db_dep)):
-    order = create_outbound_order(db, payload)
+def create_outbound_order(payload: OutboundOrderCreate, db: Session = Depends(get_db_dep)):
+    order = create_outbound_order_service(db, payload)
     db.commit()
     db.refresh(order)
     return success_response(serialize_outbound_order(order))

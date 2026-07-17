@@ -153,6 +153,27 @@ class UserRegister(BaseModel):
         return normalized
 
 
+class UserVerificationCodeRequest(BaseModel):
+    employee_no: str
+    phone: str
+
+    @field_validator("employee_no")
+    @classmethod
+    def validate_employee_no(cls, value: str) -> str:
+        normalized = normalize_employee_no(value)
+        if not normalized:
+            raise ValueError("工号不能为空")
+        return normalized
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, value: str) -> str:
+        normalized = normalize_text(value)
+        if not normalized:
+            raise ValueError("手机号不能为空")
+        return normalized
+
+
 class UserLogin(BaseModel):
     username: str
     password: str = Field(min_length=1, max_length=128)

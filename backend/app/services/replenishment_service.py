@@ -36,7 +36,7 @@ def create_replenishment_request(db: Session, payload: ReplenishmentRequestCreat
     return request
 
 
-def approve_request(db: Session, request_id: int, audited_by: int) -> ReplenishmentRequest:
+def approve_replenishment_request(db: Session, request_id: int, audited_by: int) -> ReplenishmentRequest:
     request = db.get(ReplenishmentRequest, request_id)
     if not request:
         raise BusinessException("request not found", 404)
@@ -51,7 +51,7 @@ def approve_request(db: Session, request_id: int, audited_by: int) -> Replenishm
     return request
 
 
-def reject_request(db: Session, request_id: int, audited_by: int) -> ReplenishmentRequest:
+def reject_replenishment_request(db: Session, request_id: int, audited_by: int) -> ReplenishmentRequest:
     request = db.get(ReplenishmentRequest, request_id)
     if not request:
         raise BusinessException("request not found", 404)
@@ -64,7 +64,7 @@ def reject_request(db: Session, request_id: int, audited_by: int) -> Replenishme
     return request
 
 
-def invalidate_request(db: Session, request_id: int) -> ReplenishmentRequest | None:
+def invalidate_replenishment_request(db: Session, request_id: int) -> ReplenishmentRequest | None:
     request = db.get(ReplenishmentRequest, request_id)
     if not request or request.audit_status != "approved" or request.generated_outbound_order_id is not None:
         return request
@@ -74,7 +74,7 @@ def invalidate_request(db: Session, request_id: int) -> ReplenishmentRequest | N
     return request
 
 
-def convert_to_outbound(
+def convert_replenishment_to_outbound_order(
     db: Session,
     request_id: int,
     source_warehouse_id: int | None = None,

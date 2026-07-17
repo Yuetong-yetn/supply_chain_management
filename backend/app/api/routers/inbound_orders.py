@@ -7,22 +7,23 @@ from app.core.exceptions import BusinessException
 from app.core.response import page_response, success_response
 from app.models.inbound import InboundOrder
 from app.schemas.inbound import InboundOrderCreate, InboundOrderRead
-from app.services.inbound_service import complete_inbound_order, create_from_purchase, create_inbound_order
+from app.services.inbound_service import complete_inbound_order as complete_inbound_order_service
+from app.services.inbound_service import create_from_purchase, create_inbound_order as create_inbound_order_service
 from app.utils.pagination import normalize_pagination
 
 router = APIRouter(prefix="/api/inbound-orders", tags=["inbound-orders"])
 
 
 @router.post("")
-def create(payload: InboundOrderCreate, db: Session = Depends(get_db_dep)):
-    order = create_inbound_order(db, payload)
+def create_inbound_order(payload: InboundOrderCreate, db: Session = Depends(get_db_dep)):
+    order = create_inbound_order_service(db, payload)
     db.commit()
     db.refresh(order)
     return success_response(InboundOrderRead.model_validate(order).model_dump())
 
 
 @router.post("/from-purchase/{purchase_order_id}")
-def create_by_purchase(purchase_order_id: int, handled_by: int, warehouse_id: int, db: Session = Depends(get_db_dep)):
+def create_inbound_order_from_purchase(purchase_order_id: int, handled_by: int, warehouse_id: int, db: Session = Depends(get_db_dep)):
     order = create_from_purchase(db, purchase_order_id, handled_by, warehouse_id)
     db.commit()
     db.refresh(order)
@@ -30,9 +31,9 @@ def create_by_purchase(purchase_order_id: int, handled_by: int, warehouse_id: in
 
 
 @router.post("/{order_id}/complete")
-def complete(order_id: int, db: Session = Depends(get_db_dep)):
+def complete_inbound_order(order_id: int, db: Session = Depends(get_db_dep)):
     try:
-        order = complete_inbound_order(db, order_id)
+        order = complete_inbound_order_service(db, order_id)
         db.commit()
         db.refresh(order)
         return success_response(InboundOrderRead.model_validate(order).model_dump())

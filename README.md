@@ -32,9 +32,9 @@ Supply_Chain_Management/
 │   ├── api.js                          # 统一 API 请求封装
 │   ├── app.js                          # 登录、角色视图、仪表盘与业务交互逻辑
 │   ├── style.css                       # 当前前端主样式
-│   └── styles.css                      # 兼容保留的历史样式文件
+│   └── styles.css                      # 兼容保留的历史样式文件，不再新增样式
 ├── docs/                               # 项目级文档、API 契约、OceanBase 说明
-├── requirements.txt                    # 根目录公共依赖清单
+├── requirements.txt                    # 宽松版本参考；实际开发以 backend/requirements.txt 为准
 └── README.md
 ```
 
@@ -72,6 +72,15 @@ source .venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
+```
+
+如果在 Windows PowerShell 中看到中文输出乱码，先执行以下命令再启动后端：
+
+```powershell
+chcp 65001
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$env:PYTHONUTF8 = "1"
 ```
 
 ### 2.2 配置运行环境
@@ -160,13 +169,20 @@ API 文档：http://127.0.0.1:8000/docs
 
 ## 3. 使用说明与功能验证
 
-前端演示登录说明：
+前端演示登录使用后端用户接口，登录标识填写员工工号：
 
-- 用户名：任意演示名，默认可用 `demo`
-- 密码：`demo123`
-- 角色：从下拉框选择系统管理员、采购人员、仓库人员、门店人员或业务主管
+- 管理员：`A1001 / admin123`
+- 采购员：`P1001 / buyer123`
+- 仓库主管：`W1001 / warehouse123`
+- 门店员工：`S1001 / store123`
+- 运营经理：`M1001 / manager123`
 
-后端用户登录接口也可用于接口测试：
+员工激活注册使用预置未激活工号，发送验证码时会校验工号与手机号是否匹配。当前项目未接入短信服务，页面会显示演示验证码：
+
+- 门店员工：`S2001 / 王敏 / 13000002001`
+- 仓库主管：`W2001 / 李峰 / 13000002002`
+
+后端用户登录接口可独立用于接口测试。请求体的 `username` 字段填写员工工号：
 
 ```text
 POST /api/users/login
@@ -175,7 +191,7 @@ POST /api/users/login
 系统启动后，可按以下顺序进行功能验证：
 
 1. 访问 `/api/health` 和 `/api/health/db`，确认后端服务和数据库连接正常。
-2. 打开 `/demo`，使用 `demo / demo123` 进入前端演示界面。
+2. 打开 `/demo`，使用预置工号登录，或用 `S2001`、`W2001` 完成员工激活注册。
 3. 在系统状态页确认 API、数据库和数据导入状态。
 4. 在首页看板查看商品、供应商、库存、补货建议等统计指标。
 5. 完成一张采购入库单，验证仓库库存增加并生成库存流水。
@@ -316,6 +332,6 @@ GET http://127.0.0.1:8000/api/recommendations
 
 ## 7. 相关文档
 
-- [接口契约](/docs/接口契约.md)
+- [接口契约（唯一权威版本）](/docs/api_contract.md)
 - [OceanBase 简介](/docs/OceanBase简介.md)
 - [手动数据操作示例](/docs/手动数据操作示例.md)

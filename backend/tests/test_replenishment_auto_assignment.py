@@ -12,7 +12,11 @@ from app.models.user import User
 from app.models.warehouse import Warehouse
 from app.schemas.replenishment import ReplenishmentRequestCreate
 from app.services.inventory_service import get_or_create_inventory
-from app.services.replenishment_service import approve_request, convert_to_outbound, create_replenishment_request
+from app.services.replenishment_service import (
+    approve_replenishment_request,
+    convert_replenishment_to_outbound_order,
+    create_replenishment_request,
+)
 
 
 def _ensure_user(session):
@@ -97,7 +101,7 @@ def _create_approved_request(session, *, quantity):
             created_by=user.id,
         ),
     )
-    approve_request(session, request.id, user.id)
+    approve_replenishment_request(session, request.id, user.id)
     session.flush()
     return request, product, store, user
 
@@ -124,7 +128,7 @@ def test_convert_to_outbound_auto_selects_warehouse_with_max_remaining_stock():
             frozen_quantity=10,
         )
 
-        outbounds = convert_to_outbound(session, request.id, None, user.id)
+        outbounds = convert_replenishment_to_outbound_order(session, request.id, None, user.id)
 
         assert len(outbounds) == 1
         assert outbounds[0].source_warehouse_id == warehouse_b.id
@@ -157,7 +161,7 @@ def test_convert_to_outbound_rejects_specified_warehouse_with_insufficient_stock
         )
 
         with pytest.raises(BusinessException, match="指定仓库库存不足，无法生成出库单"):
-            convert_to_outbound(session, request.id, warehouse_a.id, user.id)
+            convert_replenishment_to_outbound_order(session, request.id, warehouse_a.id, user.id)
     finally:
         session.rollback()
         session.close()
@@ -186,7 +190,7 @@ def test_convert_to_outbound_fails_when_all_warehouses_are_insufficient():
         )
 
         with pytest.raises(BusinessException, match="所有仓库库存不足，无法生成出库单"):
-            convert_to_outbound(session, request.id, None, user.id)
+            convert_replenishment_to_outbound_order(session, request.id, None, user.id)
     finally:
         session.rollback()
         session.close()
@@ -301,7 +305,7 @@ def test_convert_to_outbound_reserves_stock_immediately_and_next_request_uses_ot
                 created_by=user.id,
             ),
         )
-        approve_request(session, second_request.id, user.id)
+        approve_replenishment_request(session, second_request.id, user.id)
         warehouse_a, warehouse_b = _ensure_warehouses(session)
         inventory_a = _set_inventory(
             session,
@@ -320,8 +324,8 @@ def test_convert_to_outbound_reserves_stock_immediately_and_next_request_uses_ot
             frozen_quantity=0,
         )
 
-        first_outbounds = convert_to_outbound(session, first_request.id, None, user.id)
-        second_outbounds = convert_to_outbound(session, second_request.id, None, user.id)
+        first_outbounds = convert_replenishment_to_outbound_order(session, first_request.id, None, user.id)
+        second_outbounds = convert_replenishment_to_outbound_order(session, second_request.id, None, user.id)
 
         assert len(first_outbounds) == 1
         assert len(second_outbounds) == 1
@@ -354,7 +358,7 @@ def test_convert_to_outbound_splits_request_across_multiple_warehouses():
             frozen_quantity=0,
         )
 
-        outbounds = convert_to_outbound(session, request.id, None, user.id)
+        outbounds = convert_replenishment_to_outbound_order(session, request.id, None, user.id)
 
         assert len(outbounds) == 2
         shipped_quantities = sorted(item.items[0].quantity for item in outbounds)

@@ -3,6 +3,7 @@
 
   const API_BASE = "/api";
   const REQUEST_TIMEOUT = 15000;
+  const ACCESS_TOKEN_KEY = "supplyChainAccessToken";
 
   async function request(path, options = {}) {
     const controller = new AbortController();
@@ -11,6 +12,8 @@
       "Content-Type": "application/json",
       ...(options.headers || {}),
     };
+    const accessToken = window.localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
 
     try {
       const response = await fetch(`${API_BASE}${path}`, {
@@ -23,6 +26,7 @@
       if (!response.ok || !json?.success) {
         throw new Error(json?.message || `请求失败（HTTP ${response.status}）`);
       }
+      if (json.data?.access_token) window.localStorage.setItem(ACCESS_TOKEN_KEY, json.data.access_token);
       return json.data;
     } catch (error) {
       if (error.name === "AbortError") {
@@ -88,6 +92,7 @@
 
   const api = {
     request,
+    clearAccessToken: () => window.localStorage.removeItem(ACCESS_TOKEN_KEY),
     getHealth: () => get("/health"),
     getDatabaseHealth: () => get("/health/db"),
     getExampleStatus: () => get("/example/status"),
@@ -114,6 +119,7 @@
     getSupplierRanking: () => get("/suppliers/ranking"),
     getUsers: () => get("/users?page=1&page_size=200"),
     getUserIdentityByEmployeeNo: (employeeNo) => get(`/users/identity/${encodeURIComponent(employeeNo)}`),
+    sendRegistrationVerificationCode: (payload) => post("/users/verification-code", payload),
     loginUser: (payload) => post("/users/login", payload),
     registerUser: (payload) => post("/users/register", payload),
     getProducts: () => get("/products?page=1&page_size=200"),

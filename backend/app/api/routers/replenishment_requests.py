@@ -9,11 +9,11 @@ from app.models.outbound import OutboundOrder
 from app.models.replenishment import ReplenishmentRequest
 from app.schemas.replenishment import ReplenishmentRequestCreate, ReplenishmentRequestRead
 from app.services.replenishment_service import (
-    approve_request,
-    convert_to_outbound,
+    approve_replenishment_request,
+    convert_replenishment_to_outbound_order,
     create_replenishment_request,
-    invalidate_request,
-    reject_request,
+    invalidate_replenishment_request,
+    reject_replenishment_request,
 )
 from app.utils.pagination import normalize_pagination
 
@@ -146,14 +146,14 @@ def get_item(request_id: int, db: Session = Depends(get_db_dep)):
 
 @router.post("/{request_id}/approve")
 def approve(request_id: int, audited_by: int, db: Session = Depends(get_db_dep)):
-    item = approve_request(db, request_id, audited_by)
+    item = approve_replenishment_request(db, request_id, audited_by)
     db.commit()
     return success_response(serialize_replenishment_request(item))
 
 
 @router.post("/{request_id}/reject")
 def reject(request_id: int, audited_by: int, db: Session = Depends(get_db_dep)):
-    item = reject_request(db, request_id, audited_by)
+    item = reject_replenishment_request(db, request_id, audited_by)
     db.commit()
     return success_response(serialize_replenishment_request(item))
 
@@ -166,7 +166,7 @@ def convert(
     db: Session = Depends(get_db_dep),
 ):
     try:
-        items = convert_to_outbound(db, request_id, source_warehouse_id, handled_by)
+        items = convert_replenishment_to_outbound_order(db, request_id, source_warehouse_id, handled_by)
         db.commit()
         for item in items:
             db.refresh(item)
@@ -203,7 +203,7 @@ def convert(
         db.rollback()
         if source_warehouse_id is None:
             try:
-                invalidate_request(db, request_id)
+                invalidate_replenishment_request(db, request_id)
                 db.commit()
             except Exception:
                 db.rollback()

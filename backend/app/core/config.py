@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     llm_max_retries: int = 2
 
     cache_ttl_seconds: int = 60
+    auth_secret_key: SecretStr = Field(default=SecretStr("course-demo-change-me"), validation_alias="AUTH_SECRET_KEY", repr=False)
+    auth_token_ttl_seconds: int = 28800
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",

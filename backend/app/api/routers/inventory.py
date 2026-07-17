@@ -11,8 +11,8 @@ from app.services.inventory_service import (
     adjust_stock,
     complete_cross_warehouse_transfer,
     create_cross_warehouse_transfer,
-    get_inventory_summary,
-    get_inventory_warnings,
+    get_inventory_summary as build_inventory_summary,
+    get_inventory_warnings as build_inventory_warnings,
     get_product_distribution,
     list_inventory,
     get_rebalance_suggestions,
@@ -69,22 +69,22 @@ def warehouse_inventory(warehouse_id: int, db: Session = Depends(get_db_dep)):
 
 
 @router.get("/warnings")
-def warnings(db: Session = Depends(get_db_dep)):
-    return success_response(get_inventory_warnings(db))
+def get_inventory_warnings(db: Session = Depends(get_db_dep)):
+    return success_response(build_inventory_warnings(db))
 
 
 @router.get("/summary")
-def summary(db: Session = Depends(get_db_dep)):
+def get_inventory_summary(db: Session = Depends(get_db_dep)):
     cached = cache.get("inventory:summary")
     if cached is not None:
         return success_response(cached)
-    data = get_inventory_summary(db)
+    data = build_inventory_summary(db)
     cache.set("inventory:summary", data)
     return success_response(data)
 
 
 @router.post("/adjust")
-def adjust(payload: InventoryAdjustRequest, db: Session = Depends(get_db_dep)):
+def adjust_inventory_stock(payload: InventoryAdjustRequest, db: Session = Depends(get_db_dep)):
     try:
         item = adjust_stock(db, **payload.model_dump())
         db.commit()
@@ -114,5 +114,5 @@ def complete_transfer(transfer_id: int, db: Session = Depends(get_db_dep)):
 
 
 @router.get("/rebalance-suggestions")
-def rebalance(db: Session = Depends(get_db_dep)):
+def get_inventory_rebalance_suggestions(db: Session = Depends(get_db_dep)):
     return success_response(get_rebalance_suggestions(db))

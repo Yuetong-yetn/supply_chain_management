@@ -1826,22 +1826,6 @@ select {
   line-height: 1.8;
 }
 
-.login-route {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  color: #bec7db;
-  font-size: 13px;
-}
-
-.login-route i {
-  width: 58px;
-  height: 1px;
-  background: linear-gradient(90deg, #7783a1, #a6b0ff);
-}
-
 .login-panel {
   min-height: 100vh;
   display: grid;
@@ -1986,11 +1970,31 @@ select {
   background: var(--red-soft);
 }
 
+.verification-code-hint {
+  margin-top: -6px;
+  margin-bottom: 18px;
+}
+
+.verification-code-hint[data-state="success"] {
+  color: #17603a;
+  background: #eaf8ee;
+}
+
+.verification-code-hint[data-state="error"] {
+  color: #a93e49;
+  background: var(--red-soft);
+}
+
 .login-card .form-label {
   margin: 0 0 8px;
   color: var(--ink-2);
   font-size: 13px;
   font-weight: 700;
+}
+
+.login-card[data-mode="register"] .auth-description,
+.login-card[data-mode="register"] #authHelperText {
+  display: none;
 }
 
 .login-card .form-control {
@@ -1999,6 +2003,26 @@ select {
   border-color: #dbe0e9;
   border-radius: 9px;
   font-size: 14px;
+}
+
+.login-card[data-mode="register"] #registerPhone {
+  margin-bottom: 8px;
+}
+
+.verification-code-field[hidden] {
+  display: none;
+}
+
+.verification-code-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.verification-code-row .form-control,
+.verification-code-row .btn {
+  min-height: 48px;
+  margin-bottom: 18px;
 }
 
 .login-card .form-select {
@@ -2034,7 +2058,7 @@ select {
   font-size: 13px;
 }
 
-.demo-account {
+.auth-mode-panel {
   display: flex;
   justify-content: space-between;
   gap: 14px;
@@ -2043,10 +2067,6 @@ select {
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 12px;
-}
-
-.demo-account code {
-  color: var(--primary-dark);
 }
 
 /* User and data entry */

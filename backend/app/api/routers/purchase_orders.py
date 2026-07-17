@@ -7,15 +7,17 @@ from app.core.exceptions import BusinessException
 from app.core.response import page_response, success_response
 from app.models.purchase import PurchaseOrder
 from app.schemas.purchase import PurchaseOrderCreate, PurchaseOrderRead
-from app.services.purchase_service import cancel_purchase_order, confirm_purchase_order, create_purchase_order
+from app.services.purchase_service import cancel_purchase_order as cancel_purchase_order_service
+from app.services.purchase_service import confirm_purchase_order as confirm_purchase_order_service
+from app.services.purchase_service import create_purchase_order as create_purchase_order_service
 from app.utils.pagination import normalize_pagination
 
 router = APIRouter(prefix="/api/purchase-orders", tags=["purchase-orders"])
 
 
 @router.post("")
-def create(payload: PurchaseOrderCreate, db: Session = Depends(get_db_dep)):
-    order = create_purchase_order(db, payload)
+def create_purchase_order(payload: PurchaseOrderCreate, db: Session = Depends(get_db_dep)):
+    order = create_purchase_order_service(db, payload)
     db.commit()
     db.refresh(order)
     return success_response(PurchaseOrderRead.model_validate(order).model_dump())
@@ -41,14 +43,14 @@ def get_order(order_id: int, db: Session = Depends(get_db_dep)):
 
 
 @router.post("/{order_id}/confirm")
-def confirm(order_id: int, db: Session = Depends(get_db_dep)):
-    item = confirm_purchase_order(db, order_id)
+def confirm_purchase_order(order_id: int, db: Session = Depends(get_db_dep)):
+    item = confirm_purchase_order_service(db, order_id)
     db.commit()
     return success_response(PurchaseOrderRead.model_validate(item).model_dump())
 
 
 @router.post("/{order_id}/cancel")
-def cancel(order_id: int, db: Session = Depends(get_db_dep)):
-    item = cancel_purchase_order(db, order_id)
+def cancel_purchase_order(order_id: int, db: Session = Depends(get_db_dep)):
+    item = cancel_purchase_order_service(db, order_id)
     db.commit()
     return success_response(PurchaseOrderRead.model_validate(item).model_dump())

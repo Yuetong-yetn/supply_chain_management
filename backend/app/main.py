@@ -1,6 +1,7 @@
 from pathlib import Path
+import logging
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,6 +27,7 @@ from app.api.routers import (
     users,
     warehouses,
 )
+from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.db_errors import map_integrity_error_message
 from app.core.exceptions import BusinessException
@@ -34,6 +36,7 @@ from app.core.response import error_response
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+logger = logging.getLogger(__name__)
 
 
 @app.exception_handler(BusinessException)
@@ -53,12 +56,14 @@ async def integrity_exception_handler(_request: Request, exc: IntegrityError):
 
 @app.exception_handler(Exception)
 async def global_exception_handler(_request: Request, exc: Exception):
-    return JSONResponse(status_code=500, content=error_response(str(exc)))
+    logger.error("Unhandled API exception", exc_info=(type(exc), exc, exc.__traceback__))
+    return JSONResponse(status_code=500, content=error_response("服务器内部错误，请稍后重试"))
 
+
+for router in [health.router, users.router]:
+    app.include_router(router)
 
 for router in [
-    health.router,
-    users.router,
     categories.router,
     products.router,
     suppliers.router,
@@ -76,7 +81,7 @@ for router in [
     distributed.router,
     llm.router,
 ]:
-    app.include_router(router)
+    app.include_router(router, dependencies=[Depends(get_current_user)])
 
 
 if FRONTEND_DIR.exists():

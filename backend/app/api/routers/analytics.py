@@ -4,14 +4,14 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db_dep
 from app.core.response import success_response
 from app.services.analytics_service import (
-    dashboard,
+    build_analytics_summary,
+    build_dashboard_metrics,
     inventory_ranking,
     overstock_products,
     product_turnover,
     stockout_products,
     store_demand_heatmap,
     store_replenishment_frequency,
-    summary_text,
     supplier_purchase_ranking,
     warehouse_flow_trend,
 )
@@ -61,9 +61,9 @@ def heatmap(db: Session = Depends(get_db_dep)):
 
 @router.get("/dashboard")
 def dashboard_api(db: Session = Depends(get_db_dep)):
-    return success_response(dashboard(db))
+    return success_response(build_dashboard_metrics(db))
 
 
 @router.get("/summary-text")
 def summary_api(db: Session = Depends(get_db_dep)):
-    return success_response(summary_text(db))
+    return success_response(build_analytics_summary(db))

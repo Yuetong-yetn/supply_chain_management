@@ -7,6 +7,8 @@ from app.core.exceptions import BusinessException
 from app.core.response import page_response, success_response
 from app.models.store import Store
 from app.schemas.store import StoreCreate, StoreRead, StoreUpdate
+from app.services.base_data_service import create_store as create_store_service
+from app.services.base_data_service import deactivate_store, update_store as update_store_service
 from app.utils.pagination import normalize_pagination
 
 router = APIRouter(prefix="/api/stores", tags=["stores"])
@@ -25,10 +27,7 @@ def list_stores(page: int = 1, page_size: int = 20, keyword: str | None = None, 
 
 @router.post("")
 def create_store(payload: StoreCreate, db: Session = Depends(get_db_dep)):
-    item = Store(**payload.model_dump())
-    db.add(item)
-    db.commit()
-    db.refresh(item)
+    item = create_store_service(db, payload)
     return success_response(StoreRead.model_validate(item).model_dump())
 
 
@@ -42,21 +41,11 @@ def get_store(store_id: int, db: Session = Depends(get_db_dep)):
 
 @router.put("/{store_id}")
 def update_store(store_id: int, payload: StoreUpdate, db: Session = Depends(get_db_dep)):
-    item = db.get(Store, store_id)
-    if not item:
-        raise BusinessException("store not found", 404)
-    for key, value in payload.model_dump(exclude_unset=True).items():
-        setattr(item, key, value)
-    db.commit()
-    db.refresh(item)
+    item = update_store_service(db, store_id, payload)
     return success_response(StoreRead.model_validate(item).model_dump())
 
 
 @router.delete("/{store_id}")
 def delete_store(store_id: int, db: Session = Depends(get_db_dep)):
-    item = db.get(Store, store_id)
-    if not item:
-        raise BusinessException("store not found", 404)
-    item.business_status = "inactive"
-    db.commit()
+    deactivate_store(db, store_id)
     return success_response(message="deleted")

@@ -41,4 +41,12 @@ def clear_settings_cache():
 
 @pytest.fixture
 def api_client():
+    client = TestClient(app)
+    response = client.post("/api/users/login", json={"username": "A1001", "password": "admin123"})
+    client.headers["Authorization"] = f"Bearer {response.json()['data']['access_token']}"
+    return client
+
+
+@pytest.fixture
+def unauthenticated_client():
     return TestClient(app)

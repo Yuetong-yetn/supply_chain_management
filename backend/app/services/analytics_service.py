@@ -17,7 +17,7 @@ from app.services.llm.llm_router import get_llm_client
 from app.services.llm.prompt_templates import analytics_summary_prompt
 
 
-def cacheable(key: str, builder):
+def get_or_build_cached_analytics(key: str, builder):
     cached = cache.get(key)
     if cached is not None:
         return cached
@@ -36,7 +36,7 @@ def inventory_ranking(db: Session) -> list[dict]:
             .limit(20)
         ).all()
         return [{"product_name": name, "quantity": qty} for name, qty in rows]
-    return cacheable("analytics:inventory-ranking", _builder)
+    return get_or_build_cached_analytics("analytics:inventory-ranking", _builder)
 
 
 def supplier_purchase_ranking(db: Session) -> list[dict]:
@@ -48,10 +48,10 @@ def supplier_purchase_ranking(db: Session) -> list[dict]:
             .order_by(func.coalesce(func.max(SupplierScoreSnapshot.total_purchase_amount), 0).desc())
         ).all()
         return [{"supplier_name": name, "total_purchase_amount": float(amount)} for name, amount in rows]
-    return cacheable("analytics:supplier-purchase-ranking", _builder)
+    return get_or_build_cached_analytics("analytics:supplier-purchase-ranking", _builder)
 
 
-def dashboard(db: Session) -> dict:
+def build_dashboard_metrics(db: Session) -> dict:
     def _builder():
         warnings = get_inventory_warnings(db)
         stockout_warnings = [w for w in warnings if w["warning_type"] in {"stockout", "critical_stockout"}]
@@ -77,7 +77,7 @@ def dashboard(db: Session) -> dict:
             "top_stockout_products": stockout_warnings[:5],
             "top_overstock_products": overstock_warnings[:5],
         }
-    return cacheable("analytics:dashboard", _builder)
+    return get_or_build_cached_analytics("analytics:dashboard", _builder)
 
 
 def stockout_products(db: Session) -> list[dict]:
@@ -130,8 +130,8 @@ def store_demand_heatmap(db: Session) -> list[dict]:
     return [{"store_name": name, "retail_sales": sales} for name, sales in rows]
 
 
-def summary_text(db: Session) -> dict:
-    data = dashboard(db)
+def build_analytics_summary(db: Session) -> dict:
+    data = build_dashboard_metrics(db)
     client = get_llm_client()
     if client:
         try:

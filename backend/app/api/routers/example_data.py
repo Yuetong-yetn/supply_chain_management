@@ -9,12 +9,12 @@ router = APIRouter(prefix="/api/example", tags=["example"])
 
 
 @router.post("/generate")
-def generate():
+def generate_example_dataset():
     return success_response(generate_example_data())
 
 
 @router.post("/load")
-def load(db: Session = Depends(get_db_dep)):
+def load_example_dataset(db: Session = Depends(get_db_dep)):
     try:
         result = load_example_data(db)
         db.commit()
@@ -25,5 +25,5 @@ def load(db: Session = Depends(get_db_dep)):
 
 
 @router.get("/status")
-def status(db: Session = Depends(get_db_dep)):
+def get_example_data_status(db: Session = Depends(get_db_dep)):
     return success_response(get_example_status(db))

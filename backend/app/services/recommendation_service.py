@@ -19,7 +19,7 @@ from app.services.llm.prompt_templates import recommendation_prompt
 from app.utils.datetime_utils import now_local
 
 
-def choose_supplier(db: Session, product_id: int) -> SupplierProduct | None:
+def select_preferred_supplier_for_product(db: Session, product_id: int) -> SupplierProduct | None:
     score_subquery = (
         select(SupplierScoreSnapshot.supplier_id, SupplierScoreSnapshot.score)
         .order_by(SupplierScoreSnapshot.generated_at.desc())
@@ -55,7 +55,7 @@ def build_rule_reason(
     )
 
 
-def maybe_enhance_reason(rule_reason: str) -> tuple[str | None, str, bool]:
+def enhance_recommendation_reason_if_available(rule_reason: str) -> tuple[str | None, str, bool]:
     client = get_llm_client()
     if not client:
         return None, "rule", False
@@ -97,7 +97,7 @@ def generate_recommendations(
             recent_30_sales = float(sales)
             recent_7_sales = recent_30_sales / 4
             avg_daily_sales = recent_30_sales / 30
-            supplier_link = choose_supplier(db, inventory.product_id)
+            supplier_link = select_preferred_supplier_for_product(db, inventory.product_id)
             lead_time_days = supplier_link.lead_time_days if supplier_link else 3
             review_period_days = 7
             buffer_days = 3
@@ -159,7 +159,7 @@ def generate_recommendations(
     if enhance_with_llm:
         high_risk_recommendations = [item for item in recommendations if item.risk_level == "high"]
         for recommendation in high_risk_recommendations:
-            reason_enhanced, llm_provider, llm_used = maybe_enhance_reason(recommendation.reason)
+            reason_enhanced, llm_provider, llm_used = enhance_recommendation_reason_if_available(recommendation.reason)
             recommendation.reason_enhanced = reason_enhanced
             recommendation.llm_provider = llm_provider
             recommendation.llm_used = llm_used

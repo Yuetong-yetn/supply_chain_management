@@ -24,19 +24,19 @@ def list_transactions(page: int = 1, page_size: int = 20, keyword: str | None = 
 
 
 @router.get("/product/{product_id}")
-def by_product(product_id: int, db: Session = Depends(get_db_dep)):
+def list_stock_transactions_by_product(product_id: int, db: Session = Depends(get_db_dep)):
     items = list(db.scalars(select(StockTransaction).where(StockTransaction.product_id == product_id)))
     return success_response([{"transaction_no": item.transaction_no, "transaction_type": item.transaction_type, "change_quantity": item.change_quantity} for item in items])
 
 
 @router.get("/doc/{doc_type}/{doc_id}")
-def by_doc(doc_type: str, doc_id: int, db: Session = Depends(get_db_dep)):
+def list_stock_transactions_by_document(doc_type: str, doc_id: int, db: Session = Depends(get_db_dep)):
     items = list(db.scalars(select(StockTransaction).where(StockTransaction.related_doc_type == doc_type, StockTransaction.related_doc_id == doc_id)))
     return success_response([{"transaction_no": item.transaction_no, "transaction_type": item.transaction_type, "change_quantity": item.change_quantity} for item in items])
 
 
 @router.get("/product/{product_id}/trace")
-def trace(product_id: int, db: Session = Depends(get_db_dep)):
+def trace_product_stock_transactions(product_id: int, db: Session = Depends(get_db_dep)):
     product = db.get(Product, product_id)
     transactions = list(db.scalars(select(StockTransaction).where(StockTransaction.product_id == product_id).order_by(StockTransaction.transaction_time)))
     data = [

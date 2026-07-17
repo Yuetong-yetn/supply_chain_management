@@ -1,5 +1,7 @@
 # 最小接口契约 v0.1
 
+> 本文件是项目唯一权威接口契约（single source of truth）。任何 API 路径、请求/响应字段、状态值或通用响应结构的变更都应先更新本文件，再同步修改 Schema、Router、前端调用与测试。
+
 > 本文件用于前后端协作。前端只调用本文件中的接口；后端优先保证本文件中的接口稳定。除非全员确认，不要随意修改路径、字段名、响应结构。
 
 ---
@@ -57,6 +59,8 @@ fetch("/api/analytics/dashboard")
 ```http
 Content-Type: application/json
 ```
+
+除健康检查、登录、注册、身份预览和发送验证码外，请求需携带登录返回的令牌：`Authorization: Bearer <access_token>`。
 
 ### 1.3 通用成功响应格式
 
@@ -354,7 +358,35 @@ POST /api/users/login
 
 失败时返回 HTTP 401 和统一失败响应，`message` 为 `用户名或密码错误`。
 
-说明：该接口用于课程 Demo 的身份校验和用户信息展示，不签发 Token，也不实现复杂角色权限控制，符合 workplan 中“不做完整登录注册与复杂权限控制”的范围约束。
+说明：该接口用于课程 Demo 的身份校验，成功响应的用户对象额外包含 `access_token` 和 `token_type: "bearer"`。令牌用于保护后端业务接口；用户管理写操作仅允许管理员访问。
+
+### 3.4 发送注册验证码
+
+```http
+POST /api/users/verification-code
+```
+
+请求：
+
+```json
+{
+  "employee_no": "W2001",
+  "phone": "13000002002"
+}
+```
+
+该接口用于课程 Demo 的账号激活流程：后端校验工号和预留手机号匹配后生成 6 位验证码，并更新该员工档案中的验证码摘要。验证码 5 分钟内有效，60 秒内不可重复发送，连续输错 5 次后需重新获取。当前项目未接入短信服务，响应会返回 `verification_code` 供前端展示为演示验证码；生产环境不得返回验证码明文。
+
+```json
+{
+  "success": true,
+  "message": "验证码已生成",
+  "data": {
+    "masked_phone": "130****2002",
+    "verification_code": "123456"
+  }
+}
+```
 
 ---
 

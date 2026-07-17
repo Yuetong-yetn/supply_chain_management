@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
 from app.api.deps import get_db_dep
-from app.core.db_errors import raise_product_integrity_error
 from app.core.exceptions import BusinessException
 from app.core.response import page_response, success_response
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.services.base_data_service import create_product as create_product_service
+from app.services.base_data_service import deactivate_product, update_product as update_product_service
 from app.utils.pagination import normalize_pagination
 
 router = APIRouter(prefix="/api/products", tags=["products"])
@@ -27,14 +27,7 @@ def list_products(page: int = 1, page_size: int = 20, keyword: str | None = None
 
 @router.post("")
 def create_product(payload: ProductCreate, db: Session = Depends(get_db_dep)):
-    try:
-        item = Product(**payload.model_dump())
-        db.add(item)
-        db.commit()
-    except IntegrityError as exc:
-        db.rollback()
-        raise_product_integrity_error(exc)
-    db.refresh(item)
+    item = create_product_service(db, payload)
     return success_response(ProductRead.model_validate(item).model_dump())
 
 
@@ -48,25 +41,11 @@ def get_product(product_id: int, db: Session = Depends(get_db_dep)):
 
 @router.put("/{product_id}")
 def update_product(product_id: int, payload: ProductUpdate, db: Session = Depends(get_db_dep)):
-    item = db.get(Product, product_id)
-    if not item:
-        raise BusinessException("product not found", 404)
-    for key, value in payload.model_dump(exclude_unset=True).items():
-        setattr(item, key, value)
-    try:
-        db.commit()
-    except IntegrityError as exc:
-        db.rollback()
-        raise_product_integrity_error(exc)
-    db.refresh(item)
+    item = update_product_service(db, product_id, payload)
     return success_response(ProductRead.model_validate(item).model_dump())
 
 
 @router.delete("/{product_id}")
 def delete_product(product_id: int, db: Session = Depends(get_db_dep)):
-    item = db.get(Product, product_id)
-    if not item:
-        raise BusinessException("product not found", 404)
-    item.is_active = False
-    db.commit()
+    deactivate_product(db, product_id)
     return success_response(message="deleted")

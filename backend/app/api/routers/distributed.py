@@ -3,14 +3,14 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db_dep
 from app.core.response import success_response
-from app.services.distributed_service import complete_transfer, create_transfer, get_sync_logs, overview, run_reconciliation
+from app.services.distributed_service import get_distributed_inventory_overview, get_sync_logs, run_reconciliation
 
 router = APIRouter(prefix="/api/distributed", tags=["distributed"])
 
 
 @router.get("/overview")
 def distributed_overview(db: Session = Depends(get_db_dep)):
-    return success_response(overview(db))
+    return success_response(get_distributed_inventory_overview(db))
 
 
 @router.post("/reconciliation/run")

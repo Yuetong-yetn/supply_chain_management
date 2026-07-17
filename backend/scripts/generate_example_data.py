@@ -10,4 +10,6 @@ from app.services.example_data_service import generate_example_data
 
 if __name__ == "__main__":
     result = generate_example_data()
-    print(result)
+    print("示例数据文件生成完成。")
+    print(f"生成目录：{ROOT / 'example'}")
+    print(f"处理结果：{result}")

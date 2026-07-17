@@ -17,14 +17,17 @@ def ensure_example_data_files() -> None:
 
 
 if __name__ == "__main__":
+    print("正在检查并导入示例数据...")
     ensure_example_data_files()
     session = SessionLocal()
     try:
         result = load_example_data(session)
         session.commit()
-        print(result)
+        print("示例数据导入完成。")
+        print(f"处理结果：{result}")
     except Exception:
         session.rollback()
+        print("示例数据导入失败，已回滚数据库事务。")
         raise
     finally:
         session.close()
