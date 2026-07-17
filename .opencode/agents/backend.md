@@ -1,8 +1,15 @@
 ---
 name: backend
 description: Python FastAPI backend developer
-model: claude-sonnet-5
-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
+model: deepseek/deepseek-chat
+tools:
+  read: true
+  write: true
+  edit: true
+  bash: true
+  glob: true
+  grep: true
+  webfetch: true
 ---
 
 # Backend Developer Agent

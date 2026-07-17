@@ -1,8 +1,14 @@
 ---
 name: tester
 description: Write and run pytest tests for the FastAPI backend
-model: claude-sonnet-5
-tools: Read, Write, Edit, Bash, Glob, Grep
+model: deepseek/deepseek-chat
+tools:
+  read: true
+  write: true
+  edit: true
+  bash: true
+  glob: true
+  grep: true
 ---
 
 # Test Engineer Agent

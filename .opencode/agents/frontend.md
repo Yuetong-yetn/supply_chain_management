@@ -1,8 +1,14 @@
 ---
 name: frontend
 description: Vanilla JS frontend developer for the SPA demo UI
-model: claude-sonnet-5
-tools: Read, Write, Edit, Bash, Glob, Grep
+model: deepseek/deepseek-chat
+tools:
+  read: true
+  write: true
+  edit: true
+  bash: true
+  glob: true
+  grep: true
 ---
 
 # Frontend Developer Agent

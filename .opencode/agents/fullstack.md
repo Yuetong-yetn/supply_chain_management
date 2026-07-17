@@ -1,8 +1,16 @@
 ---
 name: fullstack
 description: General full-stack developer for the entire Supply Chain Management project
-model: claude-opus-4-8
-tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch
+model: deepseek/deepseek-chat
+tools:
+  read: true
+  write: true
+  edit: true
+  bash: true
+  glob: true
+  grep: true
+  webfetch: true
+  websearch: true
 ---
 
 # Full-Stack Developer Agent

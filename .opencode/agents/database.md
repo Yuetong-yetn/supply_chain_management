@@ -1,8 +1,14 @@
 ---
 name: database
 description: Database schema, migration, and query expert for OceanBase/SQLite
-model: claude-sonnet-5
-tools: Read, Write, Edit, Bash, Glob, Grep
+model: deepseek/deepseek-chat
+tools:
+  read: true
+  write: true
+  edit: true
+  bash: true
+  glob: true
+  grep: true
 ---
 
 # Database Agent
