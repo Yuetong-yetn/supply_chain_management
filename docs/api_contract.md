@@ -351,12 +351,16 @@ POST /api/users/login
     "store_id": null,
     "phone": "13000000001",
     "is_active": true,
-    "created_at": "2026-06-27T10:00:00"
+    "created_at": "2026-06-27T10:00:00",
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer"
   }
 }
 ```
 
 失败时返回 HTTP 401 和统一失败响应，`message` 为 `用户名或密码错误`。
+
+说明：该接口用于课程 Demo 的身份校验，成功响应的用户对象额外包含 `access_token` 和 `token_type: "bearer"`。令牌用于保护后端业务接口；用户管理写操作仅允许管理员访问。
 
 说明：该接口用于课程 Demo 的身份校验，成功响应的用户对象额外包含 `access_token` 和 `token_type: "bearer"`。令牌用于保护后端业务接口；用户管理写操作仅允许管理员访问。
 

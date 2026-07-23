@@ -1,0 +1,27 @@
+version: "3.9"
+
+# 生产环境部署注意事项:
+#   1. 将 AUTH_SECRET_KEY 更换为高强度随机密钥
+#   2. 将 APP_ENV 设为 prod（禁止返回验证码明文）
+#   3. 使用 MySQL/OceanBase 替代 SQLite
+#   4. 配置 DEEPSEEK_API_KEY 以启用 LLM 增强
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=${APP_ENV:-dev}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./schema/supply_chain.db}
+      - SQLITE_FALLBACK_URL=${SQLITE_FALLBACK_URL:-sqlite:///./schema/supply_chain.db}
+      - AUTH_SECRET_KEY=${AUTH_SECRET_KEY:-course-demo-change-me}
+      - LLM_PROVIDER=${LLM_PROVIDER:-rule}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+    volumes:
+      - ./backend:/app
+      - sqlite_data:/app/schema
+
+volumes:
+  sqlite_data:

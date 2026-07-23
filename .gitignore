@@ -1,14 +1,40 @@
-.pytest_cache/
-**/.pytest_cache/
-**/pytest-cache-files-*/
-**/__pycache__/
-*.pyc
-*.log
-*.db
-backend/schema/supply_chain.db
-backend/schema/*.db
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+venv/
+
+# Environment files
 .env
 backend/.env
-backend/data/raw/
-data/raw/
-*.zip
+
+# SQLite database files
+*.db
+backend/schema/*.db
+
+# Code intelligence index
+.codegraph/
+
+# Work plans
+.omo/
+
+# Node.js
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+.dockerignore

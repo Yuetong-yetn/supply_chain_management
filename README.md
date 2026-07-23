@@ -1,290 +1,296 @@
-# Supply_Chain_Management
+# Supply Chain Multi-Agent System
 
-本项目为供应链库存协同与智能补货管理系统。系统面向中小型连锁企业、校园商超、社区便利店等多仓库、多门店零售场景，以库存管理为核心，对商品从供应商采购进入仓库，再由仓库配送至门店的全过程进行统一建模、记录和分析。
+基于 **FastAPI + Sisyphus Orchestrator + 12 个领域 Agent + 进程内 Event Bus** 的供应链协同管理课程项目。
 
-项目通过需求分析和数据库建模，在商品、供应商、仓库、门店、采购订单、入库单、出库单、库存和库存流水等基础实体上，结合项目实际，补充了库存预警、门店补货申请、供应商管理与排行、统计分析、AI API 增强的智能补货建议、OceanBase 主数据库部署、系统状态检查、角色化演示界面和多端共享数据访问等内容。
+系统仍是一个单体 FastAPI 应用，不是微服务。Sisyphus 在应用启动时注册全部 Agent、挂载路由并连接事件订阅；各领域 Agent 分别维护自己的模型、业务处理器和 API。
 
-## 1. Repository Structure
+## 当前实现概览
 
 ```text
-Supply_Chain_Management/
+浏览器 / API 客户端
+        |
+        v
+FastAPI + Sisyphus Orchestrator
+        |
+        +-- 注册并挂载 12 个领域 Agent
+        |
+        +-- 进程内同步 Event Bus
+        |      采购入库完成 -> 库存增加 -> 库存流水
+        |      出库发货     -> 仓库库存减少 -> 库存流水
+        |      门店签收     -> 门店库存增加 -> 库存流水
+        |
+        +-- SQLAlchemy -> SQLite / MySQL / OceanBase
+```
+
+Event Bus 当前是**进程内同步发布/订阅**，不是外部消息队列。业务事件与发起请求复用同一个 SQLAlchemy Session，因此库存变化和库存流水会与业务状态在同一事务中提交；事件处理失败时请求事务会回滚，不会再出现“接口返回成功但库存没有更新”的情况。
+
+## 12 个领域 Agent
+
+| Agent | 主要职责 | 主要 API / 事件 |
+|---|---|---|
+| `user_agent` | 登录、JWT、用户注册与身份查询 | `/api/users/*` |
+| `product_agent` | 商品与品类 | `/api/products`、`/api/categories` |
+| `supplier_agent` | 供应商、供货商品、供应商评分 | `/api/suppliers/*` |
+| `procurement_agent` | 采购单与入库单 | `/api/purchase-orders/*`、`/api/inbound-orders/*`；发布 `procurement.inbound.completed` |
+| `inventory_agent` | 仓库/门店库存、库存预警与调整 | `/api/inventory/*`；订阅入库、发货、签收事件 |
+| `warehouse_agent` | 仓库基础数据 | `/api/warehouses/*` |
+| `store_agent` | 门店基础数据 | `/api/stores/*` |
+| `fulfillment_agent` | 补货申请、审核、转出库、发货与签收 | `/api/replenishment-requests/*`、`/api/outbound-orders/*` |
+| `transaction_agent` | 库存流水与追溯 | `/api/transactions/*`；订阅库存增加/减少事件 |
+| `analytics_agent` | 首页看板、排行与趋势分析 | `/api/analytics/*` |
+| `recommendation_agent` | 规则补货建议及可选 LLM 文本增强 | `/api/recommendations/*` |
+| `monitoring_agent` | 健康检查、数据库与 LLM 状态 | `/api/health`、`/api/health/db`、`/api/llm/status` |
+
+Sisyphus 注册状态可通过 `GET /api/system/agents` 查看，正常情况下返回 12 个 Agent。
+
+## 项目结构
+
+```text
+supply_chain_multi_agent/
 ├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── deps.py                 # 路由依赖与通用注入
-│   │   │   └── routers/                # 按业务划分的 API 路由
-│   │   ├── core/                       # 配置、数据库连接、缓存、统一响应与异常处理
-│   │   ├── models/                     # SQLAlchemy 数据模型
-│   │   ├── schemas/                    # Pydantic 请求与响应模型
-│   │   ├── services/                   # 业务服务层
-│   │   │   └── llm/                    # LLM 路由与 DeepSeek、Ollama 适配实现
-│   │   ├── utils/                      # 日期、哈希、分页、数值处理等工具函数
-│   │   └── main.py                     # FastAPI 入口，挂载 API、Demo 页面与静态前端
-│   ├── docs/                           # 后端结构、部署与接口说明
-│   ├── example/                        # 示例主数据、业务单据、AI 推荐与外部数据样例
-│   ├── schema/                         # 数据库 schema、seed SQL 与本地 SQLite 文件
-│   ├── scripts/                        # 初始化、造数、重置演示数据脚本
-│   ├── tests/                          # 自动化测试，覆盖健康检查、登录、库存、补货、推荐、导入等流程
-│   ├── .env.example
-│   └── requirements.txt
-├── frontend/                           # 前端演示页面与静态资源
-│   ├── index.html                      # 演示入口与页面骨架
-│   ├── api.js                          # 统一 API 请求封装
-│   ├── app.js                          # 登录、角色视图、仪表盘与业务交互逻辑
-│   ├── style.css                       # 当前前端主样式
-│   └── styles.css                      # 兼容保留的历史样式文件，不再新增样式
-├── docs/                               # 项目级文档、API 契约、OceanBase 说明
-├── requirements.txt                    # 宽松版本参考；实际开发以 backend/requirements.txt 为准
+│   ├── agents/                  # 12 个领域 Agent
+│   ├── kernel/
+│   │   ├── common/              # 配置、数据库、认证、事件总线、共享查询
+│   │   └── sisyphus/            # Agent 注册、路由挂载与工作流编排
+│   ├── tests/                   # pytest 基础设施
+│   ├── main.py                  # FastAPI 应用入口
+│   ├── requirements.txt         # 后端运行依赖
+│   └── .env.example             # 环境变量示例
+├── frontend/                    # 后端直接托管的静态前端，无构建步骤
+├── scripts/                     # 建库、生成与导入示例数据脚本
+├── example/                     # 生成的示例 JSON 数据
+├── schema/                      # SQLite 数据库及导出的 schema/seed 文件
+├── docs/api_contract.md         # API 契约
 └── README.md
 ```
 
-## 2. 系统安装、运行与使用说明
+## 环境要求
 
-本节用于完成系统部署、后端启动、前端访问和基础功能使用。按照以下步骤执行后，可以在本地运行完整演示系统。
+- Windows 开发环境
+- 推荐 Python 3.12；当前依赖也可在支持相应 wheel 的更高版本 Python 上运行
+- 无需单独安装前端依赖或执行前端构建
+- 默认课程演示使用 SQLite
 
-### 2.1 安装后端环境
+## 本地启动
 
-进入后端目录：
+以下命令默认从项目根目录 `supply_chain_multi_agent/` 开始执行。
 
-```bash
-cd Supply_Chain_Management/backend
+### 1. 创建虚拟环境并安装依赖
+
+```bat
+python -m venv backend\.venv
+backend\.venv\Scripts\activate.bat
+python -m pip install -r backend\requirements.txt
 ```
 
-创建并激活虚拟环境：
-
-```bash
-python -m venv .venv
-```
-
-Windows：
-
-```bash
-.venv\Scripts\activate
-```
-
-macOS / Linux：
-
-```bash
-source .venv/bin/activate
-```
-
-安装依赖：
-
-```bash
-pip install -r requirements.txt
-```
-
-如果在 Windows PowerShell 中看到中文输出乱码，先执行以下命令再启动后端：
+PowerShell 激活命令为：
 
 ```powershell
-chcp 65001
-$OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$env:PYTHONUTF8 = "1"
+backend\.venv\Scripts\Activate.ps1
 ```
 
-### 2.2 配置运行环境
+### 2. 创建环境配置
 
-复制环境变量模板：
+如果使用 **CMD**：
+
+```bat
+copy backend\.env.example backend\.env
+```
+
+如果使用 **PowerShell**：
 
 ```powershell
-Copy-Item .env.example .env
+Copy-Item backend\.env.example backend\.env
 ```
 
-正式演示建议在 `.env` 中配置 OceanBase 和 AI API：
+不要在 CMD 中使用 `Copy-Item`，它只属于 PowerShell。
+
+默认 `.env.example` 使用：
 
 ```env
-DATABASE_URL=mysql+pymysql://root:your-password@127.0.0.1:2881/supply_chain?charset=utf8mb4
+DATABASE_URL=sqlite:///./schema/supply_chain.db
 SQLITE_FALLBACK_URL=sqlite:///./schema/supply_chain.db
-LLM_PROVIDER=deepseek
-DEEPSEEK_API_KEY=your-api-key
-DEEPSEEK_MODEL=deepseek-chat
+LLM_PROVIDER=rule
+AUTH_SECRET_KEY=course-demo-change-me-with-32-plus-bytes
 ```
 
-### 2.3 Docker / OceanBase 环境准备
+SQLite 相对路径会被后端统一解析到项目根目录的 `schema/supply_chain.db`，因此从项目根目录运行脚本、从 `backend/` 启动服务时会访问同一个数据库文件。
 
-本项目优先使用 OceanBase 作为主数据库，SQLite 作为应急回退。若只做本地快速演示，可直接使用 SQLite；若需要展示 OceanBase，请按以下步骤准备。
+如果你已经有旧的 `backend/.env`，请确保其中的 `AUTH_SECRET_KEY` 至少 32 字节，否则 PyJWT 会输出 `InsecureKeyLengthWarning`。生产环境必须替换为随机高强度密钥。
 
-确认 Docker 已启动：
+### 3. 初始化数据库和示例数据
 
-```bash
-docker --version
-docker ps
+这些脚本必须从**项目根目录**运行：
+
+```bat
+python scripts\init_db.py --rebuild
+python scripts\generate_example_data.py
+python scripts\load_example_data.py
 ```
-
-启动 OceanBase 容器：
-
-```bash
-docker run -d --name oceanbase-ce --restart unless-stopped -p 2881:2881 -e MODE=mini -e OB_TENANT_PASSWORD=ObDemo2026 -e OB_DATABASE=supply_chain oceanbase/oceanbase-ce
-```
-
-如果容器已经存在但处于停止状态，使用：
-
-```bash
-docker start oceanbase-ce
-```
-
-在 `backend/.env` 中配置：
-
-```env
-DATABASE_URL=mysql+pymysql://root%40test:ObDemo2026@127.0.0.1:2881/supply_chain?charset=utf8mb4
-SQLITE_FALLBACK_URL=sqlite:///./schema/supply_chain.db
-DATABASE_CONNECT_TIMEOUT_SECONDS=10
-```
-
-启动后端后访问以下接口确认实际数据库：
-
-```text
-http://127.0.0.1:8000/api/health/db
-```
-
-当 `mode` 显示 `oceanbase-primary` 时，表示当前连接 OceanBase；如果显示 `sqlite-fallback`，表示系统正在使用 SQLite 回退数据库。
-
-### 2.4 初始化数据库和示例数据
-
-```bash
-python scripts/init_db.py --rebuild
-python scripts/generate_example_data.py
-python scripts/load_example_data.py
-```
-
-### 2.5 启动系统
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-### 2.6 访问系统
-
-```text
-演示入口：http://127.0.0.1:8000/demo
-API 文档：http://127.0.0.1:8000/docs
-前端演示：http://127.0.0.1:8000/ui/
-健康检查：http://127.0.0.1:8000/api/health
-数据库健康检查：http://127.0.0.1:8000/api/health/db
-```
-
-说明：`/demo` 是推荐演示入口，会进入带登录页的前端演示；`/ui/` 是前端页面直接入口。
-
-
-## 3. 使用说明与功能验证
-
-前端演示登录使用后端用户接口，登录标识填写员工工号：
-
-- 管理员：`A1001 / admin123`
-- 采购员：`P1001 / buyer123`
-- 仓库主管：`W1001 / warehouse123`
-- 门店员工：`S1001 / store123`
-- 运营经理：`M1001 / manager123`
-
-员工激活注册使用预置未激活工号，发送验证码时会校验工号与手机号是否匹配。当前项目未接入短信服务，页面会显示演示验证码：
-
-- 门店员工：`S2001 / 王敏 / 13000002001`
-- 仓库主管：`W2001 / 李峰 / 13000002002`
-
-后端用户登录接口可独立用于接口测试。请求体的 `username` 字段填写员工工号：
-
-```text
-POST /api/users/login
-```
-
-系统启动后，可按以下顺序进行功能验证：
-
-1. 访问 `/api/health` 和 `/api/health/db`，确认后端服务和数据库连接正常。
-2. 打开 `/demo`，使用预置工号登录，或用 `S2001`、`W2001` 完成员工激活注册。
-3. 在系统状态页确认 API、数据库和数据导入状态。
-4. 在首页看板查看商品、供应商、库存、补货建议等统计指标。
-5. 完成一张采购入库单，验证仓库库存增加并生成库存流水。
-6. 新建门店补货申请，依次验证审核、拒绝、转出库单、发货和签收流程。
-7. 生成 AI 补货建议，查看推荐数量、风险等级、推荐理由和采用状态。
-8. 打开 `/docs`，测试用户登录、商品新增、库存调整、补货建议采用或拒绝等接口。
-
-## 4. 多电脑共享访问
-
-如果希望一台电脑新增或修改数据后，其他电脑也能看到，需要让所有电脑访问同一个后端服务和同一个数据库。
-
-在作为服务器的电脑上启动：
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-查询服务器电脑的局域网 IP，例如 `192.168.1.23`。其他电脑访问：
-
-```text
-演示入口：http://192.168.1.23:8000/demo
-API 文档：http://192.168.1.23:8000/docs
-前端演示：http://192.168.1.23:8000/ui/
-```
-
-共享访问模式下，所有新增商品、库存调整、补货申请、出库发货等操作都会写入同一份数据库，因此其他电脑刷新页面后可以看到最新记录。
 
 说明：
 
-- `127.0.0.1` 只代表当前电脑。
-- 多电脑演示时不能每个人各自运行一套本地后端。
-- 推荐使用 OceanBase/MySQL 作为共享数据库；SQLite 仅作为本地开发或应急排查时的回退数据库。
+- `init_db.py --rebuild` 会删除并重建当前 SQLite 数据库，属于破坏性操作。
+- 初始化脚本会加载全部 Agent 模型后统一建表，确保外键引用表完整。
+- `generate_example_data.py` 重新生成 `example/` 下的课程演示 JSON；已有数据文件且不需要重新生成时可以跳过。
+- `load_example_data.py` 导入商品、供应商、仓库、门店、库存、订单、流水、推荐等示例数据。
+- 示例用户导入支持幂等更新，不会与初始化时的预置账号发生工号冲突。
 
-## 5. OceanBase 说明
+### 4. 启动后端
 
-OceanBase 在本项目中作为主数据库服务，不是网站部署平台。系统通过 SQLAlchemy + PyMySQL 接入 OceanBase 的 MySQL 兼容协议，并通过数据库健康检查接口展示当前运行模式。
-
-本地 Docker 启动示例：
-
-```bash
-docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce
+```bat
+cd backend
+uvicorn main:app --reload --port 8000
 ```
 
-`.env` 配置示例：
-
-```env
-DATABASE_URL=mysql+pymysql://root:your-password@127.0.0.1:2881/supply_chain?charset=utf8mb4
-SQLITE_FALLBACK_URL=sqlite:///./schema/supply_chain.db
-```
-
-SQLite 保留为应急回退数据库，用于本地开发、环境排查或主数据库临时不可连接时的保底运行。
-
-## 6. AI API 说明
-
-系统已接入 LLM 路由层，可根据 `backend/.env` 配置选择 DeepSeek、Ollama 或规则模型。AI API 用于对补货建议理由和经营摘要进行文本增强；库存预警、补货数量和风险等级仍由系统规则模型计算，因此 AI 服务不可用时，核心业务流程仍可运行。
-
-### 7.1 配置文件位置
-
-AI 相关配置写在后端目录下的 `.env` 文件中：
+看到以下信息说明 12 个 Agent 已正常注册：
 
 ```text
-Supply_Chain_Management/backend/.env
+[System] All 12 agents registered. Sisyphus orchestrator ready.
 ```
 
-如果还没有 `.env`，先在 `backend` 目录复制模板：
+## 访问地址
 
-```powershell
-cd Supply_Chain_Management/backend
-Copy-Item .env.example .env
+| 功能 | 地址 |
+|---|---|
+| 前端演示 | http://127.0.0.1:8000/demo |
+| 静态前端 | http://127.0.0.1:8000/ui/ |
+| Swagger API 文档 | http://127.0.0.1:8000/docs |
+| 健康检查 | http://127.0.0.1:8000/api/health |
+| 数据库状态 | http://127.0.0.1:8000/api/health/db |
+| Agent 列表 | http://127.0.0.1:8000/api/system/agents |
+| LLM 状态 | http://127.0.0.1:8000/api/llm/status |
+
+## 演示账号
+
+登录接口的 `username` 字段同时接受**用户名或员工工号**，例如 `admin` 和 `A1001` 都能登录同一个账号。
+
+| 用户名 | 工号 | 密码 | 角色 |
+|---|---|---|---|
+| `admin` | `A1001` | `admin123` | 系统管理员 |
+| `buyer` | `P1001` | `buyer123` | 采购专员 |
+| `warehouse` | `W1001` | `warehouse123` | 仓库主管 |
+| `store` | `S1001` | `store123` | 门店员工 |
+| `manager` | `M1001` | `manager123` | 运营经理 |
+
+示例数据还包含两个尚未激活的员工：
+
+| 工号 | 姓名 | 手机号 | 角色 |
+|---|---|---|---|
+| `S2001` | 王敏 | `13000002001` | 门店员工 |
+| `W2001` | 李峰 | `13000002002` | 仓库主管 |
+
+开发环境下，`POST /api/users/verification-code` 会返回明文验证码，便于课程演示；随后可调用 `POST /api/users/register` 激活账号。生产环境 `APP_ENV=prod` 时不应返回明文验证码。
+
+## API 验证示例
+
+健康检查：
+
+```bat
+curl http://127.0.0.1:8000/api/health
+curl http://127.0.0.1:8000/api/health/db
+curl http://127.0.0.1:8000/api/system/agents
 ```
 
-### 7.2 使用 DeepSeek API
+使用工号登录：
 
-在 `backend/.env` 中填写：
+```bat
+curl -X POST http://127.0.0.1:8000/api/users/login -H "Content-Type: application/json" -d "{\"username\":\"A1001\",\"password\":\"admin123\"}"
+```
+
+除健康检查、登录、注册、身份预览和验证码接口外，业务接口需要携带 JWT：
+
+```bat
+curl http://127.0.0.1:8000/api/products -H "Authorization: Bearer <access_token>"
+curl http://127.0.0.1:8000/api/analytics/dashboard -H "Authorization: Bearer <access_token>"
+curl http://127.0.0.1:8000/api/inventory/warnings -H "Authorization: Bearer <access_token>"
+```
+
+## 关键业务流程
+
+### 采购入库
+
+```text
+入库单完成
+-> procurement.inbound.completed
+-> InventoryAgent 增加仓库库存
+-> inventory.stock.increased
+-> TransactionAgent 创建库存流水
+-> 请求事务统一提交
+```
+
+### 补货与出库
+
+```text
+门店创建补货申请
+-> 审核通过
+-> 转换为出库单
+-> 发货后扣减仓库库存并记录流水
+-> 门店签收后增加门店库存并记录流水
+```
+
+调用转出库接口时，`source_warehouse_id` 当前为可选参数；未传入时，系统会自动选择该商品可用库存足够且当前库存量较高的仓库。没有仓库满足数量要求时返回业务错误。
+
+## 数据库行为
+
+- 默认开发数据库：SQLite，文件为 `schema/supply_chain.db`。
+- 配置 MySQL/OceanBase URL 后会优先尝试连接；连接失败时可回退到 `SQLITE_FALLBACK_URL`。
+- `GET /api/health/db` 可查看当前实际使用的数据库方言和脱敏 URL。
+- FastAPI 的请求级数据库依赖会在接口成功后统一 `commit()`，异常时统一 `rollback()`。
+- 当前使用 `Base.metadata.create_all()` 和初始化脚本维护表结构，尚未接入 Alembic。
+
+## 统一响应格式
+
+成功响应：
+
+```json
+{
+  "success": true,
+  "message": "ok",
+  "data": {}
+}
+```
+
+失败响应：
+
+```json
+{
+  "success": false,
+  "message": "错误信息",
+  "data": null
+}
+```
+
+分页列表的 `data` 为：
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "page": 1,
+  "page_size": 20
+}
+```
+
+完整接口定义以 `docs/api_contract.md` 为准。
+
+## LLM 配置
+
+补货数量和风险等级由规则逻辑计算，LLM 只用于增强推荐理由文本，不决定核心库存业务。
+
+默认配置：
+
+```env
+LLM_PROVIDER=rule
+```
+
+可选配置 DeepSeek 或 Ollama：
 
 ```env
 LLM_PROVIDER=deepseek
-DEEPSEEK_API_KEY=你的DeepSeek API Key
-DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_API_KEY=<your-key>
 DEEPSEEK_MODEL=deepseek-chat
-LLM_TIMEOUT_SECONDS=30
-LLM_MAX_RETRIES=2
 ```
-
-其中 `DEEPSEEK_API_KEY` 为 API Key 填写位置。修改 `.env` 后需要重启后端服务：
-
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
-```
-
-### 7.3 使用本地 Ollama
-
-如果使用本地 Ollama，不需要外部 API Key，但需要本机已启动 Ollama 服务并已下载模型。`backend/.env` 示例：
 
 ```env
 LLM_PROVIDER=ollama
@@ -292,46 +298,51 @@ OLLAMA_BASE_URL=http://127.0.0.1:11434
 OLLAMA_MODEL=qwen2.5:7b
 ```
 
-### 7.4 不使用外部 AI
+未配置外部模型时，核心业务仍可正常运行。
 
-如果不配置 DeepSeek API Key，也不使用 Ollama，可以使用规则模型：
+## 测试和检查
 
-```env
-LLM_PROVIDER=rule
+运行依赖中暂未包含 pytest。如需运行测试：
+
+```bat
+backend\.venv\Scripts\activate.bat
+python -m pip install pytest
+cd backend
+python -m pytest -q
 ```
 
-规则模型会返回系统自动生成的补货理由，不调用外部 AI 服务。
+当前仓库已有 pytest 配置和 `conftest.py` 基础设施，但测试用例仍需继续补充；没有测试文件时 pytest 会提示 `no tests ran`。
 
-### 7.5 检查 AI 配置是否生效
+Python 语法检查示例：
 
-启动后端后访问：
-
-```text
-GET http://127.0.0.1:8000/api/llm/status
+```bat
+cd backend
+python -m py_compile main.py
 ```
 
-返回结果中重点查看：
+## 当前限制
 
-- `provider`：当前提供方，例如 `deepseek`、`ollama` 或 `rule`；
-- `model`：当前模型名称；
-- `available`：是否可用；
-- `key_configured`：DeepSeek API Key 是否已配置。
+- Event Bus 是单进程内同步实现，不支持跨进程消息投递、消息持久化和失败重试。
+- 部分跨 Agent 只读查询通过 `kernel/common/query_service.py` 聚合；`recommendation_agent` 仍直接读取库存、门店和供应商模型，尚未完全达到严格 Agent 隔离。
+- 当前没有 Alembic 数据库迁移。
+- 当前测试覆盖有限。
+- `Dockerfile` 和 `docker-compose.yml` 已提供，但目前本地脚本启动流程是已验证的主要运行方式；生产部署前需进一步校准持久化卷、数据库和密钥配置。
 
-### 7.6 生成 AI 智能补货建议
+## 安全说明
 
-前端可以在“智能补货建议”模块点击“生成补货建议”。也可以在 Swagger 中调用：
+本项目是课程 Demo，已经实现：
 
-```text
-POST http://127.0.0.1:8000/api/recommendations/generate?enhance_with_llm=true
-GET http://127.0.0.1:8000/api/recommendations
-```
+- PBKDF2-SHA256 密码哈希存储；
+- JWT Bearer Token 认证；
+- 密码学安全随机验证码；
+- 统一业务异常和数据库异常响应；
+- 至少 32 字节的演示 JWT 默认密钥。
 
-当 `enhance_with_llm=true` 时，系统会先用规则模型计算补货数量、风险等级和基础理由，再尝试调用 AI API 增强推荐理由。如果 AI API 调用失败，系统会保留规则理由并继续返回建议结果。
+生产部署前仍必须：
 
-
-
-## 7. 相关文档
-
-- [接口契约（唯一权威版本）](/docs/api_contract.md)
-- [OceanBase 简介](/docs/OceanBase简介.md)
-- [手动数据操作示例](/docs/手动数据操作示例.md)
+- 使用随机生成的 `AUTH_SECRET_KEY`，不要使用仓库中的演示值；
+- 启用 HTTPS；
+- 补充细粒度角色和权限校验；
+- 将验证码接入真实短信/邮件通道，禁止返回明文；
+- 使用 MySQL/OceanBase 等生产数据库并接入 Alembic；
+- 将进程内 Event Bus 替换为具备可靠投递能力的消息基础设施（如业务规模确有需要）。

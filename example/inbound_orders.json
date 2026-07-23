@@ -1,0 +1,827 @@
+[
+  {
+    "inbound_no": "INEX0001",
+    "purchase_order_no": "POEX0001",
+    "supplier_name": "供应商S02",
+    "warehouse_code": "WH-EAST",
+    "inbound_time": "2026-07-21T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 1",
+    "items": [
+      {
+        "product_code": "P0004",
+        "quantity": 105,
+        "batch_no": "BATCH0001",
+        "production_date": "2026-06-21",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0005",
+        "quantity": 115,
+        "batch_no": "BATCH0001",
+        "production_date": "2026-06-21",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0006",
+        "quantity": 125,
+        "batch_no": "BATCH0001",
+        "production_date": "2026-06-21",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0002",
+    "purchase_order_no": "POEX0002",
+    "supplier_name": "供应商S03",
+    "warehouse_code": "WH-WEST",
+    "inbound_time": "2026-07-20T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 2",
+    "items": [
+      {
+        "product_code": "P0007",
+        "quantity": 110,
+        "batch_no": "BATCH0002",
+        "production_date": "2026-06-20",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0008",
+        "quantity": 120,
+        "batch_no": "BATCH0002",
+        "production_date": "2026-06-20",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0009",
+        "quantity": 130,
+        "batch_no": "BATCH0002",
+        "production_date": "2026-06-20",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0003",
+    "purchase_order_no": "POEX0003",
+    "supplier_name": "供应商S04",
+    "warehouse_code": "WH-COLD",
+    "inbound_time": "2026-07-19T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 3",
+    "items": [
+      {
+        "product_code": "P0010",
+        "quantity": 69,
+        "batch_no": "BATCH0003",
+        "production_date": "2026-06-19",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0011",
+        "quantity": 75,
+        "batch_no": "BATCH0003",
+        "production_date": "2026-06-19",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0012",
+        "quantity": 81,
+        "batch_no": "BATCH0003",
+        "production_date": "2026-06-19",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0004",
+    "purchase_order_no": "POEX0004",
+    "supplier_name": "供应商S05",
+    "warehouse_code": "WH-CENTRAL",
+    "inbound_time": "2026-07-18T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "pending",
+    "remark": "示例入库单 4",
+    "items": [
+      {
+        "product_code": "P0013",
+        "quantity": 120,
+        "batch_no": "BATCH0004",
+        "production_date": "2026-06-18",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0014",
+        "quantity": 130,
+        "batch_no": "BATCH0004",
+        "production_date": "2026-06-18",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0015",
+        "quantity": 140,
+        "batch_no": "BATCH0004",
+        "production_date": "2026-06-18",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0005",
+    "purchase_order_no": "POEX0005",
+    "supplier_name": "供应商S06",
+    "warehouse_code": "WH-EAST",
+    "inbound_time": "2026-07-17T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 5",
+    "items": [
+      {
+        "product_code": "P0016",
+        "quantity": 125,
+        "batch_no": "BATCH0005",
+        "production_date": "2026-06-17",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0017",
+        "quantity": 135,
+        "batch_no": "BATCH0005",
+        "production_date": "2026-06-17",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0018",
+        "quantity": 145,
+        "batch_no": "BATCH0005",
+        "production_date": "2026-06-17",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0006",
+    "purchase_order_no": "POEX0006",
+    "supplier_name": "供应商S07",
+    "warehouse_code": "WH-WEST",
+    "inbound_time": "2026-07-16T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 6",
+    "items": [
+      {
+        "product_code": "P0019",
+        "quantity": 78,
+        "batch_no": "BATCH0006",
+        "production_date": "2026-06-16",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0020",
+        "quantity": 84,
+        "batch_no": "BATCH0006",
+        "production_date": "2026-06-16",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0021",
+        "quantity": 90,
+        "batch_no": "BATCH0006",
+        "production_date": "2026-06-16",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0007",
+    "purchase_order_no": "POEX0007",
+    "supplier_name": "供应商S08",
+    "warehouse_code": "WH-COLD",
+    "inbound_time": "2026-07-15T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 7",
+    "items": [
+      {
+        "product_code": "P0022",
+        "quantity": 135,
+        "batch_no": "BATCH0007",
+        "production_date": "2026-06-15",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0023",
+        "quantity": 145,
+        "batch_no": "BATCH0007",
+        "production_date": "2026-06-15",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0024",
+        "quantity": 155,
+        "batch_no": "BATCH0007",
+        "production_date": "2026-06-15",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0008",
+    "purchase_order_no": "POEX0008",
+    "supplier_name": "供应商S09",
+    "warehouse_code": "WH-CENTRAL",
+    "inbound_time": "2026-07-14T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "pending",
+    "remark": "示例入库单 8",
+    "items": [
+      {
+        "product_code": "P0025",
+        "quantity": 140,
+        "batch_no": "BATCH0008",
+        "production_date": "2026-06-14",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0026",
+        "quantity": 150,
+        "batch_no": "BATCH0008",
+        "production_date": "2026-06-14",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0027",
+        "quantity": 160,
+        "batch_no": "BATCH0008",
+        "production_date": "2026-06-14",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0009",
+    "purchase_order_no": "POEX0009",
+    "supplier_name": "供应商S10",
+    "warehouse_code": "WH-EAST",
+    "inbound_time": "2026-07-13T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 9",
+    "items": [
+      {
+        "product_code": "P0028",
+        "quantity": 87,
+        "batch_no": "BATCH0009",
+        "production_date": "2026-06-13",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0029",
+        "quantity": 93,
+        "batch_no": "BATCH0009",
+        "production_date": "2026-06-13",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0030",
+        "quantity": 99,
+        "batch_no": "BATCH0009",
+        "production_date": "2026-06-13",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0010",
+    "purchase_order_no": "POEX0010",
+    "supplier_name": "供应商S11",
+    "warehouse_code": "WH-WEST",
+    "inbound_time": "2026-07-12T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 10",
+    "items": [
+      {
+        "product_code": "P0031",
+        "quantity": 150,
+        "batch_no": "BATCH0010",
+        "production_date": "2026-06-12",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0032",
+        "quantity": 160,
+        "batch_no": "BATCH0010",
+        "production_date": "2026-06-12",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0033",
+        "quantity": 170,
+        "batch_no": "BATCH0010",
+        "production_date": "2026-06-12",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0011",
+    "purchase_order_no": "POEX0011",
+    "supplier_name": "供应商S12",
+    "warehouse_code": "WH-COLD",
+    "inbound_time": "2026-07-11T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 11",
+    "items": [
+      {
+        "product_code": "P0034",
+        "quantity": 155,
+        "batch_no": "BATCH0011",
+        "production_date": "2026-06-11",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0035",
+        "quantity": 165,
+        "batch_no": "BATCH0011",
+        "production_date": "2026-06-11",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0036",
+        "quantity": 175,
+        "batch_no": "BATCH0011",
+        "production_date": "2026-06-11",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0012",
+    "purchase_order_no": "POEX0012",
+    "supplier_name": "供应商S01",
+    "warehouse_code": "WH-CENTRAL",
+    "inbound_time": "2026-07-10T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "pending",
+    "remark": "示例入库单 12",
+    "items": [
+      {
+        "product_code": "P0037",
+        "quantity": 96,
+        "batch_no": "BATCH0012",
+        "production_date": "2026-06-10",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0038",
+        "quantity": 102,
+        "batch_no": "BATCH0012",
+        "production_date": "2026-06-10",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0039",
+        "quantity": 108,
+        "batch_no": "BATCH0012",
+        "production_date": "2026-06-10",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0013",
+    "purchase_order_no": "POEX0013",
+    "supplier_name": "供应商S02",
+    "warehouse_code": "WH-EAST",
+    "inbound_time": "2026-07-09T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 13",
+    "items": [
+      {
+        "product_code": "P0040",
+        "quantity": 165,
+        "batch_no": "BATCH0013",
+        "production_date": "2026-06-09",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0041",
+        "quantity": 175,
+        "batch_no": "BATCH0013",
+        "production_date": "2026-06-09",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0042",
+        "quantity": 185,
+        "batch_no": "BATCH0013",
+        "production_date": "2026-06-09",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0014",
+    "purchase_order_no": "POEX0014",
+    "supplier_name": "供应商S03",
+    "warehouse_code": "WH-WEST",
+    "inbound_time": "2026-07-08T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 14",
+    "items": [
+      {
+        "product_code": "P0043",
+        "quantity": 170,
+        "batch_no": "BATCH0014",
+        "production_date": "2026-06-08",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0044",
+        "quantity": 180,
+        "batch_no": "BATCH0014",
+        "production_date": "2026-06-08",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0045",
+        "quantity": 190,
+        "batch_no": "BATCH0014",
+        "production_date": "2026-06-08",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0015",
+    "purchase_order_no": "POEX0015",
+    "supplier_name": "供应商S04",
+    "warehouse_code": "WH-COLD",
+    "inbound_time": "2026-07-07T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 15",
+    "items": [
+      {
+        "product_code": "P0046",
+        "quantity": 105,
+        "batch_no": "BATCH0015",
+        "production_date": "2026-06-07",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0047",
+        "quantity": 111,
+        "batch_no": "BATCH0015",
+        "production_date": "2026-06-07",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0048",
+        "quantity": 117,
+        "batch_no": "BATCH0015",
+        "production_date": "2026-06-07",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0016",
+    "purchase_order_no": "POEX0016",
+    "supplier_name": "供应商S05",
+    "warehouse_code": "WH-CENTRAL",
+    "inbound_time": "2026-07-06T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "pending",
+    "remark": "示例入库单 16",
+    "items": [
+      {
+        "product_code": "P0049",
+        "quantity": 180,
+        "batch_no": "BATCH0016",
+        "production_date": "2026-06-06",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0050",
+        "quantity": 190,
+        "batch_no": "BATCH0016",
+        "production_date": "2026-06-06",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0051",
+        "quantity": 200,
+        "batch_no": "BATCH0016",
+        "production_date": "2026-06-06",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0017",
+    "purchase_order_no": "POEX0017",
+    "supplier_name": "供应商S06",
+    "warehouse_code": "WH-EAST",
+    "inbound_time": "2026-07-05T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 17",
+    "items": [
+      {
+        "product_code": "P0052",
+        "quantity": 185,
+        "batch_no": "BATCH0017",
+        "production_date": "2026-06-05",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0053",
+        "quantity": 195,
+        "batch_no": "BATCH0017",
+        "production_date": "2026-06-05",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0054",
+        "quantity": 205,
+        "batch_no": "BATCH0017",
+        "production_date": "2026-06-05",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0018",
+    "purchase_order_no": "POEX0018",
+    "supplier_name": "供应商S07",
+    "warehouse_code": "WH-WEST",
+    "inbound_time": "2026-07-04T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 18",
+    "items": [
+      {
+        "product_code": "P0055",
+        "quantity": 114,
+        "batch_no": "BATCH0018",
+        "production_date": "2026-06-04",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0056",
+        "quantity": 120,
+        "batch_no": "BATCH0018",
+        "production_date": "2026-06-04",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0057",
+        "quantity": 126,
+        "batch_no": "BATCH0018",
+        "production_date": "2026-06-04",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0019",
+    "purchase_order_no": "POEX0019",
+    "supplier_name": "供应商S08",
+    "warehouse_code": "WH-COLD",
+    "inbound_time": "2026-07-03T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 19",
+    "items": [
+      {
+        "product_code": "P0058",
+        "quantity": 195,
+        "batch_no": "BATCH0019",
+        "production_date": "2026-06-03",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0059",
+        "quantity": 205,
+        "batch_no": "BATCH0019",
+        "production_date": "2026-06-03",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0060",
+        "quantity": 215,
+        "batch_no": "BATCH0019",
+        "production_date": "2026-06-03",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0020",
+    "purchase_order_no": "POEX0020",
+    "supplier_name": "供应商S09",
+    "warehouse_code": "WH-CENTRAL",
+    "inbound_time": "2026-07-02T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "pending",
+    "remark": "示例入库单 20",
+    "items": [
+      {
+        "product_code": "P0001",
+        "quantity": 200,
+        "batch_no": "BATCH0020",
+        "production_date": "2026-06-02",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0002",
+        "quantity": 210,
+        "batch_no": "BATCH0020",
+        "production_date": "2026-06-02",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0003",
+        "quantity": 220,
+        "batch_no": "BATCH0020",
+        "production_date": "2026-06-02",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0021",
+    "purchase_order_no": "POEX0021",
+    "supplier_name": "供应商S10",
+    "warehouse_code": "WH-EAST",
+    "inbound_time": "2026-07-01T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 21",
+    "items": [
+      {
+        "product_code": "P0004",
+        "quantity": 123,
+        "batch_no": "BATCH0021",
+        "production_date": "2026-06-01",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0005",
+        "quantity": 129,
+        "batch_no": "BATCH0021",
+        "production_date": "2026-06-01",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0006",
+        "quantity": 135,
+        "batch_no": "BATCH0021",
+        "production_date": "2026-06-01",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0022",
+    "purchase_order_no": "POEX0022",
+    "supplier_name": "供应商S11",
+    "warehouse_code": "WH-WEST",
+    "inbound_time": "2026-06-30T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 22",
+    "items": [
+      {
+        "product_code": "P0007",
+        "quantity": 210,
+        "batch_no": "BATCH0022",
+        "production_date": "2026-05-31",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0008",
+        "quantity": 220,
+        "batch_no": "BATCH0022",
+        "production_date": "2026-05-31",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0009",
+        "quantity": 230,
+        "batch_no": "BATCH0022",
+        "production_date": "2026-05-31",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0023",
+    "purchase_order_no": "POEX0023",
+    "supplier_name": "供应商S12",
+    "warehouse_code": "WH-COLD",
+    "inbound_time": "2026-06-29T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 23",
+    "items": [
+      {
+        "product_code": "P0010",
+        "quantity": 215,
+        "batch_no": "BATCH0023",
+        "production_date": "2026-05-30",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0011",
+        "quantity": 225,
+        "batch_no": "BATCH0023",
+        "production_date": "2026-05-30",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0012",
+        "quantity": 235,
+        "batch_no": "BATCH0023",
+        "production_date": "2026-05-30",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0024",
+    "purchase_order_no": "POEX0024",
+    "supplier_name": "供应商S01",
+    "warehouse_code": "WH-CENTRAL",
+    "inbound_time": "2026-06-28T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "pending",
+    "remark": "示例入库单 24",
+    "items": [
+      {
+        "product_code": "P0013",
+        "quantity": 132,
+        "batch_no": "BATCH0024",
+        "production_date": "2026-05-29",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0014",
+        "quantity": 138,
+        "batch_no": "BATCH0024",
+        "production_date": "2026-05-29",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0015",
+        "quantity": 144,
+        "batch_no": "BATCH0024",
+        "production_date": "2026-05-29",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  },
+  {
+    "inbound_no": "INEX0025",
+    "purchase_order_no": "POEX0025",
+    "supplier_name": "供应商S02",
+    "warehouse_code": "WH-EAST",
+    "inbound_time": "2026-06-27T10:00:00",
+    "handled_by_username": "warehouse",
+    "status": "completed",
+    "remark": "示例入库单 25",
+    "items": [
+      {
+        "product_code": "P0016",
+        "quantity": 225,
+        "batch_no": "BATCH0025",
+        "production_date": "2026-05-28",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0017",
+        "quantity": 235,
+        "batch_no": "BATCH0025",
+        "production_date": "2026-05-28",
+        "expiry_date": "2027-01-18"
+      },
+      {
+        "product_code": "P0018",
+        "quantity": 245,
+        "batch_no": "BATCH0025",
+        "production_date": "2026-05-28",
+        "expiry_date": "2027-01-18"
+      }
+    ]
+  }
+]
