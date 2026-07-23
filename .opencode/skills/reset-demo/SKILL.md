@@ -1,3 +1,8 @@
+---
+name: reset-demo
+description: Use when resetting demo data, restoring the initial demo state, or preparing a clean course demonstration.
+---
+
 # reset-demo — Reset demo data to initial state
 
 Reset the system to a clean demo state.

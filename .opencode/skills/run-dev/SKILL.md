@@ -1,3 +1,8 @@
+---
+name: run-dev
+description: Use when starting the FastAPI backend development server and checking /api/health or /api/health/db.
+---
+
 # run-dev — Start the backend development server
 
 Start the FastAPI development server for this project.

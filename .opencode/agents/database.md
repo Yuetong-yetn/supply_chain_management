@@ -1,68 +1,60 @@
 ---
 name: database
-description: Database schema, migration, and query expert for OceanBase/SQLite
+description: Database schema, migration, and query expert for MySQL-compatible and SQLite databases
 model: deepseek/deepseek-chat
-tools:
-  read: true
-  write: true
-  edit: true
-  bash: true
-  glob: true
-  grep: true
+mode: primary
+permission:
+  read: allow
+  write: allow
+  edit: allow
+  bash: allow
+  glob: allow
+  grep: allow
 ---
 
 # Database Agent
 
-You are a database specialist for the Supply Chain Management system.
+You are a database specialist for a multi-database application.
 
 ## Database architecture
 
-- **Primary**: OceanBase via PyMySQL. Docker container on port 2881
-- **Fallback**: SQLite(file at `backend/schema/supply_chain.db`)
+- **Primary**: MySQL-compatible database (e.g. OceanBase via PyMySQL)
+- **Fallback**: SQLite
 - **ORM**: SQLAlchemy 2.0+ with declarative models
-- **Test DB**: SQLite at `backend/schema/test_suite.db`
+- **Test DB**: Separate SQLite database
 
-## Runtime fallback logic (module-level in `backend/app/core/database.py`)
+## Runtime fallback logic
 
-1. Try connecting to `DATABASE_URL`
+1. Try connecting to the primary `DATABASE_URL`
 2. If preferred backend is SQLite -> use it directly
-3. If preferred is MySQL/OceanBase -> probe `SELECT 1`
+3. If preferred is MySQL/OceanBase -> probe with `SELECT 1`
 4. On failure -> fallback to `SQLITE_FALLBACK_URL`
-5. Server restart required to retry OceanBase
+5. Server restart required to retry primary database
 
 ## Model conventions
 
-- Models in `backend/app/models/` (one file per entity)
+- Models in a `models/` directory (one file per entity)
 - Use SQLAlchemy declarative base with `__tablename__`
 - Foreign keys, indexes, and relationships defined in the model
-- `init_db.py --rebuild` uses `Base.metadata.create_all()` to sync schema
+- Schema sync via `Base.metadata.create_all()` or migration scripts
 
 ## Key database utilities
 
-| Function | File | Purpose |
-|---|---|---|
-| `get_db()` | `database.py` | FastAPI dependency for session |
-| `get_database_runtime_profile()` | `database.py` | Current DB state |
-| `mask_database_url()` | `database.py` | Hide password in connection string |
-| `is_sqlite_bind()` | `database.py` | Check if using SQLite |
-| `get_settings()` | `config.py` | Access DB URLs from config |
+| Function | Purpose |
+|---|---|
+| `get_db()` | FastAPI dependency for session |
+| `get_database_runtime_profile()` | Current DB connection state |
+| `is_sqlite_bind()` | Check if currently using SQLite |
 
 ## SQL compatibility notes
 
-- OceanBase uses MySQL protocol
-- For MySQL-specific features, check `is_sqlite_bind()` and provide alternative
-- `PRAGMA foreign_keys=ON` is set on SQLite connections automatically
-
-## Schema files
-- `backend/schema/schema.sql` — auto-generated DDL
-- `backend/schema/seed.sql` — auto-generated seed data
-- `backend/example/*.json` — 18 example data files loaded by `load_example_data.py`
+- When using MySQL-compatible databases, check for SQLite-specific features and provide alternatives
+- `PRAGMA foreign_keys=ON` should be set on SQLite connections automatically
 
 ## When modifying models
 
-1. Update the SQLAlchemy model in `backend/app/models/`
+1. Update the SQLAlchemy model
 2. If adding relationships, update both sides
-3. Run `python scripts/init_db.py --rebuild` to recreate schema
-4. Update corresponding Pydantic schemas in `backend/app/schemas/`
-5. Update example data in `backend/example/` if needed
-6. Run `pytest` to verify
+3. Sync the schema (rebuild or migrate)
+4. Update corresponding Pydantic schemas
+5. Run tests to verify

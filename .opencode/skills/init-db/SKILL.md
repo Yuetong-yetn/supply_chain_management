@@ -1,3 +1,8 @@
+---
+name: init-db
+description: Use when initializing, rebuilding, resetting, or loading the backend database and example data for this project.
+---
+
 # init-db — Initialize or reset the database
 
 Rebuild the database schema and load example data from scratch.

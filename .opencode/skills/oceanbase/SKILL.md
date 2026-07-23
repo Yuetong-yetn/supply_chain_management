@@ -1,3 +1,8 @@
+---
+name: oceanbase
+description: Use when starting, stopping, configuring, or troubleshooting the OceanBase Docker database for this project.
+---
+
 # oceanbase — Manage OceanBase database
 
 Manage the OceanBase Docker container used as the primary database.

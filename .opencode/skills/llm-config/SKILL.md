@@ -1,3 +1,8 @@
+---
+name: llm-config
+description: Use when configuring DeepSeek, Ollama, or rule-based LLM settings for replenishment recommendation text enhancement.
+---
+
 # llm-config
 
 Set up or change the AI service provider for replenishment recommendation enhancement.

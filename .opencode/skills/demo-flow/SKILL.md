@@ -1,3 +1,8 @@
+---
+name: demo-flow
+description: Use when the user asks to run, verify, or explain the full Supply Chain Management demo flow end to end.
+---
+
 # demo-flow
 
 Run the complete business flow to verify all system features are working.

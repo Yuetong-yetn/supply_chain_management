@@ -1,3 +1,8 @@
+---
+name: add-api
+description: Use when adding a new FastAPI endpoint, router, schema, service method, frontend API call, or updating docs/api_contract.md.
+---
+
 # add-api — Add a new API endpoint
 
 Adding a new API route module

@@ -1,3 +1,8 @@
+---
+name: run-tests
+description: Use when running pytest, a single backend test file, or checking the automated test suite status.
+---
+
 # run-tests — Run automated tests
 
 Execute the pytest test suite for this project.
