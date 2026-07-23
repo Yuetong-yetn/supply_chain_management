@@ -54,6 +54,7 @@ SQLITE_FALLBACK_URL=sqlite:///./schema/supply_chain.db
 ## 7. 初始化数据库并导入示例数据
 
 ```bash
+# 在项目根目录执行
 python scripts/init_db.py --rebuild
 python scripts/load_example_data.py
 ```
@@ -67,7 +68,8 @@ python scripts/load_example_data.py
 ## 8. 启动 FastAPI
 
 ```bash
-uvicorn app.main:app --reload
+# 在 backend/ 目录执行
+uvicorn main:app --reload
 ```
 
 ## 9. 验证数据库连接
@@ -103,5 +105,6 @@ SQLITE_FALLBACK_URL=sqlite:///./schema/supply_chain.db
 ```bash
 python scripts/init_db.py --rebuild
 python scripts/load_example_data.py
-uvicorn app.main:app --reload
+cd backend
+uvicorn main:app --reload
 ```

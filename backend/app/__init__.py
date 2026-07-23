@@ -1,1 +1,0 @@
-"""Supply chain backend package."""

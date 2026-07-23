@@ -52,7 +52,6 @@ supply_chain_multi_agent/
 │   ├── kernel/
 │   │   ├── common/              # 配置、数据库、认证、事件总线、共享查询
 │   │   └── sisyphus/            # Agent 注册、路由挂载与工作流编排
-│   ├── tests/                   # pytest 基础设施
 │   ├── main.py                  # FastAPI 应用入口
 │   ├── requirements.txt         # 后端运行依赖
 │   └── .env.example             # 环境变量示例
@@ -300,9 +299,11 @@ OLLAMA_MODEL=qwen2.5:7b
 
 未配置外部模型时，核心业务仍可正常运行。
 
-## 测试和检查
+## 检查
 
-运行依赖中暂未包含 pytest。如需运行测试：
+当前多智能体框架尚未补齐正式自动化测试，仓库中也不再保留临时接口自检测试。上线前需要重新建立 pytest 测试目录和关键业务用例。
+
+如果后续补充测试，可安装 pytest 后运行：
 
 ```bat
 backend\.venv\Scripts\activate.bat
@@ -310,8 +311,6 @@ python -m pip install pytest
 cd backend
 python -m pytest -q
 ```
-
-当前仓库已有 pytest 配置和 `conftest.py` 基础设施，但测试用例仍需继续补充；没有测试文件时 pytest 会提示 `no tests ran`。
 
 Python 语法检查示例：
 

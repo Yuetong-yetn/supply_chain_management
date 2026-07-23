@@ -141,7 +141,7 @@ fulfillment.outbound.signed
 
 6. **基础设施添加**
    - `.gitignore`、`pyproject.toml`、Dockerfile、docker-compose.yml
-   - `tests/conftest.py` 测试基础设施
+   - 当前测试基础设施已移除，后续需要按多智能体框架重新补齐
 
 ### 📋 仍待处理
 
