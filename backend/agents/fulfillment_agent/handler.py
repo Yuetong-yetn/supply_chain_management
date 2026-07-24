@@ -37,20 +37,11 @@ def convert_to_outbound(db: Session, rid: int, source_warehouse_id: int | None =
     if r.audit_status != "approved": raise BusinessException("only approved can convert")
     if r.generated_outbound_order_id: raise BusinessException("already converted")
     if source_warehouse_id is None:
-        from agents.inventory_agent.models import Inventory
+        from kernel.common.query_service import find_warehouse_with_available_stock
 
-        inv = db.scalar(
-            select(Inventory)
-            .where(
-                Inventory.product_id == r.product_id,
-                Inventory.location_type == "warehouse",
-                Inventory.current_quantity - Inventory.frozen_quantity >= r.request_quantity,
-            )
-            .order_by(Inventory.current_quantity.desc())
-        )
-        if not inv or not inv.warehouse_id:
+        source_warehouse_id = find_warehouse_with_available_stock(db, r.product_id, r.request_quantity)
+        if not source_warehouse_id:
             raise BusinessException("no warehouse has enough available inventory")
-        source_warehouse_id = inv.warehouse_id
     o = OutboundOrder(outbound_no=generate_no("OUT", db), source_warehouse_id=source_warehouse_id,
                        target_store_id=r.store_id, handled_by=handled_by,
                        source_request_id=r.id, status="pending")

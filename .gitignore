@@ -23,6 +23,12 @@ backend/schema/*.db
 # Work plans
 .omo/
 
+# OpenCode AI assistant config
+.opencode/
+
+# Pytest cache
+.pytest_cache/
+
 # Node.js
 node_modules/
 

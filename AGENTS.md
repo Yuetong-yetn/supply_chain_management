@@ -42,7 +42,7 @@ python -m venv .venv
 pip install -r requirements.txt
 Copy-Item .env.example .env
 
-# 数据库初始化（⚠️ 见下方 gotcha）
+# 数据库初始化
 python scripts/init_db.py --rebuild
 python scripts/generate_example_data.py
 python scripts/load_example_data.py

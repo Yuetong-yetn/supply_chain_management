@@ -16,7 +16,7 @@ services:
       - APP_ENV=${APP_ENV:-dev}
       - DATABASE_URL=${DATABASE_URL:-sqlite:///./schema/supply_chain.db}
       - SQLITE_FALLBACK_URL=${SQLITE_FALLBACK_URL:-sqlite:///./schema/supply_chain.db}
-      - AUTH_SECRET_KEY=${AUTH_SECRET_KEY:-course-demo-change-me}
+      - AUTH_SECRET_KEY=${AUTH_SECRET_KEY:-course-demo-change-me-with-32-plus-bytes}
       - LLM_PROVIDER=${LLM_PROVIDER:-rule}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
     volumes:

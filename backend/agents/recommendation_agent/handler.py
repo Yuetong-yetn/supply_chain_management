@@ -4,31 +4,27 @@ from sqlalchemy import delete, func, select
 from kernel.common.database import Session
 from kernel.common.event import Event, event_bus
 from kernel.common.exceptions import BusinessException
+from kernel.common.query_service import list_stores, get_store_inventory, get_supplier_product_by_product
 from .models import AIRecommendation, MonthlySalesFact, Promotion
-from agents.inventory_agent.models import Inventory
-from agents.store_agent.models import Store
-from agents.supplier_agent.models import SupplierProduct
 
 def generate_recommendations(db: Session, store_id: int = None, enhance_with_llm: bool = False):
     if store_id:
         db.execute(delete(AIRecommendation).where(AIRecommendation.store_id == store_id))
     else:
         db.execute(delete(AIRecommendation))
-    stores_q = select(Store)
-    if store_id: stores_q = stores_q.where(Store.id == store_id)
-    stores = list(db.scalars(stores_q))
+    stores = list_stores(db, store_id)
     recs = []
     latest = db.execute(select(MonthlySalesFact.year, MonthlySalesFact.month)
         .order_by(MonthlySalesFact.year.desc(), MonthlySalesFact.month.desc()).limit(1)).first()
     ly, lm = (latest.year, latest.month) if latest else (datetime.now().year, datetime.now().month)
     for store in stores:
-        invs = list(db.scalars(select(Inventory).where(Inventory.store_id == store.id, Inventory.location_type == "store")))
+        invs = get_store_inventory(db, store.id)
         for inv in invs:
             sales = db.scalar(select(func.coalesce(func.sum(MonthlySalesFact.retail_sales), 0))
                 .where(MonthlySalesFact.store_id == store.id, MonthlySalesFact.product_id == inv.product_id,
                        MonthlySalesFact.year == ly, MonthlySalesFact.month == lm)) or 0
             avg_daily = sales / 30
-            sp = db.scalar(select(SupplierProduct).where(SupplierProduct.product_id == inv.product_id))
+            sp = get_supplier_product_by_product(db, inv.product_id)
             lead_time = sp.lead_time_days if sp else 3
             target = math.ceil(avg_daily * (lead_time + 10) + inv.safety_stock)
             qty = max(0, target - inv.current_quantity)

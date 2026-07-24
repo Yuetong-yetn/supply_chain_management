@@ -99,3 +99,45 @@ def get_warehouse_flow_trend(db: Session) -> list[dict]:
         {"year": year, "month": month, "warehouse_name": name or "未知仓库", "warehouse_sales": sales}
         for year, month, name, sales in rows
     ]
+
+
+def list_stores(db: Session, store_id: int | None = None):
+    """返回门店对象列表；可指定 store_id 过滤。"""
+    from agents.store_agent.models import Store
+
+    q = select(Store)
+    if store_id is not None:
+        q = q.where(Store.id == store_id)
+    return list(db.scalars(q))
+
+
+def get_store_inventory(db: Session, store_id: int):
+    """返回指定门店的全部库存记录（Inventory 对象列表）。"""
+    from agents.inventory_agent.models import Inventory
+
+    return list(db.scalars(
+        select(Inventory).where(Inventory.store_id == store_id, Inventory.location_type == "store")
+    ))
+
+
+def get_supplier_product_by_product(db: Session, product_id: int):
+    """返回指定商品的供应商供货关系对象，可能为 None。"""
+    from agents.supplier_agent.models import SupplierProduct
+
+    return db.scalar(select(SupplierProduct).where(SupplierProduct.product_id == product_id))
+
+
+def find_warehouse_with_available_stock(db: Session, product_id: int, quantity: int) -> int | None:
+    """找到该商品可用库存 >= quantity 的仓库，按库存量降序，返回 warehouse_id；无满足条件时返回 None。"""
+    from agents.inventory_agent.models import Inventory
+
+    inv = db.scalar(
+        select(Inventory)
+        .where(
+            Inventory.product_id == product_id,
+            Inventory.location_type == "warehouse",
+            Inventory.current_quantity - Inventory.frozen_quantity >= quantity,
+        )
+        .order_by(Inventory.current_quantity.desc())
+    )
+    return inv.warehouse_id if inv else None
