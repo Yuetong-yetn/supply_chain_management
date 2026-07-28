@@ -1,0 +1,19 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - strong [ref=e10]: Supply Chain
+    - generic [ref=e11]:
+      - text: SUPPLY CHAIN · INVENTORY · FULFILLMENT
+      - heading [level=1] [ref=e12]: 供应链库存协同
+      - heading [level=1] [ref=e13]: 与智能补货管理 系统
+  - generic [ref=e15]:
+    - generic [ref=e16]:
+      - text: WELCOME BACK
+      - heading "工号登录" [level=2] [ref=e17]
+    - generic [ref=e18]: 工号
+    - textbox "工号" [ref=e19]: A1001
+    - generic [ref=e20]: 密码
+    - textbox "密码" [ref=e21]
+    - button "进入系统" [ref=e22] [cursor=pointer]
+    - generic [ref=e23]:
+      - generic [ref=e24]: 还没有账号？
+      - button "立即注册" [ref=e25] [cursor=pointer]

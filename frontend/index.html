@@ -570,10 +570,17 @@
                 <span class="soft-badge" id="inboundResultBadge">0 张单据</span>
               </div>
               <p class="card-description section-note">完成入库后，系统会同步增加目标仓库库存，并在库存流水中生成对应追溯记录。</p>
+              <div class="batch-action-bar" id="inboundBatchBar" hidden>
+                <span class="batch-info" id="inboundBatchInfo">已选择 0 张待入库单</span>
+                <button class="btn btn-primary btn-sm" type="button" id="inboundBatchCompleteBtn" data-action-permission="complete-inbound">
+                  <span class="btn-label">批量完成入库</span>
+                </button>
+              </div>
               <div class="table-responsive">
                 <table class="table app-table align-middle">
                   <thead>
                     <tr>
+                      <th style="width:40px"><input type="checkbox" id="inboundSelectAll" title="全选待入库单" onclick="inboundSelectAll()" /></th>
                       <th>入库单号</th>
                       <th>采购订单</th>
                       <th>供应商</th>
@@ -961,6 +968,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="/ui/api.js?v=20260717-verification-code"></script>
-    <script src="/ui/app.js?v=20260717-login-ui-fix"></script>
+    <script src="/ui/app.js?v=20260728-toggle-fix-final"></script>
   </body>
 </html>

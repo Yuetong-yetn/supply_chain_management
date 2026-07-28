@@ -1,6 +1,10 @@
 import logging
 from pathlib import Path
 
+# --- trigger reload for frontend changes ---
+__frontend_version__ = "v11"
+# -------------------------------------------
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, RedirectResponse

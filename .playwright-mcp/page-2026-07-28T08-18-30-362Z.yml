@@ -1,0 +1,228 @@
+- generic [ref=f3e26]:
+  - complementary [ref=f3e27]:
+    - generic [ref=f3e34]:
+      - strong [ref=f3e35]: Supply Chain
+      - generic [ref=f3e36]: 库存协同管理平台
+    - paragraph [ref=f3e37]: 业务模块
+    - navigation "演示模块导航" [ref=f3e38]:
+      - button "01 首页看板" [ref=f3e39] [cursor=pointer]:
+        - generic [ref=f3e40]: "01"
+        - generic [ref=f3e41]: 首页看板
+      - button "02 基础数据录入" [ref=f3e42] [cursor=pointer]:
+        - generic [ref=f3e43]: "02"
+        - generic [ref=f3e44]: 基础数据录入
+      - button "03 库存查询与预警" [ref=f3e45] [cursor=pointer]:
+        - generic [ref=f3e46]: "03"
+        - generic [ref=f3e47]: 库存查询与预警
+      - button "04 采购入库" [ref=f3e48] [cursor=pointer]:
+        - generic [ref=f3e49]: "04"
+        - generic [ref=f3e50]: 采购入库
+      - button "05 门店补货与出库" [ref=f3e51] [cursor=pointer]:
+        - generic [ref=f3e52]: "05"
+        - generic [ref=f3e53]: 门店补货与出库
+      - button "06 库存流水追溯" [ref=f3e54] [cursor=pointer]:
+        - generic [ref=f3e55]: "06"
+        - generic [ref=f3e56]: 库存流水追溯
+      - button "07 智能补货建议" [ref=f3e57] [cursor=pointer]:
+        - generic [ref=f3e58]: "07"
+        - generic [ref=f3e59]: 智能补货建议
+      - button "08 统计分析" [ref=f3e60] [cursor=pointer]:
+        - generic [ref=f3e61]: "08"
+        - generic [ref=f3e62]: 统计分析
+      - button "09 供应商排行" [ref=f3e63] [cursor=pointer]:
+        - generic [ref=f3e64]: "09"
+        - generic [ref=f3e65]: 供应商排行
+      - button "10 系统状态" [ref=f3e66] [cursor=pointer]:
+        - generic [ref=f3e67]: "10"
+        - generic [ref=f3e68]: 系统状态
+    - generic [ref=f3e69]:
+      - generic [ref=f3e70]: 系统运行正常
+      - generic [ref=f3e73]: 后端服务已连接
+  - generic [ref=f3e74]:
+    - banner [ref=f3e75]:
+      - generic [ref=f3e76]:
+        - paragraph [ref=f3e77]: 智能供应链 · 实时协同
+        - heading "首页看板" [level=1] [ref=f3e78]
+      - generic [ref=f3e79]:
+        - generic [ref=f3e80]:
+          - generic [ref=f3e81]: 当前角色
+          - strong [ref=f3e82]: 系统管理员
+        - button "刷新数据" [ref=f3e83] [cursor=pointer]
+        - button "切换角色" [ref=f3e84] [cursor=pointer]
+    - main [ref=f3e85]:
+      - generic [ref=f3e86]:
+        - generic [ref=f3e87]:
+          - generic [ref=f3e88]:
+            - text: OVERVIEW
+            - heading "智能供应链协同中心" [level=2] [ref=f3e89]
+            - paragraph [ref=f3e90]: 实时感知库存风险 · 自动协同补货出库 · 支撑门店运营决策
+          - generic [ref=f3e91]:
+            - generic [ref=f3e92]: 数据更新时间
+            - strong [ref=f3e93]: 16:18:29
+          - generic [ref=f3e94]:
+            - generic [ref=f3e95]: 实时感知
+            - generic [ref=f3e97]: 风险识别
+            - generic [ref=f3e99]: 协同执行
+            - generic [ref=f3e101]: 经营支撑
+        - generic [ref=f3e102]:
+          - article [ref=f3e103]:
+            - generic [ref=f3e104]: 在库商品总数
+            - strong [ref=f3e105]: "60"
+            - generic [ref=f3e106]: 当前纳入库存管理的商品
+          - article [ref=f3e107]:
+            - generic [ref=f3e108]: 合作供应商规模
+            - strong [ref=f3e109]: "12"
+            - generic [ref=f3e110]: 已接入协同采购网络
+          - article [ref=f3e111]:
+            - generic [ref=f3e112]: 库存异常监控预警
+            - strong [ref=f3e113]: "136"
+            - generic [ref=f3e114]: 27 条缺货 · 109 条积压
+          - article [ref=f3e115]:
+            - generic [ref=f3e116]: 智能补货建议
+            - strong [ref=f3e117]: "20"
+            - generic [ref=f3e118]: 其中 7 条高风险建议
+        - generic "供应链次级指标" [ref=f3e119]:
+          - generic [ref=f3e120]:
+            - generic [ref=f3e121]: 仓库节点
+            - strong [ref=f3e122]: "4"
+          - generic [ref=f3e123]:
+            - generic [ref=f3e124]: 门店节点
+            - strong [ref=f3e125]: "8"
+          - generic [ref=f3e126]:
+            - generic [ref=f3e127]: 库存总量
+            - strong [ref=f3e128]: 58,160
+          - generic [ref=f3e129]:
+            - generic [ref=f3e130]: 近期出库量
+            - strong [ref=f3e131]: "540"
+        - article [ref=f3e132]:
+          - generic [ref=f3e133]:
+            - generic [ref=f3e134]:
+              - text: BUSINESS FLOW
+              - heading "业务协同主线" [level=3] [ref=f3e135]
+            - generic [ref=f3e136]: 演示主流程
+          - generic "业务协同主线" [ref=f3e137]:
+            - generic [ref=f3e138]:
+              - generic [ref=f3e139]: "1"
+              - generic [ref=f3e140]:
+                - strong [ref=f3e141]: 采购入库
+                - generic [ref=f3e142]: 采购到货后入仓
+            - generic [ref=f3e143]: "->"
+            - generic [ref=f3e144]:
+              - generic [ref=f3e145]: "2"
+              - generic [ref=f3e146]:
+                - strong [ref=f3e147]: 仓库库存
+                - generic [ref=f3e148]: 形成可用库存池
+            - generic [ref=f3e149]: "->"
+            - generic [ref=f3e150]:
+              - generic [ref=f3e151]: "3"
+              - generic [ref=f3e152]:
+                - strong [ref=f3e153]: 门店补货申请
+                - generic [ref=f3e154]: 门店提交需求
+            - generic [ref=f3e155]: "->"
+            - generic [ref=f3e156]:
+              - generic [ref=f3e157]: "4"
+              - generic [ref=f3e158]:
+                - strong [ref=f3e159]: 自动分仓出库
+                - generic [ref=f3e160]: 系统分配来源仓库
+            - generic [ref=f3e161]: "->"
+            - generic [ref=f3e162]:
+              - generic [ref=f3e163]: "5"
+              - generic [ref=f3e164]:
+                - strong [ref=f3e165]: 门店签收
+                - generic [ref=f3e166]: 签收后库存入店
+            - generic [ref=f3e167]: "->"
+            - generic [ref=f3e168]:
+              - generic [ref=f3e169]: "6"
+              - generic [ref=f3e170]:
+                - strong [ref=f3e171]: 智能补货建议
+                - generic [ref=f3e172]: 生成后续补货参考
+        - generic [ref=f3e173]:
+          - article [ref=f3e174]:
+            - generic [ref=f3e175]:
+              - generic [ref=f3e176]:
+                - text: INVENTORY ALERTS
+                - heading "当前库存异常警告" [level=3] [ref=f3e177]
+              - button "查看完整预警清单 ->" [ref=f3e178] [cursor=pointer]
+            - paragraph [ref=f3e179]: 自动检测库存量与安全线偏离，优先展示需要处理的商品。
+            - generic [ref=f3e180]:
+              - generic [ref=f3e181]:
+                - generic [ref=f3e183]:
+                  - strong [ref=f3e184]: 矿泉水 550ml
+                  - generic [ref=f3e185]: 仓库 · 库存积压
+                - generic [ref=f3e186]:
+                  - strong [ref=f3e187]: "580"
+                  - generic [ref=f3e188]: 安全库存 11
+              - generic [ref=f3e189]:
+                - generic [ref=f3e191]:
+                  - strong [ref=f3e192]: 苏打水 500ml
+                  - generic [ref=f3e193]: 仓库 · 库存积压
+                - generic [ref=f3e194]:
+                  - strong [ref=f3e195]: "660"
+                  - generic [ref=f3e196]: 安全库存 12
+              - generic [ref=f3e197]:
+                - generic [ref=f3e199]:
+                  - strong [ref=f3e200]: 绿茶 500ml
+                  - generic [ref=f3e201]: 仓库 · 库存积压
+                - generic [ref=f3e202]:
+                  - strong [ref=f3e203]: "740"
+                  - generic [ref=f3e204]: 安全库存 13
+              - generic [ref=f3e205]:
+                - generic [ref=f3e207]:
+                  - strong [ref=f3e208]: 绿茶 500ml
+                  - generic [ref=f3e209]: 仓库 · 库存积压
+                - generic [ref=f3e210]:
+                  - strong [ref=f3e211]: "400"
+                  - generic [ref=f3e212]: 安全库存 13
+              - generic [ref=f3e213]:
+                - generic [ref=f3e215]:
+                  - strong [ref=f3e216]: 可乐 330ml
+                  - generic [ref=f3e217]: 仓库 · 库存积压
+                - generic [ref=f3e218]:
+                  - strong [ref=f3e219]: "820"
+                  - generic [ref=f3e220]: 安全库存 14
+          - article [ref=f3e221]:
+            - generic [ref=f3e222]:
+              - generic [ref=f3e223]:
+                - text: SMART REPLENISHMENT
+                - heading "核心补货协同建议" [level=3] [ref=f3e224]
+              - button "进入智能补货中心 ->" [ref=f3e225] [cursor=pointer]
+            - paragraph [ref=f3e226]: 依据库存、安全线与近期出库量，给出优先补货对象与数量。
+            - generic [ref=f3e227]:
+              - generic [ref=f3e228]:
+                - generic [ref=f3e229]:
+                  - generic [ref=f3e230]: 高风险
+                  - strong [ref=f3e231]: 绿茶 500ml
+                  - generic [ref=f3e232]: STORE-C 门店 · 规则型智能补货建议
+                - generic [ref=f3e233]:
+                  - generic [ref=f3e234]: 建议补货量
+                  - strong [ref=f3e235]: "52"
+              - generic [ref=f3e236]:
+                - generic [ref=f3e237]:
+                  - generic [ref=f3e238]: 高风险
+                  - strong [ref=f3e239]: 乌龙茶 500ml
+                  - generic [ref=f3e240]: STORE-F 门店 · 规则型智能补货建议
+                - generic [ref=f3e241]:
+                  - generic [ref=f3e242]: 建议补货量
+                  - strong [ref=f3e243]: "55"
+              - generic [ref=f3e244]:
+                - generic [ref=f3e245]:
+                  - generic [ref=f3e246]: 高风险
+                  - strong [ref=f3e247]: 薯片 原味
+                  - generic [ref=f3e248]: STORE-A 门店 · 规则型智能补货建议
+                - generic [ref=f3e249]:
+                  - generic [ref=f3e250]: 建议补货量
+                  - strong [ref=f3e251]: "58"
+              - generic [ref=f3e252]:
+                - generic [ref=f3e253]:
+                  - generic [ref=f3e254]: 高风险
+                  - strong [ref=f3e255]: 方便面 红烧牛肉味
+                  - generic [ref=f3e256]: STORE-D 门店 · 规则型智能补货建议
+                - generic [ref=f3e257]:
+                  - generic [ref=f3e258]: 建议补货量
+                  - strong [ref=f3e259]: "61"
+        - article [ref=f3e260]:
+          - generic [ref=f3e261]:
+            - generic [ref=f3e262]:
+              - text: INVENTORY RANKING
+              - heading "商品库存排行" [level=3] [ref=f3e263]
+            - generic [ref=f3e264]: Top 10

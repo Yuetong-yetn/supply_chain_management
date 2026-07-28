@@ -1,5 +1,6 @@
 (function () {
   "use strict";
+  // v20260728-batch-fix2
 
   const API = window.SupplyAPI;
 
@@ -1309,6 +1310,81 @@
     return fallback ? [fallback] : [];
   }
 
+  let inboundSelectedIds = new Set();
+
+  window.inboundSelectAll = function() {
+    var selAll = document.getElementById("inboundSelectAll");
+    var checked = !!selAll && selAll.checked;
+    var pendingRows = document.querySelectorAll('#inboundTableBody tr[data-pending="true"]');
+    pendingRows.forEach(function(tr) {
+      var cb = tr.querySelector('input[type="checkbox"]');
+      if (cb) cb.checked = checked;
+      var id = Number(tr.dataset.id);
+      if (checked) inboundSelectedIds.add(id);
+      else inboundSelectedIds.delete(id);
+    });
+    inboundUpdateBatchBar();
+  };
+
+  window.inboundToggleRow = function(id) {
+    var cb = document.querySelector('.inbound-row-checkbox[data-id="' + id + '"]');
+    var tr = cb ? cb.closest("tr") : null;
+    var isPending = tr && tr.dataset.pending === "true";
+    if (!isPending) { if (cb) cb.checked = false; return; }
+    cb.checked = !cb.checked;
+    if (cb.checked) inboundSelectedIds.add(id);
+    else inboundSelectedIds.delete(id);
+    var selAll = document.getElementById("inboundSelectAll");
+    if (selAll) selAll.checked = false;
+    inboundUpdateBatchBar();
+  };
+
+  function inboundUpdateBatchBar() {
+    const pendingIds = [...inboundSelectedIds].filter((id) => {
+      const tr = document.querySelector(`#inboundTableBody tr[data-id="${id}"]`);
+      return tr && tr.dataset.pending === "true";
+    });
+    inboundSelectedIds = new Set(pendingIds);
+    const count = inboundSelectedIds.size;
+    const bar = $("inboundBatchBar");
+    if (count > 0 && canDo("complete-inbound")) {
+      bar.hidden = false;
+      setText("inboundBatchInfo", `已选择 ${count} 张待入库单`);
+    } else {
+      bar.hidden = true;
+    }
+  }
+
+  function inboundClearSelection() {
+    inboundSelectedIds.clear();
+    const selectAll = $("inboundSelectAll");
+    if (selectAll) selectAll.checked = false;
+    inboundUpdateBatchBar();
+  }
+
+  async function handleInboundBatchComplete() {
+    if (!canDo("complete-inbound")) return;
+    const ids = [...inboundSelectedIds];
+    if (!ids.length) return;
+    if (!window.confirm(`确认完成 ${ids.length} 张入库单？完成入库后库存将同步增加。`)) return;
+    const btn = $("inboundBatchCompleteBtn");
+    try {
+      btn.disabled = true;
+      btn.querySelector(".btn-label").textContent = "处理中…";
+      const result = await API.completeInboundBatch(ids);
+      inboundClearSelection();
+      showToast(`批量入库完成：${result.completed} 张单据已处理`, "success");
+      await loadInbound();
+      if (hasModuleAccess("dashboard")) await loadDashboard();
+      if (hasModuleAccess("transactions")) await loadTransactions();
+    } catch (err) {
+      showToast(`批量入库失败：${err.message}`, "error");
+    } finally {
+      btn.disabled = false;
+      btn.querySelector(".btn-label").textContent = "批量完成入库";
+    }
+  }
+
   async function loadInbound() {
     await loadLookups();
     const rows = listItems(await API.getInboundOrders());
@@ -1317,7 +1393,8 @@
       ? rows
           .map(
             (item) => `
-              <tr>
+              <tr data-id="${item.id}" data-pending="${item.status === "pending" ? "true" : "false"}">
+                <td onclick="var cb=this.querySelector('.inbound-row-checkbox');if(cb&&!cb.disabled){cb.checked=!cb.checked;setTimeout(function(){inboundToggleRow(${item.id})},0)}"><input type="checkbox" class="inbound-row-checkbox" data-id="${item.id}" ${item.status === "pending" ? "" : "disabled"} /></td>
                 <td><strong>${escapeHtml(item.inbound_no)}</strong><small class="cell-subtitle">ID ${escapeHtml(item.id)}</small></td>
                 <td>${item.purchase_order_id ? `PO #${escapeHtml(item.purchase_order_id)}` : "--"}</td>
                 <td>${escapeHtml(supplierName(item.supplier_id))}</td>
@@ -1337,7 +1414,8 @@
               </tr>`,
           )
           .join("")
-      : emptyRow(8, "暂无入库单，请先导入演示数据");
+      : emptyRow(9, "暂无入库单，请先导入演示数据");
+    inboundClearSelection();
     state.loadedViews.add("inbound");
   }
 
@@ -2662,6 +2740,8 @@
         handleRowAction(actionButton);
       }
     });
+
+    document.getElementById("inboundBatchCompleteBtn")?.addEventListener("click", handleInboundBatchComplete);
 
     $("mobileMenuBtn").addEventListener("click", () => {
       const sidebar = $("appSidebar");

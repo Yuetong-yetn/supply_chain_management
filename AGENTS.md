@@ -24,7 +24,7 @@ backend/
 │       ├── router.py    # FastAPI APIRouter（只做参数校验）
 │       ├── handler.py   # 业务逻辑
 │       └── models.py    # SQLAlchemy 模型
-├── main.py              # 入口：启动时注册所有 Agent → 挂载路由
+├── main.py              # 入口：启动时注册所有 Agent，挂载路由
 └── .env.example
 ```
 
@@ -67,15 +67,15 @@ curl http://127.0.0.1:8000/api/health            # 健康检查
 ### 事件流（核心业务流程）
 ```
 procurement.inbound.completed
-  → inventory_agent: increase_stock()  发布 inventory.stock.increased
-  → transaction_agent: 记录流水（当前未实现事件回调）
+ ，inventory_agent: increase_stock()  发布 inventory.stock.increased
+ ，transaction_agent: 记录流水（当前未实现事件回调）
 
 fulfillment.outbound.shipped
-  → inventory_agent: decrease_stock()  发布 inventory.stock.decreased
-  → transaction_agent: 记录流水
+ ，inventory_agent: decrease_stock()  发布 inventory.stock.decreased
+ ，transaction_agent: 记录流水
 
 fulfillment.outbound.signed
-  → inventory_agent: increase_store_stock()
+ ，inventory_agent: increase_store_stock()
 ```
 
 ### 响应格式
@@ -90,7 +90,7 @@ fulfillment.outbound.signed
 
 ### 错误处理
 - 业务异常：`raise BusinessException("消息", status_code)`
-- 框架自动处理：BusinessException → 400, RequestValidationError → 422, IntegrityError → 400
+- 框架自动处理：BusinessException，400, RequestValidationError，422, IntegrityError，400
 
 ---
 
@@ -159,11 +159,11 @@ fulfillment.outbound.signed
 # 4. 启动后访问 /api/system/agents 确认注册成功
 
 # import 规则：
-#   handler.py → from kernel.common.{database,exceptions,event}
-#   handler.py → 可 from .models, from .events
-#   handler.py → 不可 from agents.other_agent.handler
-#   router.py  → 从 .handler import 函数
-#   models.py  → 从 kernel.common.database import Base
+#   handler.py，from kernel.common.{database,exceptions,event}
+#   handler.py，可 from .models, from .events
+#   handler.py，不可 from agents.other_agent.handler
+#   router.py ，从 .handler import 函数
+#   models.py ，从 kernel.common.database import Base
 ```
 
 ---

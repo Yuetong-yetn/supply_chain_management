@@ -46,3 +46,26 @@ def complete_inbound(db: Session, iid: int):
         "_db": db,
     }))
     return o
+
+def batch_complete_inbound(db: Session, ids: list[int]):
+    if not ids:
+        raise BusinessException("inbound order id list is empty")
+    orders = []
+    for iid in ids:
+        o = db.get(InboundOrder, iid)
+        if not o:
+            raise BusinessException(f"inbound order {iid} not found", 404)
+        if o.status != "pending":
+            raise BusinessException(f"inbound order {iid} status is {o.status}, only pending can be completed")
+        orders.append(o)
+    for o in orders:
+        o.status = "completed"
+        items = list(db.scalars(select(InboundItem).where(InboundItem.inbound_order_id == o.id)))
+        db.flush()
+        event_bus.publish(Event(type=EVENT_INBOUND_COMPLETED, source="procurement_agent", data={
+            "inbound_order_id": o.id, "warehouse_id": o.warehouse_id,
+            "items": [{"product_id": i.product_id, "quantity": i.quantity} for i in items],
+            "handled_by": o.handled_by,
+            "_db": db,
+        }))
+    return orders

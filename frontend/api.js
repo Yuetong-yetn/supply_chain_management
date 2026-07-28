@@ -103,6 +103,7 @@
     getInventory: () => getAllPages("/inventory", { pageSize: 100 }),
     getInboundOrders: () => get("/inbound-orders?page=1&page_size=100"),
     completeInbound: (orderId) => post(`/inbound-orders/${orderId}/complete`),
+    completeInboundBatch: (ids) => post("/inbound-orders/batch-complete", { ids }),
     getReplenishmentRequests: () => get("/replenishment-requests?page=1&page_size=100"),
     approveReplenishment: (requestId, auditedBy) =>
       post(`/replenishment-requests/${requestId}/approve?audited_by=${encodeURIComponent(auditedBy)}`),

@@ -1239,6 +1239,51 @@ POST /api/inbound-orders/{order_id}/complete
 }
 ```
 
+### 9.6 批量完成入库
+
+```http
+POST /api/inbound-orders/batch-complete
+```
+
+请求：
+
+```json
+{
+  "ids": [1, 2, 3]
+}
+```
+
+响应：
+
+```json
+{
+  "success": true,
+  "message": "ok",
+  "data": {
+    "completed": 3
+  }
+}
+```
+
+业务规则：
+
+- `ids` 数组不能为空。
+- 每个 ID 对应的入库单必须存在。
+- 每个入库单必须为 `pending` 状态。
+- 所有操作在同一事务内完成：任一入库单失败则全部回滚。
+- 每个入库单完成时会分别发布 `procurement.inbound.completed` 事件。
+- 重复调用已完成的入库单会失败并回滚。
+
+失败示例：
+
+```json
+{
+  "success": false,
+  "message": "inbound order 2 status is completed, only pending can be completed",
+  "data": null
+}
+```
+
 ---
 
 ## 10. 门店补货申请接口

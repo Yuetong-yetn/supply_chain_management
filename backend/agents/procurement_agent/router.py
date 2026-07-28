@@ -4,7 +4,7 @@ from kernel.common.database import get_db, Session
 from kernel.common.response import success_response, page_response
 from kernel.common.auth import get_current_user
 from agents.user_agent.models import User
-from .handler import create_purchase_order, confirm_purchase_order, cancel_purchase_order, generate_no, complete_inbound
+from .handler import create_purchase_order, confirm_purchase_order, cancel_purchase_order, generate_no, complete_inbound, batch_complete_inbound
 from .models import PurchaseOrder, InboundOrder
 
 router = APIRouter(prefix="/api", tags=["procurement"])
@@ -62,3 +62,10 @@ def get_inbound(iid: int, db: Session = Depends(get_db), current_user: User = De
 @router.post("/inbound-orders/{iid}/complete")
 def complete_inbound_route(iid: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return success_response(complete_inbound(db, iid))
+
+class BatchCompleteInboundRequest(BaseModel):
+    ids: list[int]
+
+@router.post("/inbound-orders/batch-complete")
+def batch_complete_inbound_route(data: BatchCompleteInboundRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return success_response({"completed": len(batch_complete_inbound(db, data.ids))})

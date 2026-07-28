@@ -124,7 +124,7 @@ def get_database_runtime_profile(db: Session | None = None) -> dict[str, str]:
     # 脱敏：隐藏 URL 中的密码
     masked = active_database_url
     if "@" in masked:
-        # mysql+pymysql://user:password@host/db → mysql+pymysql://user:***@host/db
+        # mysql+pymysql://user:password@host/db，mysql+pymysql://user:***@host/db
         prefix, rest = masked.split("@", 1)
         if "://" in prefix:
             scheme, cred = prefix.split("://", 1)
