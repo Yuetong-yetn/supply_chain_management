@@ -86,6 +86,7 @@ def set_sqlite_pragma(dbapi_connection, _connection_record):
         return
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON;")
+    cursor.execute("PRAGMA busy_timeout=30000;")
     cursor.close()
 
 
