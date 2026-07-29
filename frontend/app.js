@@ -1080,19 +1080,43 @@
 
     if (showWarnings) {
       const rankingRows = listItems(ranking).slice(0, 10);
+      const productNames = rankingRows.map((item) => item.product_name);
+      const invValues = rankingRows.map((item) => Number(item.quantity || 0));
+      const invMax = Math.max(...invValues, 1);
       updateChart("dashboardInventoryChart", {
         ...baseChartOption(),
-        grid: { left: 130, right: 42, top: 20, bottom: 34 },
+        tooltip: {
+          trigger: "axis",
+          backgroundColor: "rgba(22, 32, 51, .94)",
+          borderWidth: 0,
+          textStyle: { color: "#fff" },
+          formatter: function (params) {
+            if (!params || !params.length) return "";
+            const p = params[0];
+            const row = rankingRows[p.dataIndex];
+            return `<strong>${escapeHtml(row.product_name)}</strong><br/>库存数量：<strong>${formatNumber(row.quantity)}</strong>`;
+          },
+        },
+        grid: { left: 140, right: 42, top: 20, bottom: 34, containLabel: true },
         xAxis: {
           type: "value",
+          min: 0,
+          max: Math.ceil(invMax * 1.15),
           axisLabel: { color: "#7a879c", hideOverlap: true },
           splitLine: { lineStyle: { color: "#edf1f7" } },
         },
         yAxis: {
           type: "category",
           inverse: true,
-          data: rankingRows.map((item) => item.product_name),
-          axisLabel: { color: "#4d5b70", width: 118, overflow: "truncate", align: "right", margin: 12 },
+          data: productNames,
+          axisLabel: {
+            color: "#4d5b70",
+            width: 126,
+            overflow: "truncate",
+            align: "right",
+            margin: 12,
+            fontSize: 11,
+          },
           axisLine: { show: false },
           axisTick: { show: false },
         },
@@ -1100,7 +1124,7 @@
           {
             name: "库存数量",
             type: "bar",
-            data: rankingRows.map((item) => Number(item.quantity || 0)),
+            data: invValues,
             barWidth: 13,
             itemStyle: {
               borderRadius: [0, 7, 7, 0],
@@ -1165,7 +1189,7 @@
             <div>
               ${statusBadge(item.risk_level)}
               <strong>${escapeHtml(productName(item.product_id))}</strong>
-              <small>${escapeHtml(storeName(item.store_id))} · 规则型智能补货建议</small>
+              <small>${escapeHtml(storeName(item.store_id))} · ${item.llm_used ? "LLM 增强" : "规则模型"}</small>
             </div>
             <div class="dashboard-recommendation-quantity">
               <span>建议补货量</span>
@@ -1855,19 +1879,36 @@
     setText("analyticsProducts", formatNumber(dashboard.product_count));
     setText("analyticsResultBadge", `Top ${rankingRows.length || 0}`);
 
+    const anRankingRows = rankingRows;
+    const anValues = anRankingRows.map((item) => Number(item.quantity || 0));
+    const anMax = Math.max(...anValues, 1);
     updateChart("analyticsInventoryChart", {
       ...baseChartOption(),
-      grid: { left: 130, right: 42, top: 20, bottom: 34 },
+      tooltip: {
+        trigger: "axis",
+        backgroundColor: "rgba(22, 32, 51, .94)",
+        borderWidth: 0,
+        textStyle: { color: "#fff" },
+        formatter: function (params) {
+          if (!params || !params.length) return "";
+          const p = params[0];
+          const row = anRankingRows[p.dataIndex];
+          return `<strong>${escapeHtml(row.product_name)}</strong><br/>库存数量：<strong>${formatNumber(row.quantity)}</strong>`;
+        },
+      },
+      grid: { left: 140, right: 42, top: 20, bottom: 34, containLabel: true },
       xAxis: {
         type: "value",
+        min: 0,
+        max: Math.ceil(anMax * 1.15),
         axisLabel: { color: "#7a879c", hideOverlap: true },
         splitLine: { lineStyle: { color: "#edf1f7" } },
       },
       yAxis: {
         type: "category",
         inverse: true,
-        data: rankingRows.map((item) => item.product_name),
-        axisLabel: { color: "#4d5b70", width: 118, overflow: "truncate", align: "right", margin: 12 },
+        data: anRankingRows.map((item) => item.product_name),
+        axisLabel: { color: "#4d5b70", width: 126, overflow: "truncate", align: "right", margin: 12, fontSize: 11 },
         axisLine: { show: false },
         axisTick: { show: false },
       },
@@ -1875,7 +1916,7 @@
         {
           name: "库存数量",
           type: "bar",
-          data: rankingRows.map((item) => Number(item.quantity || 0)),
+          data: anValues,
           barWidth: 13,
           itemStyle: {
             borderRadius: [0, 7, 7, 0],
@@ -2684,10 +2725,11 @@
         showToast("当前角色无权限操作", "error");
         return;
       }
+      const useLlm = $("useLlmToggle") ? $("useLlmToggle").checked : false;
       await runButtonAction(
         event.currentTarget,
         async () => {
-          const result = await API.generateRecommendations();
+          const result = await API.generateRecommendations(useLlm);
           await Promise.all([
             loadRecommendations(),
             hasModuleAccess("dashboard") ? loadDashboard() : Promise.resolve(),
@@ -2695,8 +2737,24 @@
           return result;
         },
         {
-          loadingText: "生成中…",
+          loadingText: useLlm ? "大模型分析中…" : "生成中…",
           successMessage: (result) => `已生成 ${formatNumber(result.count)} 条补货建议`,
+        },
+      );
+    });
+
+    $("recalculateScoresBtn")?.addEventListener("click", async (event) => {
+      const useLlm = $("supplierUseLlmToggle") ? $("supplierUseLlmToggle").checked : false;
+      await runButtonAction(
+        event.currentTarget,
+        async () => {
+          const result = await API.recalculateSupplierScores(useLlm);
+          await loadSuppliers();
+          return result;
+        },
+        {
+          loadingText: useLlm ? "大模型评分中…" : "规则计算中…",
+          successMessage: (result) => `已重新计算 ${formatNumber(result.count)} 家供应商评分`,
         },
       );
     });

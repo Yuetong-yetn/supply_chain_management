@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sqlalchemy import delete, func, select
 
@@ -49,6 +50,8 @@ def recalculate_scores(db: Session, use_llm: bool = True):
     else:
         provider = None  # fallback to rule formula
 
+    # 预先计算各供应商的统计数据
+    supplier_stats = []
     for s in suppliers:
         products = list(db.scalars(select(SupplierProduct).where(SupplierProduct.supplier_id == s.id)))
         count = len(products)
@@ -57,44 +60,54 @@ def recalculate_scores(db: Session, use_llm: bool = True):
                 supplier_id=s.id, product_count=0, score=0, score_source="no_data",
             ))
             continue
-
         avg_lt = sum(p.lead_time_days for p in products) / count
         avg_ot = sum(p.on_time_rate for p in products) / count
         avg_q = sum(p.quality_score for p in products) / count
         delayed = max(0, int(count * (1 - avg_ot) * 10))
+        supplier_stats.append((s, count, avg_lt, avg_ot, avg_q, delayed))
 
-        if provider and provider.name != "rule":
-            # LLM 综合评分
-            ctx = SupplierEvalContext(
-                supplier_id=s.id,
-                supplier_name=s.name,
-                product_count=count,
-                avg_lead_time_days=avg_lt,
-                avg_on_time_rate=avg_ot,
-                avg_quality_score=avg_q,
-                delayed_count=delayed,
-            )
+    if provider and provider.name != "rule":
+        # LLM 综合评分 — 并发调用提升速度
+        def _score_one(s, count, avg_lt, avg_ot, avg_q, delayed):
             try:
-                result: LLMAnalysisResult = provider.evaluate_supplier(ctx)
+                ctx = SupplierEvalContext(
+                    supplier_id=s.id, supplier_name=s.name,
+                    product_count=count, avg_lead_time_days=avg_lt,
+                    avg_on_time_rate=avg_ot, avg_quality_score=avg_q,
+                    delayed_count=delayed,
+                )
+                result = provider.evaluate_supplier(ctx)
                 try:
                     score = max(0, min(100, round(float(result.label))))
                 except (ValueError, TypeError):
                     score = 0
                 score_source = f"llm_{result.llm_provider}: {result.analysis[:80]}"
+                return (s.id, score, score_source)
             except Exception as e:
                 logger.warning("[Supplier] LLM evaluate failed for %s: %s, fallback to rule", s.name, e)
-                # 降级到规则公式
                 score = max(0, min(100, round(100 - avg_lt*2 - delayed*5 + avg_ot*20 + avg_q*10, 2)))
-                score_source = "calculated"
-        else:
-            # 规则公式评分
-            score = max(0, min(100, round(100 - avg_lt*2 - delayed*5 + avg_ot*20 + avg_q*10, 2)))
-            score_source = "calculated"
+                return (s.id, score, "calculated")
 
-        snapshots.append(SupplierScoreSnapshot(
-            supplier_id=s.id, product_count=count, avg_lead_time_days=avg_lt,
-            delayed_arrival_count=delayed, score=score, score_source=score_source,
-        ))
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            futures = [pool.submit(_score_one, *stats) for stats in supplier_stats]
+            results = {}
+            for f in as_completed(futures):
+                sid, score, source = f.result()
+                results[sid] = (score, source)
+            for s, count, avg_lt, avg_ot, avg_q, delayed in supplier_stats:
+                score, score_source = results.get(s.id, (0, "error"))
+                snapshots.append(SupplierScoreSnapshot(
+                    supplier_id=s.id, product_count=count, avg_lead_time_days=avg_lt,
+                    delayed_arrival_count=delayed, score=score, score_source=score_source,
+                ))
+    else:
+        # 规则公式评分
+        for s, count, avg_lt, avg_ot, avg_q, delayed in supplier_stats:
+            score = max(0, min(100, round(100 - avg_lt*2 - delayed*5 + avg_ot*20 + avg_q*10, 2)))
+            snapshots.append(SupplierScoreSnapshot(
+                supplier_id=s.id, product_count=count, avg_lead_time_days=avg_lt,
+                delayed_arrival_count=delayed, score=score, score_source="calculated",
+            ))
 
     for snap in snapshots:
         db.add(snap)

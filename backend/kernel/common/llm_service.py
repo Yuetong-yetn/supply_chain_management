@@ -181,7 +181,7 @@ class RuleProvider(BaseLLMProvider):
 
 
 class DeepseekProvider(BaseLLMProvider):
-    """DeepSeek API Provider"""
+    """DeepSeek API Provider — 复用 httpx.Client 连接池提升并发性能。"""
     name = "deepseek"
 
     def __init__(self, api_key: str, base_url: str, model: str,
@@ -191,18 +191,23 @@ class DeepseekProvider(BaseLLMProvider):
         self.model = model
         self.timeout = float(timeout)
         self.max_retries = max(0, max_retries)
+        # 复用连接池：避免每个请求新建 TCP 连接，提升并发性能
+        self._client = httpx.Client(
+            base_url=self.base_url,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            timeout=self.timeout,
+        )
 
     def _call(self, system_prompt: str, user_prompt: str) -> dict[str, Any] | None:
         """调用 DeepSeek Chat API（含重试），返回解析后的 JSON dict 或 None"""
         last_error = None
         for attempt in range(self.max_retries + 1):
             try:
-                resp = httpx.post(
-                    f"{self.base_url}/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json",
-                    },
+                resp = self._client.post(
+                    "/v1/chat/completions",
                     json={
                         "model": self.model,
                         "messages": [
@@ -212,7 +217,6 @@ class DeepseekProvider(BaseLLMProvider):
                         "temperature": 0.3,
                         "max_tokens": 512,
                     },
-                    timeout=self.timeout,
                 )
                 resp.raise_for_status()
                 body = resp.json()

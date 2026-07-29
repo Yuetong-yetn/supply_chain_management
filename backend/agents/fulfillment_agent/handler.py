@@ -8,7 +8,12 @@ from .events import *
 
 def generate_no(prefix: str, db: Session) -> str:
     today = datetime.now().strftime("%Y%m%d")
-    count = (db.scalar(select(func.count(ReplenishmentRequest.id))) or 0) + 1
+    if prefix == "RR":
+        count = (db.scalar(select(func.count(ReplenishmentRequest.id))) or 0) + 1
+    elif prefix == "OUT":
+        count = (db.scalar(select(func.count(OutboundOrder.id))) or 0) + 1
+    else:
+        count = 1
     return f"{prefix}{today}{count:04d}"
 
 def create_request(db: Session, data: dict):

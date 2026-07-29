@@ -760,6 +760,10 @@
                 <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="recommendations">
                   <span class="btn-label">刷新列表</span>
                 </button>
+                <label class="inline-toggle" style="display:inline-flex;align-items:center;gap:6px;margin-right:8px;font-size:13px;color:#6b7a90;cursor:pointer">
+                  <input type="checkbox" id="useLlmToggle" checked>
+                  <span>LLM 增强</span>
+                </label>
                 <button class="btn btn-primary app-btn" id="generateRecommendationBtn" type="button" data-action-permission="generate-recommendations">
                   <span class="btn-label">生成补货建议</span>
                 </button>
@@ -821,9 +825,18 @@
                 <h2>供应商排行</h2>
                 <p>展示供应商综合评分和对应说明，用于采购协同与合作评估。</p>
               </div>
-              <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="suppliers">
-                <span class="btn-label">刷新排行</span>
-              </button>
+              <div class="section-actions">
+                <label class="inline-toggle" style="display:inline-flex;align-items:center;gap:6px;margin-right:8px;font-size:13px;color:#6b7a90;cursor:pointer">
+                  <input type="checkbox" id="supplierUseLlmToggle" checked>
+                  <span>LLM 评分</span>
+                </label>
+                <button class="btn btn-outline-primary app-btn" id="recalculateScoresBtn" type="button">
+                  <span class="btn-label">重新计算评分</span>
+                </button>
+                <button class="btn btn-outline-primary app-btn module-refresh" type="button" data-loader="suppliers">
+                  <span class="btn-label">刷新排行</span>
+                </button>
+              </div>
             </div>
 
             <article class="content-card chart-card">

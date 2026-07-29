@@ -2,12 +2,25 @@
   "use strict";
 
   const API_BASE = "/api";
-  const REQUEST_TIMEOUT = 15000;
   const ACCESS_TOKEN_KEY = "supplyChainAccessToken";
+  // 不同接口的超时时间（毫秒）
+  const TIMEOUTS = {
+    default: 15000,
+    "/recommendations/generate": 120000,       // 补货生成含 LLM 增强，需 60-120s
+    "/suppliers/recalculate-scores": 60000,    // 供应商评分子 LLM 评分
+  };
+
+  function _getTimeout(path) {
+    for (const [key, t] of Object.entries(TIMEOUTS)) {
+      if (path.includes(key)) return t;
+    }
+    return TIMEOUTS.default;
+  }
 
   async function request(path, options = {}) {
+    const timeoutMs = _getTimeout(path);
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
     const headers = {
       "Content-Type": "application/json",
       ...(options.headers || {}),
@@ -115,9 +128,10 @@
     shipOutbound: (orderId) => post(`/outbound-orders/${orderId}/ship`),
     signOutbound: (orderId) => post(`/outbound-orders/${orderId}/sign`),
     getTransactions: () => getAllPages("/transactions", { pageSize: 100 }),
-    generateRecommendations: () => post("/recommendations/generate"),
+    generateRecommendations: (useLlm) => post(`/recommendations/generate?enhance_with_llm=${useLlm ? 'true' : 'false'}`),
     getRecommendations: () => get("/recommendations"),
     getSupplierRanking: () => get("/suppliers/ranking"),
+    recalculateSupplierScores: (useLlm) => post(`/suppliers/recalculate-scores?use_llm=${useLlm ? 'true' : 'false'}`),
     getUsers: () => get("/users?page=1&page_size=200"),
     getUserIdentityByEmployeeNo: (employeeNo) => get(`/users/identity/${encodeURIComponent(employeeNo)}`),
     sendRegistrationVerificationCode: (payload) => post("/users/verification-code", payload),
