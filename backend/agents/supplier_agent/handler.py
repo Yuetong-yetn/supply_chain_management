@@ -7,7 +7,6 @@ from kernel.common.database import Session
 from kernel.common.exceptions import BusinessException
 from kernel.common.event import Event, event_bus
 from kernel.common.llm_service import (
-    LLMAnalysisResult,
     SupplierEvalContext,
     get_llm_provider,
 )

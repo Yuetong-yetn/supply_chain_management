@@ -150,7 +150,7 @@ def _batch_evaluate_risk_and_enhance(db: Session, provider, recs: list, stores_m
         product_name = _get_name(rec.product_id)
         store_name = _store_name(rec.store_id)
 
-        # 1) LLM 评估补货风险等级
+        # 1) LLM 评估补货风险等级（复用调用方传入的 provider）
         risk_ctx = RestockRiskContext(
             store_id=rec.store_id,
             store_name=store_name,
@@ -165,8 +165,7 @@ def _batch_evaluate_risk_and_enhance(db: Session, provider, recs: list, stores_m
             has_promotion=False,
             recommended_qty=rec.recommended_quantity,
         )
-        risk_provider = get_llm_provider()
-        risk_result = risk_provider.evaluate_restock_risk(risk_ctx)
+        risk_result = provider.evaluate_restock_risk(risk_ctx)
         risk_level = risk_result.label if risk_result and risk_result.label in ("high", "medium", "low") else rec.risk_level
 
         # 2) LLM 增强补货理由

@@ -1,176 +1,141 @@
 # AGENTS.md — Supply Chain Multi-Agent System
 
-## 项目本质
+## What this project is
 
-Sisyphus 总指挥 + 12 个领域 Agent + Event Bus 的**运行时多智能体架构**。
-每个 Agent 自包含模型、业务逻辑和 API 路由，通过事件总线异步通信。
+A **single FastAPI process** that at startup registers 13 Agent modules via `SisyphusOrchestrator`. Each Agent owns its models, handler, router, and event subscriptions. Cross-Agent calls go through an in-process synchronous `EventBus` — **no message queue, no microservices**.
 
-**不是**微服务——仍然是单体 FastAPI 应用，但模块间禁止直接 import 调用。
+**Entrypoint**: `backend/main.py`
+**Agent registration**: `backend/agents/__init__.py` → `register_all_agents(orchestrator)`
+**Route-to-Agent map**: `backend/kernel/sisyphus/gateway.py`
 
----
-
-## 目录结构要点
+## Directory layout (backend)
 
 ```
 backend/
-├── kernel/              # 核心基础设施（不可跨 Agent 调用）
-│   ├── common/          # BaseAgent, EventBus, config, database, auth, cache
-│   └── sisyphus/        # 编排引擎（Orchestrator, Gateway, Workflow）
-├── agents/              # 12 个领域 Agent
-│   ├── __init__.py      # 注册所有 Agent 的入口
-│   └── {agent}/
-│       ├── agent.py     # 继承 BaseAgent，声明元信息
-│       ├── events.py    # 事件常量 + 订阅映射
-│       ├── router.py    # FastAPI APIRouter（只做参数校验）
-│       ├── handler.py   # 业务逻辑
-│       └── models.py    # SQLAlchemy 模型
-├── main.py              # 入口：启动时注册所有 Agent，挂载路由
-└── .env.example
+├── kernel/common/       # Shared infra: config, db, auth, llm_service, event bus, exceptions
+├── kernel/sisyphus/      # Orchestrator + gateway + workflow
+├── agents/{agent}/       # 13 agents, each with agent.py, router.py, handler.py, models.py, events.py
+├── scripts/              # init_db, generate/load example data — run from project ROOT, not backend/
+├── main.py
+└── .env                  # DATABASE_URL, LLM_PROVIDER, AUTH_SECRET_KEY
 ```
 
----
-
-## 关键命令
+## Startup commands (all from backend/)
 
 ```powershell
-# 所有命令在 backend/ 下执行
-cd backend
-
-# 首次启动
-python -m venv .venv
-.venv\Scripts\activate
+backend/.venv/Scripts/Activate.ps1
 pip install -r requirements.txt
-Copy-Item .env.example .env
 
-# 数据库初始化
+# DB init scripts run from PROJECT ROOT (not backend/):
+# cd ..
 python scripts/init_db.py --rebuild
 python scripts/generate_example_data.py
 python scripts/load_example_data.py
 
-# 启动
+# Start dev server (from backend/):
+cd backend
 uvicorn main:app --reload --port 8000
-
-# 验证
-curl http://127.0.0.1:8000/api/system/agents   # 应返回 12 个 Agent
-curl http://127.0.0.1:8000/api/health            # 健康检查
 ```
 
----
+**Gotcha**: `init_db.py` etc. reference `backend/` paths — they MUST run from the project root directory, not from `backend/`.
 
-## 架构规则
+## Architecture rules
 
-### Agent 边界（重要）
-- **禁止** Agent A 的 handler.py 直接 import Agent B 的 handler.py
-- 跨 Agent 协作必须通过 **Event Bus**：`event_bus.publish(Event(...))`
-- **例外**（当前代码中的不一致）：analytics_agent 和 recommendation_agent 直接 import 了其他 Agent 的 models——这是违反规则的，需要重构为只读 API 调用
+### Agent isolation
+- Agent A's `handler.py` MUST NOT import Agent B's `handler.py` directly.
+- Cross-Agent data access goes through `kernel/common/query_service.py` (lazy imports inside functions).
+- Cross-Agent **logic** goes through `event_bus.publish(Event(...))`.
+- Exception: `recommendation_agent` still directly imports other agents' models (historical, not yet fully isolated).
+- All `from agents.other_agent.models import ...` must be inside a function (lazy import), never at module top level.
 
-### 事件流（核心业务流程）
+### Each Agent must implement (see `kernel/common/base_agent.py`)
+- `info` → `AgentInfo(name, description, owns_tables)`
+- `register_routes()` → list of `APIRouter`
+- `register_subscriptions()` → `{event_type: handler}` dict
+
+### Event bus behavior
+- Synchronous, in-process. All subscribers run before `publish()` returns.
+- If a subscriber fails, other subscribers still run; the publisher is not affected (error logged, not raised).
+- Events carry `_db` key when the subscriber needs to reuse the publisher's DB session.
+
+### All API responses
+```json
+{"success": true, "message": "ok", "data": ...}
+{"success": false, "message": "error string", "data": null}
 ```
-procurement.inbound.completed
- ，inventory_agent: increase_stock()  发布 inventory.stock.increased
- ，transaction_agent: 记录流水（当前未实现事件回调）
+Errors are handled by exception handlers in `main.py`: `BusinessException → 400`, `RequestValidationError → 422`, `IntegrityError → 400`, unhandled → 500.
 
-fulfillment.outbound.shipped
- ，inventory_agent: decrease_stock()  发布 inventory.stock.decreased
- ，transaction_agent: 记录流水
+## 13 Agents at a glance
 
-fulfillment.outbound.signed
- ，inventory_agent: increase_store_stock()
-```
+| Route prefix | Agent | Owned tables | Key events |
+|---|---|---|---|
+| `/api/users` | user_agent | users | publishes `user.logged_in` |
+| `/api/products`, `/api/categories` | product_agent | products, categories | publishes `product.created` |
+| `/api/suppliers` | supplier_agent | suppliers, supplier_products, supplier_score_snapshots | publishes `supplier.scored` |
+| `/api/purchase-orders`, `/api/inbound-orders` | procurement_agent | purchase_orders, inbound_orders | publishes `procurement.inbound.completed` |
+| `/api/inventory` | inventory_agent | inventory | subscribes to inbound/shipped/signed events |
+| `/api/warehouses` | warehouse_agent | warehouses | — |
+| `/api/stores` | store_agent | stores | — |
+| `/api/replenishment-requests`, `/api/outbound-orders` | fulfillment_agent | replenishment_requests, outbound_orders, outbound_items | publishes `outbound.shipped`, `outbound.signed` |
+| `/api/transactions` | transaction_agent | stock_transactions | subscribes to stock changes |
+| `/api/analytics` | analytics_agent | (read-only via query_service) | — |
+| `/api/recommendations` | recommendation_agent | ai_recommendations, monthly_sales_facts, promotions | — |
+| `/api/health`, `/api/llm`, `/api/example` | monitoring_agent | none | — |
+| `/api/analysis` | analysis_agent | inventory_warning_analyses, restock_risk_analyses | subscribes to stock changes (LLM analysis) |
 
-### 响应格式
-```python
-# 所有 API 返回同一格式
-{"success": True, "message": "ok", "data": ...}
-# 分页列表
-{"success": True, "message": "ok", "data": {"items": [...], "total": N, "page": P, "page_size": S}}
-# 错误
-{"success": False, "message": "错误信息", "data": None}
-```
+Note: `analysis_agent` is the 13th agent, added after the original 12.
 
-### 错误处理
-- 业务异常：`raise BusinessException("消息", status_code)`
-- 框架自动处理：BusinessException，400, RequestValidationError，422, IntegrityError，400
+## LLM Integration (DeepSeek)
 
----
+All external LLM calls go through `kernel/common/llm_service.py`. There are **4 entry points**:
 
-## Agent 映射
+| Method | Called by | Purpose |
+|---|---|---|
+| `enhance_reason()` | `recommendation_agent/handler.py` — `_batch_evaluate_risk_and_enhance()` | Generate natural-language replenishment reason text + compute risk level via `evaluate_restock_risk()` |
+| `evaluate_supplier()` | `supplier_agent/handler.py` — `recalculate_scores()` | Score suppliers 0-100 |
+| `analyze_inventory_risk()` | `analysis_agent/handler.py` — `_run_inventory_warning_analysis()` | Classify stock as critical_stockout/stockout/overstock/none |
+| `evaluate_restock_risk()` | `analysis_agent/handler.py` — `_run_restock_risk_analysis()` | Classify restock risk as high/medium/low |
 
-| 路由前缀 | Agent | 拥有表 | 关键事件 |
-|---------|-------|--------|---------|
-| /api/users | user_agent | users | 发布: user.logged_in |
-| /api/products, /api/categories | product_agent | products, categories | 发布: product.created |
-| /api/suppliers | supplier_agent | suppliers, supplier_products, supplier_score_snapshots | 评分公式见 handler |
-| /api/purchase-orders, /api/inbound-orders | procurement_agent | purchase_orders, inbound_orders | 发布: procurement.inbound.completed |
-| /api/inventory | inventory_agent | inventory | 订阅: inbound.completed, outbound.shipped/signed |
-| /api/warehouses | warehouse_agent | warehouses | — |
-| /api/stores | store_agent | stores | — |
-| /api/outbound-orders, /api/replenishment-requests | fulfillment_agent | replenishment_requests, outbound_orders | 发布: outbound.shipped/signed |
-| /api/transactions | transaction_agent | stock_transactions | 订阅: stock.increased/decreased |
-| /api/analytics | analytics_agent | 无（只读） | 跨 Agent import models（⚠须重构） |
-| /api/recommendations | recommendation_agent | ai_recommendations, monthly_sales_facts | 推荐算法见 handler |
-| /api/health, /api/llm | monitoring_agent | 无 | — |
+- `DeepseekProvider` uses `httpx.Client` with connection pooling (reused across calls, not per-request).
+- All calls use `ThreadPoolExecutor(max_workers=10)` for concurrency (in `recommendation_agent` and `supplier_agent`).
+- Failure fallback: `RuleProvider` (hardcoded thresholds) — no external dependency required.
+- Config: `LLM_PROVIDER=deepseek`, `DEEPSEEK_API_KEY_FILE=./.deepseek_api_key`
+- Check status: `GET /api/llm/status` returns `{"provider":"deepseek","available":true}`
 
----
+### Key LLM latency facts
+- Single DeepSeek call: ~1.5-3s
+- Supplier scoring (12 suppliers, concurrent): ~8s
+- Generate recommendations (200 recs, concurrent 10 workers): ~30s
+- **Frontend fetch timeout** for these long operations is set in `frontend/api.js` `TIMEOUTS` map: generate=120s, recalculate scores=60s, default=15s.
 
-## 已知问题 / 修复记录
+## Database
 
-### ✅ 已修复
+- Default: SQLite at `backend/schema/supply_chain.db`
+- Optional: OceanBase/MySQL via `DATABASE_URL=mysql+pymysql://...`
+- Auto-fallback: if MySQL connection fails at import time, SQLite is used.
+- Table creation: `Base.metadata.create_all()` on startup (no Alembic).
+- Scripts use the same SQLAlchemy models as the app — they must load all models before creating tables.
 
-1. **认证系统修复**
-   - `_extract_token()` 已替换为 FastAPI `HTTPBearer` 自动提取 Bearer Token
-   - 所有业务路由已添加 `Depends(get_current_user)` 认证保护
-   - 登录接口使用 `verify_password()` 进行 PBKDF2-SHA256 哈希验证
-   - 验证码使用 `secrets.randbelow()` 生成，已哈希后存储
+## Authentication
 
-2. **scripts/*.py 的 import 路径已修复**
-   - 所有脚本现在使用 `from kernel.common.config`、`from kernel.common.database` 等正确路径
-   - 已创建 `kernel/common/example_data_service.py` 替代原 `app.services.example_data_service`
+- JWT Bearer tokens. Login accepts `employee_no` (e.g. `A1001`) or `username` (e.g. `admin`) in the `username` field.
+- Demo accounts: `admin`/`admin123`, `buyer`/`buyer123`, `warehouse`/`warehouse123`, `store`/`store123`, `manager`/`manager123`
+- All business routes require `Depends(get_current_user)`.
+- Verification codes are returned in plaintext in dev mode (`APP_ENV=dev`).
 
-3. **analytics_agent & monitoring_agent 跨 Agent import 已修复**
-   - 已创建 `kernel/common/query_service.py` 共享查询层
-   - 两个 Agent 的 router.py 不再直接 import 其他 Agent 的 models
+## Frontend
 
-4. **inventory_agent 事件回调已实现**
-   - `_handle()` 现在调用 `increase_stock()` / `decrease_stock()` 实际处理事件
-   - `transaction_agent.on_stock_changed()` 现在创建 `StockTransaction` 记录
+- Static files in `frontend/`, served by FastAPI at `/ui/`.
+- No build step. No npm. Plain HTML + JS + ECharts.
+- All backend calls through `frontend/api.js` — single `request()` function with fetch + AbortController.
+- `frontend/app.js` owns all UI logic (DOM manipulation, event handlers, ECharts rendering).
 
-5. **密码哈希修复**
-   - 创建 `kernel/common/hash_utils.py`，使用 PBKDF2-SHA256
-   - 与 `schema/seed.sql` 中的哈希格式兼容
+## Key gotchas and conventions
 
-6. **基础设施添加**
-   - `.gitignore`、`pyproject.toml`、Dockerfile、docker-compose.yml
-   - 当前测试基础设施已移除，后续需要按多智能体框架重新补齐
-
-### 📋 仍待处理
-
-- **数据库迁移**：当前使用 `Base.metadata.create_all()`，生产环境需使用 Alembic
-- **前端认证集成**：`frontend/api.js` 需要在请求头添加 `Authorization: Bearer <token>`
-
----
-
-## 新增 Agent 的步骤
-
-```python
-# 1. 在 backend/agents/ 下新建目录 agent_xxx/
-# 2. 创建 5 个文件（严格遵循以下 import 规则）
-# 3. 在 agents/__init__.py 中加入 import 和实例化
-# 4. 启动后访问 /api/system/agents 确认注册成功
-
-# import 规则：
-#   handler.py，from kernel.common.{database,exceptions,event}
-#   handler.py，可 from .models, from .events
-#   handler.py，不可 from agents.other_agent.handler
-#   router.py ，从 .handler import 函数
-#   models.py ，从 kernel.common.database import Base
-```
-
----
-
-## 参考资料
-
-- `backend/kernel/sisyphus/gateway.py` — API 路径到 Agent 的映射表
-- `backend/kernel/common/event.py` — Event/EventBus 定义
-- `backend/kernel/common/base_agent.py` — BaseAgent 抽象类
-- `.opencode/agents/*.md` — 每个 Agent 的开发期 AI 辅助配置
+1. **Scripts run from project root, server runs from `backend/`**. The two use different working directories.
+2. **`generate_no("OUT", ...)` uses `OutboundOrder` count** (not `ReplenishmentRequest` count) — a historical bug was fixed to use the right table per prefix.
+3. **`_batch_enhance_reasons` was renamed to `_batch_evaluate_risk_and_enhance`** — now also calls `evaluate_restock_risk` to compute risk level from LLM.
+4. **`analysis_agent.handler._run_restock_risk_analysis` imports `generate_recommendations` from `recommendation_agent.handler`** at function level — a cross-agent direct import that hasn't been refactored yet.
+5. **`InventoryWarning` vs `Inventory`**: `inventory_agent/handler.py:get_warnings()` does rule-based threshold check for quick in-memory warnings. `analysis_agent` does LLM-based analysis stored in `inventory_warning_analyses` table. They coexist for different purposes.
+6. **`__frontend_version__`** in `backend/main.py:5` — increment this string to force browsers to re-fetch static frontend files.
+7. **`.deepseek_api_key`** in `backend/` is git-ignored (listed in `.gitignore`). Never hardcode API keys.
