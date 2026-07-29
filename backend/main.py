@@ -45,7 +45,7 @@ async def integrity_exception_handler(_request: Request, exc: IntegrityError):
 
 @app.exception_handler(Exception)
 async def global_exception_handler(_request: Request, exc: Exception):
-    logger.error("Unhandled exception", exc_info=(type(exc), exc, exc.__traceback__))
+    logger.error("Unhandled exception: %s", exc, exc_info=True)
     return JSONResponse(status_code=500, content=error_response("服务器内部错误"))
 
 
