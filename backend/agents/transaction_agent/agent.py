@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable
 from fastapi import APIRouter
 from kernel.common.base_agent import BaseAgent, AgentInfo
@@ -44,7 +44,7 @@ class TransactionAgent(BaseAgent):
         owns_session = "_db" not in data
         try:
             tx = StockTransaction(
-                transaction_no=f"TX{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}",
+                transaction_no=f"TX{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')}",
                 product_id=product_id,
                 transaction_type=data.get("transaction_type", "event"),
                 source_location_type=data.get("source_location_type"),

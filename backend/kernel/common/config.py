@@ -6,7 +6,7 @@ from pathlib import Path
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve().parents[2]  # backend/ 目录
 
 
 class Settings(BaseSettings):
@@ -20,11 +20,10 @@ class Settings(BaseSettings):
     example_data_dir: str = "./example"
 
     llm_provider: str = "deepseek"
-    ollama_base_url: str = "http://127.0.0.1:11434"
-    ollama_model: str = "qwen2.5:7b"
     deepseek_api_key: SecretStr | None = Field(
         default=None, validation_alias="DEEPSEEK_API_KEY", repr=False
     )
+    deepseek_api_key_file: str = ""
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"
     llm_timeout_seconds: int = 30
@@ -57,7 +56,18 @@ class Settings(BaseSettings):
 
     @property
     def deepseek_api_key_value(self) -> str:
-        return self.deepseek_api_key.get_secret_value() if self.deepseek_api_key else ""
+        """获取 DeepSeek API Key，优先从环境变量，其次从文件读取。"""
+        if self.deepseek_api_key:
+            val = self.deepseek_api_key.get_secret_value()
+            if val:
+                return val
+        if self.deepseek_api_key_file:
+            key_path = Path(self.deepseek_api_key_file)
+            if not key_path.is_absolute():
+                key_path = BASE_DIR / key_path
+            if key_path.exists():
+                return key_path.read_text("utf-8").strip()
+        return ""
 
     @property
     def auth_secret_key_value(self) -> str:

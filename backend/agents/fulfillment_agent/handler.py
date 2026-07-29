@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import func, select
 from kernel.common.database import Session
 from kernel.common.exceptions import BusinessException
@@ -19,7 +19,7 @@ def approve_request(db: Session, rid: int, audited_by: int):
     r = db.get(ReplenishmentRequest, rid)
     if not r: raise BusinessException("not found", 404)
     if r.audit_status != "pending": raise BusinessException("only pending can be approved")
-    r.audit_status = "approved"; r.audited_by = audited_by; r.audit_time = datetime.utcnow()
+    r.audit_status = "approved"; r.audited_by = audited_by; r.audit_time = datetime.now(timezone.utc)
     db.flush()
     event_bus.publish(Event(type=EVENT_REPLENISHMENT_APPROVED, source="fulfillment_agent", data={"request_id": rid}))
     return r
@@ -28,7 +28,7 @@ def reject_request(db: Session, rid: int, audited_by: int):
     r = db.get(ReplenishmentRequest, rid)
     if not r: raise BusinessException("not found", 404)
     if r.audit_status != "pending": raise BusinessException("only pending can be rejected")
-    r.audit_status = "rejected"; r.audited_by = audited_by; r.audit_time = datetime.utcnow()
+    r.audit_status = "rejected"; r.audited_by = audited_by; r.audit_time = datetime.now(timezone.utc)
     db.flush(); return r
 
 def convert_to_outbound(db: Session, rid: int, source_warehouse_id: int | None = None, handled_by: int = 1):

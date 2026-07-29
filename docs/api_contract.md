@@ -1823,6 +1823,7 @@ POST /api/recommendations/generate?store_id=1&enhance_with_llm=false
 - 没有 LLM API 时也必须能生成规则型建议。
 - 推荐数量不能为负。
 - 建议理由不能为空。
+- `enhance_with_llm=true` 时，系统在生成每条建议后调用 DeepSeek API 增强理由文本存入 `reason_enhanced` 字段；调用失败时回退到规则文本，`reason_enhanced` 保持 `null`。
 
 ### 13.2 AI 补货建议列表
 
@@ -1877,7 +1878,10 @@ GET /api/recommendations
 | `shortage_risk` | 是否有缺货风险 |
 | `risk_level` | 风险等级 |
 | `days_until_stockout` | 预计缺货天数 |
-| `reason` | 推荐理由 |
+| `reason` | 推荐理由（规则生成） |
+| `reason_enhanced` | 推荐理由（LLM 增强版，仅在 `enhance_with_llm=true` 时填充） |
+| `llm_provider` | 实际使用的 LLM 类型（`deepseek` / `rule`） |
+| `llm_used` | 是否使用了 LLM 增强原因 |
 | `adoption_status` | 采纳状态 |
 
 ### 13.3 按门店查询 AI 建议
@@ -1917,8 +1921,14 @@ POST /api/recommendations/{recommendation_id}/reject
 ### 14.1 重新计算供应商评分
 
 ```http
-POST /api/suppliers/recalculate-scores
+POST /api/suppliers/recalculate-scores?use_llm=true
 ```
+
+查询参数：
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|---|---|---|---|---|
+| `use_llm` | bool | 否 | `true` | 是否使用 LLM 进行综合评价。`true` 时尝试调用 DeepSeek（配置为 `rule` 时自动降级为规则公式） |
 
 响应：
 
@@ -1932,7 +1942,16 @@ POST /api/suppliers/recalculate-scores
 }
 ```
 
-用途：Demo 前重新计算供应商评分。
+用途：Demo 前重新计算供应商评分。当 `use_llm=true` 且正确配置了 DeepSeek API 时，评分由大模型综合多维度数据生成；评分依据（`score_source`）会标注 `llm_deepseek`。
+
+评分维度：
+
+| 维度 | 说明 |
+|---|---|
+| 平均交货周期 | 越短越优 |
+| 准时到货率 | 越接近100%越优 |
+| 质量评分 | 越高越优 |
+| 延迟记录 | 延迟次数为减分因素 |
 
 ### 14.2 供应商排行
 
@@ -2243,7 +2262,103 @@ GET /api/inventory/rebalance-suggestions
 
 ---
 
-## 17. Demo 前端最小页面与接口映射
+## 17. LLM 自动分析结果查询接口
+
+系统新增 `analysis_agent`，在每次库存变动事件发生后自动在后台调用 LLM 进行库存预警分析和补货风险分析。分析结果写入专用表，以下接口供前端查询。
+
+### 17.1 LLM 预警分析列表
+
+```http
+GET /api/analysis/warnings
+```
+
+用途：获取所有当前活跃（非 `none`）的 LLM 预警分析结果，按最新排序。
+
+响应：
+
+```json
+{
+  "success": true,
+  "message": "ok",
+  "data": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "product_name": "矿泉水",
+      "location_type": "store",
+      "location_name": "门店A",
+      "warning_label": "critical_stockout",
+      "analysis_text": "当前库存18件，仅为安全库存30件的60%，且近7日销量56件，预计3日内断货，建议紧急补货",
+      "llm_provider": "deepseek",
+      "current_quantity": 18,
+      "safety_stock": 30,
+      "created_at": "2026-06-27T10:30:00"
+    }
+  ]
+}
+```
+
+`warning_label` 取值：
+
+| 值 | 含义 |
+|---|---|
+| `critical_stockout` | 严重缺货 |
+| `stockout` | 库存不足 |
+| `overstock` | 库存积压 |
+| `none` | 库存正常（活跃列表不返回此项） |
+
+`llm_provider` 说明：当 `deepseek` 不可用或配置为 `rule` 时返回 `rule`，表示使用规则降级。
+
+### 17.2 指定商品预警历史
+
+```http
+GET /api/analysis/warnings/{product_id}?location_type=store&store_id=1
+```
+
+参数：
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|---|---|---|---|---|
+| `location_type` | string | 否 | `warehouse` | 位置类型 |
+| `warehouse_id` | int | 否 | null | 仓库 ID |
+| `store_id` | int | 否 | null | 门店 ID |
+
+响应：预警分析对象数组，按时间倒序。
+
+### 17.3 门店补货风险分析
+
+```http
+GET /api/analysis/restock-risk/{store_id}?product_id=1
+```
+
+用途：查看指定门店的最新 LLM 补货风险分析结果。
+
+响应：
+
+```json
+{
+  "success": true,
+  "message": "ok",
+  "data": [
+    {
+      "id": 1,
+      "store_id": 1,
+      "product_id": 1,
+      "risk_level": "high",
+      "analysis_text": "库存18件，日均销量8件，仅够约2天，供应商提前期5天，存在断货风险",
+      "llm_provider": "deepseek",
+      "confidence": 0.85,
+      "current_stock": 18,
+      "days_until_stockout": 2.25,
+      "created_at": "2026-06-27T10:30:00"
+    }
+  ]
+}
+```
+
+---
+
+## 18. Demo 前端最小页面与接口映射
 
 | 页面区域 | 按钮 / 操作 | 接口 |
 |---|---|---|
@@ -2268,20 +2383,20 @@ GET /api/inventory/rebalance-suggestions
 
 ---
 
-## 18. 一键 Demo 脚本接口顺序
+## 19. 一键 Demo 脚本接口顺序
 
 `scripts/demo_flow.py` 应按以下顺序调用：
 
 ```text
-1. GET  /api/health
-2. GET  /api/health/db
-3. GET  /api/example/status
-4. GET  /api/analytics/dashboard
-5. GET  /api/inventory/warnings
-6. GET  /api/inbound-orders
-7. POST /api/inbound-orders/{first_pending_inbound_id}/complete
-8. GET  /api/transactions
-9. GET  /api/replenishment-requests
+ 1. GET  /api/health
+ 2. GET  /api/health/db
+ 3. GET  /api/example/status
+ 4. GET  /api/analytics/dashboard
+ 5. GET  /api/inventory/warnings
+ 6. GET  /api/inbound-orders
+ 7. POST /api/inbound-orders/{first_pending_inbound_id}/complete
+ 8. GET  /api/transactions
+ 9. GET  /api/replenishment-requests
 10. POST /api/replenishment-requests/{first_pending_request_id}/approve?audited_by=1
 11. POST /api/replenishment-requests/{request_id}/convert-to-outbound?source_warehouse_id=1&handled_by=1
 12. POST /api/outbound-orders/{outbound_order_id}/ship
@@ -2290,21 +2405,23 @@ GET /api/inventory/rebalance-suggestions
 15. POST /api/recommendations/generate
 16. GET  /api/recommendations
 17. GET  /api/analytics/dashboard
+18. GET  /api/analysis/warnings          [新增] 查看 LLM 自动预警分析
+19. GET  /api/analysis/restock-risk/1    [新增] 查看 LLM 补货风险分析
 ```
 
 脚本输出格式建议：
 
 ```text
-[1/17] Health Check: ok
-[2/17] Database: sqlite connected
-[3/17] Example Data: products=30, stores=10
-[4/17] Dashboard: stockout=6, overstock=4
+[1/19] Health Check: ok
+[2/19] Database: sqlite connected
+[3/19] Example Data: products=30, stores=10
+[4/19] Dashboard: stockout=6, overstock=4
 ...
 ```
 
 ---
 
-## 19. 错误码与前端提示建议
+## 20. 错误码与前端提示建议
 
 当前后端可能只返回 `message`，不一定有 `error_code`。如果有时间，建议后端补充以下错误码；如果没时间，前端只显示 `message` 即可。
 
@@ -2331,7 +2448,7 @@ GET /api/inventory/rebalance-suggestions
 
 ---
 
-## 20. 前后端联调验收标准
+## 21. 前后端联调验收标准
 
 ### 20.1 P0 验收
 
@@ -2360,9 +2477,9 @@ GET /api/inventory/rebalance-suggestions
 
 ---
 
-## 21. 契约冻结规则
+## 22. 契约冻结规则
 
-### 21.1 可以改的内容
+### 22.1 可以改的内容
 
 - 文档中的中文说明；
 - 前端展示名称；
@@ -2370,7 +2487,7 @@ GET /api/inventory/rebalance-suggestions
 - 示例 JSON 中的具体数值；
 - Mock 数据。
 
-### 21.2 不要随意改的内容
+### 22.2 不要随意改的内容
 
 - P0 接口路径；
 - P0 接口请求方法；
@@ -2378,7 +2495,7 @@ GET /api/inventory/rebalance-suggestions
 - 关键字段名，如 `id`、`status`、`current_quantity`、`request_quantity`、`recommended_quantity`；
 - 单据状态枚举。
 
-### 21.3 必须改接口时的流程
+### 22.3 必须改接口时的流程
 
 ```text
 1. 在群里说明要改哪个接口、为什么改、影响谁。

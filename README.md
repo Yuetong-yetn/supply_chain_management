@@ -277,27 +277,19 @@ curl http://127.0.0.1:8000/api/inventory/warnings -H "Authorization: Bearer <acc
 
 补货数量和风险等级由规则逻辑计算，LLM 只用于增强推荐理由文本，不决定核心库存业务。
 
-默认配置：
+默认配置：使用规则引擎（无需外部 API）。
 
-```env
-LLM_PROVIDER=rule
-```
-
-可选配置 DeepSeek 或 Ollama：
+可选配置 DeepSeek 增强分析：
 
 ```env
 LLM_PROVIDER=deepseek
 DEEPSEEK_API_KEY=<your-key>
+# 或者将 API Key 写入文件（不会被 git 追踪）
+DEEPSEEK_API_KEY_FILE=./.deepseek_api_key
 DEEPSEEK_MODEL=deepseek-chat
 ```
 
-```env
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=qwen2.5:7b
-```
-
-未配置外部模型时，核心业务仍可正常运行。
+未配用外部模型时，系统自动降级到规则引擎，核心业务仍可正常运行。
 
 ## 检查
 

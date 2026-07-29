@@ -1,0 +1,704 @@
+[
+  {
+    "supplier_name": "供应商S03",
+    "product_code": "P0001",
+    "supply_price": 4.2,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S04",
+    "product_code": "P0002",
+    "supply_price": 4.9,
+    "lead_time_days": 4,
+    "on_time_rate": 0.88,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S05",
+    "product_code": "P0003",
+    "supply_price": 5.6,
+    "lead_time_days": 5,
+    "on_time_rate": 0.89,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S06",
+    "product_code": "P0004",
+    "supply_price": 6.3,
+    "lead_time_days": 1,
+    "on_time_rate": 0.9,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S07",
+    "product_code": "P0005",
+    "supply_price": 7.0,
+    "lead_time_days": 2,
+    "on_time_rate": 0.91,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S08",
+    "product_code": "P0005",
+    "supply_price": 7.5,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S08",
+    "product_code": "P0006",
+    "supply_price": 7.7,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0007",
+    "supply_price": 8.4,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S10",
+    "product_code": "P0008",
+    "supply_price": 9.1,
+    "lead_time_days": 5,
+    "on_time_rate": 0.94,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S11",
+    "product_code": "P0009",
+    "supply_price": 9.8,
+    "lead_time_days": 1,
+    "on_time_rate": 0.85,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S12",
+    "product_code": "P0009",
+    "supply_price": 10.3,
+    "lead_time_days": 2,
+    "on_time_rate": 0.86,
+    "quality_score": 7.9,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S12",
+    "product_code": "P0010",
+    "supply_price": 10.5,
+    "lead_time_days": 2,
+    "on_time_rate": 0.86,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S01",
+    "product_code": "P0010",
+    "supply_price": 11.0,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S01",
+    "product_code": "P0011",
+    "supply_price": 11.2,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S02",
+    "product_code": "P0012",
+    "supply_price": 11.9,
+    "lead_time_days": 4,
+    "on_time_rate": 0.88,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S03",
+    "product_code": "P0013",
+    "supply_price": 12.6,
+    "lead_time_days": 5,
+    "on_time_rate": 0.89,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S04",
+    "product_code": "P0014",
+    "supply_price": 13.3,
+    "lead_time_days": 1,
+    "on_time_rate": 0.9,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S05",
+    "product_code": "P0015",
+    "supply_price": 14.0,
+    "lead_time_days": 2,
+    "on_time_rate": 0.91,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S06",
+    "product_code": "P0015",
+    "supply_price": 14.5,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S06",
+    "product_code": "P0016",
+    "supply_price": 14.7,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S07",
+    "product_code": "P0017",
+    "supply_price": 15.4,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S08",
+    "product_code": "P0018",
+    "supply_price": 16.1,
+    "lead_time_days": 5,
+    "on_time_rate": 0.94,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0018",
+    "supply_price": 16.6,
+    "lead_time_days": 1,
+    "on_time_rate": 0.85,
+    "quality_score": 7.5,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0019",
+    "supply_price": 16.8,
+    "lead_time_days": 1,
+    "on_time_rate": 0.85,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S10",
+    "product_code": "P0020",
+    "supply_price": 17.5,
+    "lead_time_days": 2,
+    "on_time_rate": 0.86,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S11",
+    "product_code": "P0020",
+    "supply_price": 18.0,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S11",
+    "product_code": "P0021",
+    "supply_price": 18.2,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S12",
+    "product_code": "P0022",
+    "supply_price": 18.9,
+    "lead_time_days": 4,
+    "on_time_rate": 0.88,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S01",
+    "product_code": "P0023",
+    "supply_price": 19.6,
+    "lead_time_days": 5,
+    "on_time_rate": 0.89,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S02",
+    "product_code": "P0024",
+    "supply_price": 20.3,
+    "lead_time_days": 1,
+    "on_time_rate": 0.9,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S03",
+    "product_code": "P0025",
+    "supply_price": 21.0,
+    "lead_time_days": 2,
+    "on_time_rate": 0.91,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S04",
+    "product_code": "P0025",
+    "supply_price": 21.5,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S04",
+    "product_code": "P0026",
+    "supply_price": 21.7,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S05",
+    "product_code": "P0027",
+    "supply_price": 22.4,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S06",
+    "product_code": "P0027",
+    "supply_price": 22.9,
+    "lead_time_days": 5,
+    "on_time_rate": 0.94,
+    "quality_score": 9.1,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S06",
+    "product_code": "P0028",
+    "supply_price": 23.1,
+    "lead_time_days": 5,
+    "on_time_rate": 0.94,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S07",
+    "product_code": "P0029",
+    "supply_price": 23.8,
+    "lead_time_days": 1,
+    "on_time_rate": 0.85,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S08",
+    "product_code": "P0030",
+    "supply_price": 24.5,
+    "lead_time_days": 2,
+    "on_time_rate": 0.86,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0030",
+    "supply_price": 25.0,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0031",
+    "supply_price": 25.2,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S10",
+    "product_code": "P0032",
+    "supply_price": 25.9,
+    "lead_time_days": 4,
+    "on_time_rate": 0.88,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S11",
+    "product_code": "P0033",
+    "supply_price": 26.6,
+    "lead_time_days": 5,
+    "on_time_rate": 0.89,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S12",
+    "product_code": "P0034",
+    "supply_price": 27.3,
+    "lead_time_days": 1,
+    "on_time_rate": 0.9,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S01",
+    "product_code": "P0035",
+    "supply_price": 28.0,
+    "lead_time_days": 2,
+    "on_time_rate": 0.91,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S02",
+    "product_code": "P0035",
+    "supply_price": 28.5,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S02",
+    "product_code": "P0036",
+    "supply_price": 28.7,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S03",
+    "product_code": "P0036",
+    "supply_price": 29.2,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S03",
+    "product_code": "P0037",
+    "supply_price": 29.4,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S04",
+    "product_code": "P0038",
+    "supply_price": 30.1,
+    "lead_time_days": 5,
+    "on_time_rate": 0.94,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S05",
+    "product_code": "P0039",
+    "supply_price": 30.8,
+    "lead_time_days": 1,
+    "on_time_rate": 0.85,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S06",
+    "product_code": "P0040",
+    "supply_price": 31.5,
+    "lead_time_days": 2,
+    "on_time_rate": 0.86,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S07",
+    "product_code": "P0040",
+    "supply_price": 32.0,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S07",
+    "product_code": "P0041",
+    "supply_price": 32.2,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S08",
+    "product_code": "P0042",
+    "supply_price": 32.9,
+    "lead_time_days": 4,
+    "on_time_rate": 0.88,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0043",
+    "supply_price": 33.6,
+    "lead_time_days": 5,
+    "on_time_rate": 0.89,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S10",
+    "product_code": "P0044",
+    "supply_price": 34.3,
+    "lead_time_days": 1,
+    "on_time_rate": 0.9,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S11",
+    "product_code": "P0045",
+    "supply_price": 35.0,
+    "lead_time_days": 2,
+    "on_time_rate": 0.91,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S12",
+    "product_code": "P0045",
+    "supply_price": 35.5,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S01",
+    "product_code": "P0045",
+    "supply_price": 36.0,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S12",
+    "product_code": "P0046",
+    "supply_price": 35.7,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S01",
+    "product_code": "P0047",
+    "supply_price": 36.4,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S02",
+    "product_code": "P0048",
+    "supply_price": 37.1,
+    "lead_time_days": 5,
+    "on_time_rate": 0.94,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S03",
+    "product_code": "P0049",
+    "supply_price": 37.8,
+    "lead_time_days": 1,
+    "on_time_rate": 0.85,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S04",
+    "product_code": "P0050",
+    "supply_price": 38.5,
+    "lead_time_days": 2,
+    "on_time_rate": 0.86,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S05",
+    "product_code": "P0050",
+    "supply_price": 39.0,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S05",
+    "product_code": "P0051",
+    "supply_price": 39.2,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S06",
+    "product_code": "P0052",
+    "supply_price": 39.9,
+    "lead_time_days": 4,
+    "on_time_rate": 0.88,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S07",
+    "product_code": "P0053",
+    "supply_price": 40.6,
+    "lead_time_days": 5,
+    "on_time_rate": 0.89,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S08",
+    "product_code": "P0054",
+    "supply_price": 41.3,
+    "lead_time_days": 1,
+    "on_time_rate": 0.9,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0054",
+    "supply_price": 41.8,
+    "lead_time_days": 2,
+    "on_time_rate": 0.91,
+    "quality_score": 7.9,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S09",
+    "product_code": "P0055",
+    "supply_price": 42.0,
+    "lead_time_days": 2,
+    "on_time_rate": 0.91,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S10",
+    "product_code": "P0055",
+    "supply_price": 42.5,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": false
+  },
+  {
+    "supplier_name": "供应商S10",
+    "product_code": "P0056",
+    "supply_price": 42.7,
+    "lead_time_days": 3,
+    "on_time_rate": 0.92,
+    "quality_score": 8.3,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S11",
+    "product_code": "P0057",
+    "supply_price": 43.4,
+    "lead_time_days": 4,
+    "on_time_rate": 0.93,
+    "quality_score": 8.7,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S12",
+    "product_code": "P0058",
+    "supply_price": 44.1,
+    "lead_time_days": 5,
+    "on_time_rate": 0.94,
+    "quality_score": 9.1,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S01",
+    "product_code": "P0059",
+    "supply_price": 44.8,
+    "lead_time_days": 1,
+    "on_time_rate": 0.85,
+    "quality_score": 7.5,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S02",
+    "product_code": "P0060",
+    "supply_price": 45.5,
+    "lead_time_days": 2,
+    "on_time_rate": 0.86,
+    "quality_score": 7.9,
+    "is_preferred": true
+  },
+  {
+    "supplier_name": "供应商S03",
+    "product_code": "P0060",
+    "supply_price": 46.0,
+    "lead_time_days": 3,
+    "on_time_rate": 0.87,
+    "quality_score": 8.3,
+    "is_preferred": false
+  }
+]

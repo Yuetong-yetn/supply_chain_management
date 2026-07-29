@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import func, select
 from kernel.common.database import Session
 from kernel.common.exceptions import BusinessException
@@ -26,7 +26,7 @@ def increase_stock(db: Session, product_id: int, location_type: str, quantity: i
     inv = get_or_create(db, product_id, location_type, warehouse_id, store_id)
     before = inv.current_quantity
     inv.current_quantity += quantity
-    inv.last_updated_at = datetime.utcnow()
+    inv.last_updated_at = datetime.now(timezone.utc)
     db.flush()
     event_bus.publish(Event(type=EVENT_STOCK_INCREASED, source="inventory_agent", data={
         "product_id": product_id, "location_type": location_type, "warehouse_id": warehouse_id,
@@ -46,7 +46,7 @@ def decrease_stock(db: Session, product_id: int, location_type: str, quantity: i
         raise BusinessException("库存不足")
     before = inv.current_quantity
     inv.current_quantity -= quantity
-    inv.last_updated_at = datetime.utcnow()
+    inv.last_updated_at = datetime.now(timezone.utc)
     db.flush()
     event_bus.publish(Event(type=EVENT_STOCK_DECREASED, source="inventory_agent", data={
         "product_id": product_id, "location_type": location_type, "warehouse_id": warehouse_id,
@@ -88,7 +88,7 @@ def adjust_stock(db: Session, product_id: int, location_type: str, new_quantity:
     inv = get_or_create(db, product_id, location_type, warehouse_id, store_id)
     before = inv.current_quantity
     inv.current_quantity = new_quantity
-    inv.last_updated_at = datetime.utcnow()
+    inv.last_updated_at = datetime.now(timezone.utc)
     db.flush()
     event_bus.publish(Event(type=EVENT_STOCK_INCREASED if new_quantity >= before else EVENT_STOCK_DECREASED,
                             source="inventory_agent", data={}))

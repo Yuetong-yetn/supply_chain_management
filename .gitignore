@@ -12,6 +12,7 @@ venv/
 # Environment files
 .env
 backend/.env
+*.deepseek_api_key
 
 # SQLite database files
 *.db

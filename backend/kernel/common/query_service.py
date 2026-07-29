@@ -44,11 +44,11 @@ def get_inventory_warnings(db: Session) -> list[dict]:
 
 def get_recent_outbound_quantity(db: Session) -> int:
     """获取最近 30 天已出库/签收的出库数量。"""
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, timezone
 
     from agents.fulfillment_agent.models import OutboundItem, OutboundOrder
 
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     return db.scalar(
         select(func.coalesce(func.sum(OutboundItem.quantity), 0))
         .join(OutboundOrder, OutboundOrder.id == OutboundItem.outbound_order_id)

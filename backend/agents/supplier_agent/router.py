@@ -35,8 +35,12 @@ def ranking_route(db: Session = Depends(get_db), current_user: User = Depends(ge
     return success_response(get_ranking(db))
 
 @router.post("/suppliers/recalculate-scores")
-def recalc_route(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    snaps = recalculate_scores(db)
+def recalc_route(use_llm: bool = Query(True), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """重新计算供应商评分。
+
+    use_llm=True 时尝试使用大模型综合评价（配置为 rule 时仍使用规则公式）。
+    """
+    snaps = recalculate_scores(db, use_llm=use_llm)
     return success_response({"count": len(snaps)})
 
 @router.get("/suppliers/{sid}")

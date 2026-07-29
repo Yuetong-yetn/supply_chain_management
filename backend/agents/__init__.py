@@ -17,6 +17,7 @@ def register_all_agents(orchestrator: SisyphusOrchestrator) -> None:
     from agents.analytics_agent.agent import AnalyticsAgent
     from agents.recommendation_agent.agent import RecommendationAgent
     from agents.monitoring_agent.agent import MonitoringAgent
+    from agents.analysis_agent.agent import AnalysisAgent
 
     agents = [
         UserAgent(),
@@ -31,6 +32,7 @@ def register_all_agents(orchestrator: SisyphusOrchestrator) -> None:
         AnalyticsAgent(),
         RecommendationAgent(),
         MonitoringAgent(),
+        AnalysisAgent(),
     ]
     for agent in agents:
         orchestrator.register_agent(agent)

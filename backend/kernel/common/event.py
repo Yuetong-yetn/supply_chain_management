@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class Event:
     type: str
     source: str
     data: dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     correlation_id: str = ""
 
 
@@ -38,17 +38,19 @@ class EventBus:
         logger.debug("[EventBus] SUBSCRIBE %s <- %s", event_type, handler.__name__)
 
     def publish(self, event: Event) -> None:
-        """发布事件，同步调用所有订阅者。"""
+        """发布事件，同步调用所有订阅者。
+
+        单个订阅者的异常不会影响其他订阅者或发布者。
+        """
         logger.info("[EventBus] %s >> %s", event.source, event.type)
         for handler in self._subscribers.get(event.type, []):
             try:
                 handler(event)
-            except Exception as e:
+            except Exception:
                 logger.exception(
-                    "Handler %s failed on %s: %s",
-                    handler.__name__, event.type, e,
+                    "Handler %s failed on %s",
+                    handler.__name__, event.type,
                 )
-                raise
 
     def unsubscribe(self, event_type: str, handler: Callable) -> None:
         """取消订阅。"""
