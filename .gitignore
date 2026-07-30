@@ -9,6 +9,7 @@ backend/schema/supply_chain.db
 backend/schema/*.db
 .env
 backend/.env
+backend/.deepseek_api_key
 backend/data/raw/
 data/raw/
 *.zip

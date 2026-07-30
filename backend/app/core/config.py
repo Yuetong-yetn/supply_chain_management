@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen2.5:7b"
     deepseek_api_key: SecretStr | None = Field(default=None, validation_alias="DEEPSEEK_API_KEY", repr=False)
+    deepseek_api_key_file: str | None = Field(default=None, validation_alias="DEEPSEEK_API_KEY_FILE")
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"
     llm_timeout_seconds: int = 30
@@ -63,7 +64,13 @@ class Settings(BaseSettings):
 
     @property
     def deepseek_api_key_value(self) -> str:
-        return self.deepseek_api_key.get_secret_value() if self.deepseek_api_key else ""
+        if self.deepseek_api_key:
+            return self.deepseek_api_key.get_secret_value()
+        if self.deepseek_api_key_file:
+            key_path = (BASE_DIR / self.deepseek_api_key_file).resolve()
+            if key_path.is_file():
+                return key_path.read_text(encoding="utf-8").strip()
+        return ""
 
 
 @lru_cache
