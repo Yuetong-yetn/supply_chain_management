@@ -47,7 +47,7 @@ def get_current_user(
     if not payload:
         raise BusinessException("登录已过期，请重新登录", 401)
 
-    from agents.user_agent.models import User
+    from app.models.user import User
 
     user = db.get(User, payload.get("user_id"))
     if not user or not user.is_active:

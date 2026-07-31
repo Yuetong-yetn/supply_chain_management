@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from kernel.common.database import get_db, Session
 from kernel.common.response import success_response
 from kernel.common.auth import get_current_user
-from agents.user_agent.models import User
+from app.models.user import User
 from sqlalchemy import select
 from .handler import generate_recommendations, set_adoption_status
 from .models import AIRecommendation

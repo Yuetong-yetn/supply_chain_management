@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from kernel.common.auth import get_current_user
 from kernel.common.database import get_db, Session
 from kernel.common.response import success_response
-from agents.user_agent.models import User
+from app.models.user import User
 from .handler import (
     get_all_active_warnings,
     get_latest_restock_risk,

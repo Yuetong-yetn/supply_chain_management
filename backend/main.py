@@ -16,7 +16,8 @@ from kernel.common.database import engine, Base
 from kernel.common.exceptions import BusinessException
 from kernel.common.response import error_response
 from kernel.sisyphus.orchestrator import SisyphusOrchestrator
-from agents import register_all_agents
+from agents import register_ai_agents
+from app.api import register_business_routes
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
@@ -54,13 +55,25 @@ async def startup():
     global _startup_completed
     if _startup_completed:
         return
+    # 1. 创建所有数据库表（业务表 + AI Agent 表共用同一个 Base.metadata）
     Base.metadata.create_all(bind=engine)
-    register_all_agents(orchestrator)
+
+    # 2. 注册业务路由（传统 app/ 方式）
+    register_business_routes(app)
+    logger.info("[System] Business routes registered (app/api/routers)")
+
+    # 3. 注册 AI Agent（推荐、分析等 AI 能力层）
+    register_ai_agents(orchestrator)
     for agent in orchestrator.agents.values():
         agent.on_startup()
+
+    # 4. 挂载 AI Agent 路由（/api/recommendations, /api/analysis）
     orchestrator.mount_to_app(app)
     _startup_completed = True
-    logger.info("[System] All %d agents registered. Sisyphus orchestrator ready.", len(orchestrator.agents))
+    logger.info(
+        "[System] %d AI agents registered via Sisyphus. Business routes registered via app/api.",
+        len(orchestrator.agents),
+    )
 
 
 if FRONTEND_DIR.exists():

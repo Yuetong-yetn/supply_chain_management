@@ -15,21 +15,22 @@ from sqlalchemy.schema import CreateTable
 
 from kernel.common.config import get_settings
 from kernel.common.database import Base, SessionLocal, engine, get_active_database_url
-from agents.user_agent.models import User
+from app.models.user import User
 from kernel.common.hash_utils import hash_password
 
 
 MODEL_MODULES = (
-    "agents.user_agent.models",
-    "agents.product_agent.models",
-    "agents.supplier_agent.models",
-    "agents.procurement_agent.models",
-    "agents.inventory_agent.models",
-    "agents.warehouse_agent.models",
-    "agents.store_agent.models",
-    "agents.fulfillment_agent.models",
-    "agents.transaction_agent.models",
+    "app.models.user",
+    "app.models.product",
+    "app.models.supplier",
+    "app.models.procurement",
+    "app.models.inventory",
+    "app.models.warehouse",
+    "app.models.store",
+    "app.models.fulfillment",
+    "app.models.transaction",
     "agents.recommendation_agent.models",
+    "agents.analysis_agent.models",
 )
 
 

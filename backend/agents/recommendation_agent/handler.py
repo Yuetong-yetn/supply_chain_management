@@ -119,7 +119,7 @@ def set_adoption_status(db: Session, rid: int, status: str):
 
 def _get_product_name(db: Session, product_id: int) -> str:
     """获取商品名称（延迟加载避免循环 import）。"""
-    from agents.product_agent.models import Product
+    from app.models.product import Product
     p = db.get(Product, product_id)
     return p.name if p else f"商品#{product_id}"
 

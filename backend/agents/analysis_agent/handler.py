@@ -64,7 +64,7 @@ def on_stock_changed(event_data: dict[str, Any]) -> None:
 
 
 def _get_product_name(db: Session, product_id: int) -> str:
-    from agents.product_agent.models import Product
+    from app.models.product import Product
     p = db.get(Product, product_id)
     return p.name if p else f"商品#{product_id}"
 
@@ -72,12 +72,12 @@ def _get_product_name(db: Session, product_id: int) -> str:
 def _get_location_name(db: Session, location_type: str, warehouse_id: int | None, store_id: int | None) -> str:
     name = "未知位置"
     if location_type == "warehouse" and warehouse_id:
-        from agents.warehouse_agent.models import Warehouse
+        from app.models.warehouse import Warehouse
         w = db.get(Warehouse, warehouse_id)
         if w:
             name = w.name
     elif location_type == "store" and store_id:
-        from agents.store_agent.models import Store
+        from app.models.store import Store
         s = db.get(Store, store_id)
         if s:
             name = s.name
@@ -86,8 +86,8 @@ def _get_location_name(db: Session, location_type: str, warehouse_id: int | None
 
 def _get_inventory(db: Session, product_id: int, location_type: str,
                    warehouse_id: int | None, store_id: int | None):
-    from agents.inventory_agent.handler import get_available
-    from agents.inventory_agent.models import Inventory
+    from app.services.inventory_service import get_available
+    from app.models.inventory import Inventory
 
     inv = db.scalar(
         select(Inventory).where(
@@ -105,7 +105,7 @@ def _get_inventory(db: Session, product_id: int, location_type: str,
 def _get_recent_sales(db: Session, product_id: int, location_type: str,
                       warehouse_id: int | None, store_id: int | None) -> tuple[float, float]:
     """获取近7日/30日销量用于 LLM 分析上下文"""
-    from agents.transaction_agent.models import StockTransaction
+    from app.models.transaction import StockTransaction
 
     now = datetime.now(timezone.utc)
     seven_days_ago = now - timedelta(days=7)
@@ -228,7 +228,7 @@ def _run_restock_risk_analysis(db: Session, product_id: int, store_id: int | Non
     if not store_id:
         return None
 
-    from agents.inventory_agent.models import Inventory
+    from app.models.inventory import Inventory
     from agents.recommendation_agent.handler import generate_recommendations
 
     # 检查该门店此商品是否存在库存
@@ -243,7 +243,7 @@ def _run_restock_risk_analysis(db: Session, product_id: int, store_id: int | Non
         return None
 
     # 获取门店名
-    from agents.store_agent.models import Store
+    from app.models.store import Store
     store = db.get(Store, store_id)
     store_name = store.name if store else f"门店#{store_id}"
 

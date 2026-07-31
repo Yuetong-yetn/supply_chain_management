@@ -1,38 +1,18 @@
-"""Agent 注册入口。"""
+"""AI Agent 注册入口 — 只注册 AI 能力层 Agent。
+
+业务逻辑（用户、商品、采购、库存、出库、门店、仓库等）已迁移到 app/ 目录
+以传统 MVC 方式组织，不再通过 Sisyphus 注册。
+
+AI Agent 保留在 agents/ 目录下，通过 Sisyphus 注册以维持事件驱动订阅能力。
+"""
 
 from kernel.sisyphus.orchestrator import SisyphusOrchestrator
 
 
-def register_all_agents(orchestrator: SisyphusOrchestrator) -> None:
-    """启动时注册所有 Agent 到 Sisyphus。"""
-    from agents.user_agent.agent import UserAgent
-    from agents.product_agent.agent import ProductAgent
-    from agents.supplier_agent.agent import SupplierAgent
-    from agents.procurement_agent.agent import ProcurementAgent
-    from agents.inventory_agent.agent import InventoryAgent
-    from agents.warehouse_agent.agent import WarehouseAgent
-    from agents.store_agent.agent import StoreAgent
-    from agents.fulfillment_agent.agent import FulfillmentAgent
-    from agents.transaction_agent.agent import TransactionAgent
-    from agents.analytics_agent.agent import AnalyticsAgent
+def register_ai_agents(orchestrator: SisyphusOrchestrator) -> None:
+    """只注册 AI 能力层 Agent（LLM 分析、补货建议等）。"""
     from agents.recommendation_agent.agent import RecommendationAgent
-    from agents.monitoring_agent.agent import MonitoringAgent
     from agents.analysis_agent.agent import AnalysisAgent
 
-    agents = [
-        UserAgent(),
-        ProductAgent(),
-        SupplierAgent(),
-        ProcurementAgent(),
-        InventoryAgent(),
-        WarehouseAgent(),
-        StoreAgent(),
-        FulfillmentAgent(),
-        TransactionAgent(),
-        AnalyticsAgent(),
-        RecommendationAgent(),
-        MonitoringAgent(),
-        AnalysisAgent(),
-    ]
-    for agent in agents:
+    for agent in [RecommendationAgent(), AnalysisAgent()]:
         orchestrator.register_agent(agent)
