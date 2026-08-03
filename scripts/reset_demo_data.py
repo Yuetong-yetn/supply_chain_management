@@ -11,16 +11,16 @@ for p in (str(ROOT), str(BE_DIR)):
 
 from sqlalchemy import text
 
-from kernel.common.database import SessionLocal, engine, is_sqlite_bind
-from agents.user_agent.models import User
-from agents.product_agent.models import Product, Category
-from agents.supplier_agent.models import Supplier, SupplierProduct, SupplierScoreSnapshot
-from agents.warehouse_agent.models import Warehouse
-from agents.store_agent.models import Store
-from agents.inventory_agent.models import Inventory
-from agents.procurement_agent.models import PurchaseOrder, PurchaseOrderItem, InboundOrder, InboundItem
-from agents.fulfillment_agent.models import ReplenishmentRequest, OutboundOrder, OutboundItem
-from agents.transaction_agent.models import StockTransaction
+from kernel.common.database import SessionLocal, is_sqlite_bind
+from app.models.user import User
+from app.models.product import Product, Category
+from app.models.supplier import Supplier, SupplierProduct, SupplierScoreSnapshot
+from app.models.warehouse import Warehouse
+from app.models.store import Store
+from app.models.inventory import Inventory
+from app.models.procurement import PurchaseOrder, PurchaseOrderItem, InboundOrder, InboundItem
+from app.models.fulfillment import ReplenishmentRequest, OutboundOrder, OutboundItem
+from app.models.transaction import StockTransaction
 from agents.recommendation_agent.models import AIRecommendation, MonthlySalesFact, Promotion
 
 

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy import func, select
-from kernel.common.database import get_db, Session
-from kernel.common.response import success_response, page_response
-from kernel.common.auth import get_current_user
+from app.core.database import get_db, Session
+from app.core.response import success_response, page_response
+from app.core.auth import get_current_user
 from app.models.user import User
+from app.schemas.inventory import AdjustReq
 from app.services.inventory_service import get_warnings, get_summary, adjust_stock
 from app.models.inventory import Inventory
 
@@ -44,11 +44,6 @@ def warnings_route(db: Session = Depends(get_db), current_user: User = Depends(g
 @router.get("/inventory/summary")
 def summary_route(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return success_response(get_summary(db))
-
-
-class AdjustReq(BaseModel):
-    product_id: int; location_type: str; new_quantity: int
-    warehouse_id: int | None = None; store_id: int | None = None; operator_id: int | None = None; remark: str = ""
 
 
 @router.post("/inventory/adjust")

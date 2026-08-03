@@ -1,6 +1,6 @@
 """位置名称查询 — 替代 user_agent handler 中直接导入 warehouse_agent / store_agent 的 models。"""
 
-from kernel.common.database import Session
+from app.core.database import Session
 
 
 def get_location_name(

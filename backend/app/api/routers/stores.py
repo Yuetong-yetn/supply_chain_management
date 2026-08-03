@@ -1,18 +1,12 @@
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
-from kernel.common.database import get_db, Session
-from kernel.common.response import success_response, page_response
-from kernel.common.auth import get_current_user
+from app.core.database import get_db, Session
+from app.core.response import success_response, page_response
+from app.core.auth import get_current_user
 from app.models.user import User
+from app.schemas.stores import StoreCreate
 from app.services.store_service import list_stores, create_store, get_store
 
 router = APIRouter(prefix="/api", tags=["stores"])
-
-
-class StoreCreate(BaseModel):
-    store_code: str; name: str; region: str | None = None; address: str | None = None
-    longitude: float | None = None; latitude: float | None = None
-    contact_person: str | None = None; phone: str | None = None
 
 
 @router.get("/stores")

@@ -11,10 +11,10 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
 
-from kernel.common.config import get_settings
-from kernel.common.database import engine, Base
-from kernel.common.exceptions import BusinessException
-from kernel.common.response import error_response
+from app.core.config import get_settings
+from app.core.database import engine, Base
+from app.core.exceptions import BusinessException
+from app.core.response import error_response
 from kernel.sisyphus.orchestrator import SisyphusOrchestrator
 from agents import register_ai_agents
 from app.api import register_business_routes

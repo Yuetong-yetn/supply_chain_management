@@ -229,7 +229,7 @@ def _run_restock_risk_analysis(db: Session, product_id: int, store_id: int | Non
         return None
 
     from app.models.inventory import Inventory
-    from agents.recommendation_agent.handler import generate_recommendations
+    from backend.agents.recommendation_agent.handler import generate_recommendations
 
     # 检查该门店此商品是否存在库存
     inv = db.scalar(
@@ -264,7 +264,7 @@ def _run_restock_risk_analysis(db: Session, product_id: int, store_id: int | Non
     days_to = inv.current_quantity / max(avg_daily, 0.01)
 
     # 检查是否有促销活动
-    from agents.recommendation_agent.models import Promotion
+    from backend.agents.recommendation_agent.models import Promotion
     promo = db.scalar(
         select(Promotion).where(
             Promotion.store_id == store_id,

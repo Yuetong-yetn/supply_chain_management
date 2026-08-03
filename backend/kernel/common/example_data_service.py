@@ -449,16 +449,16 @@ def load_example_data(db: Session) -> dict[str, int]:
     if not example_dir.exists():
         return {"error": "example data directory not found"}
 
-    from agents.product_agent.models import Product, Category
-    from agents.supplier_agent.models import Supplier, SupplierProduct, SupplierScoreSnapshot
-    from agents.warehouse_agent.models import Warehouse
-    from agents.store_agent.models import Store
-    from agents.user_agent.models import User
-    from agents.inventory_agent.models import Inventory
+    from app.models.product import Product, Category
+    from app.models.supplier import Supplier, SupplierProduct, SupplierScoreSnapshot
+    from app.models.warehouse import Warehouse
+    from app.models.store import Store
+    from app.models.user import User
+    from app.models.inventory import Inventory
     from agents.recommendation_agent.models import AIRecommendation, MonthlySalesFact
-    from agents.procurement_agent.models import PurchaseOrder, PurchaseOrderItem, InboundOrder, InboundItem
-    from agents.fulfillment_agent.models import ReplenishmentRequest, OutboundOrder, OutboundItem
-    from agents.transaction_agent.models import StockTransaction
+    from app.models.procurement import PurchaseOrder, PurchaseOrderItem, InboundOrder, InboundItem
+    from app.models.fulfillment import ReplenishmentRequest, OutboundOrder, OutboundItem
+    from app.models.transaction import StockTransaction
 
     counts = {}
 
@@ -769,14 +769,14 @@ def load_example_data(db: Session) -> dict[str, int]:
 
 def get_example_status(db: Session) -> dict[str, int]:
     """获取当前示例数据状态（各表记录数）。"""
-    from agents.product_agent.models import Product
-    from agents.supplier_agent.models import Supplier
-    from agents.warehouse_agent.models import Warehouse
-    from agents.store_agent.models import Store
-    from agents.inventory_agent.models import Inventory
-    from agents.procurement_agent.models import InboundOrder
-    from agents.fulfillment_agent.models import OutboundOrder, ReplenishmentRequest
-    from agents.transaction_agent.models import StockTransaction
+    from app.models.product import Product
+    from app.models.supplier import Supplier
+    from app.models.warehouse import Warehouse
+    from app.models.store import Store
+    from app.models.inventory import Inventory
+    from app.models.procurement import InboundOrder
+    from app.models.fulfillment import OutboundOrder, ReplenishmentRequest
+    from app.models.transaction import StockTransaction
 
     return {
         "products": db.scalar(select(func.count(Product.id))) or 0,

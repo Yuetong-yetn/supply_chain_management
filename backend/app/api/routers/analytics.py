@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from kernel.common.database import get_db, Session
-from kernel.common.response import success_response
-from kernel.common.auth import get_current_user
-from kernel.common.query_service import (
+from app.core.database import get_db, Session
+from app.core.response import success_response
+from app.core.auth import get_current_user
+from app.core.query import (
     get_basic_counts, get_high_risk_recommendation_count,
     get_inventory_ranking, get_inventory_summary,
     get_recent_outbound_quantity, get_warehouse_flow_trend,

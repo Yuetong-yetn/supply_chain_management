@@ -1,36 +1,18 @@
 import secrets
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy import select
 
-from kernel.common.database import get_db, Session
-from kernel.common.exceptions import BusinessException
-from kernel.common.response import success_response
-from kernel.common.auth import get_current_user
-from kernel.common.hash_utils import hash_password
+from app.core.database import get_db, Session
+from app.core.exceptions import BusinessException
+from app.core.response import success_response
+from app.core.auth import get_current_user
+from app.utils.hash_utils import hash_password
+from app.schemas.users import LoginRequest, VerificationCodeRequest, RegisterRequest
 from app.services.user_service import login as handler_login, get_user_profile, list_users, get_identity_by_employee_no, register_user
 from app.models.user import User
 
 router = APIRouter(prefix="/api/users", tags=["users"])
-
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-
-class VerificationCodeRequest(BaseModel):
-    employee_no: str
-    phone: str
-
-
-class RegisterRequest(BaseModel):
-    employee_no: str
-    real_name: str
-    phone: str
-    verification_code: str
-    password: str
 
 
 @router.post("/login")
@@ -41,7 +23,7 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
 
 @router.post("/verification-code")
 def send_verification_code(req: VerificationCodeRequest, db: Session = Depends(get_db)):
-    from kernel.common.config import get_settings
+    from app.core.config import get_settings
 
     user = db.scalar(select(User).where(
         User.employee_no == req.employee_no, User.phone == req.phone

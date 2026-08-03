@@ -5,10 +5,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sqlalchemy import delete, func, select
 
-from kernel.common.database import Session
-from kernel.common.exceptions import BusinessException
-from kernel.common.event import Event, event_bus
-from kernel.common.llm_service import SupplierEvalContext, get_llm_provider
+from app.core.database import Session
+from app.core.exceptions import BusinessException
+from app.core.event import Event, event_bus
+from app.core.llm import SupplierEvalContext, get_llm_provider
 from app.models.supplier import Supplier, SupplierProduct, SupplierScoreSnapshot
 
 logger = logging.getLogger(__name__)

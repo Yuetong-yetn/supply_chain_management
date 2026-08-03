@@ -1,18 +1,12 @@
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
-from kernel.common.database import get_db, Session
-from kernel.common.response import success_response, page_response
-from kernel.common.auth import get_current_user
+from app.core.database import get_db, Session
+from app.core.response import success_response, page_response
+from app.core.auth import get_current_user
 from app.models.user import User
+from app.schemas.products import ProductCreate
 from app.services.product_service import list_products, get_product, create_product, update_product, delete_product, list_categories, create_category
 
 router = APIRouter(prefix="/api", tags=["products"])
-
-
-class ProductCreate(BaseModel):
-    product_code: str; name: str; barcode: str | None = None
-    category_id: int | None = None; spec: str | None = None; unit: str | None = None
-    shelf_life_days: int | None = None; default_safety_stock: int = 0
 
 
 @router.get("/products")

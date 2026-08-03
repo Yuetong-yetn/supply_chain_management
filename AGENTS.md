@@ -2,140 +2,172 @@
 
 ## What this project is
 
-A **single FastAPI process** that at startup registers 13 Agent modules via `SisyphusOrchestrator`. Each Agent owns its models, handler, router, and event subscriptions. Cross-Agent calls go through an in-process synchronous `EventBus` — **no message queue, no microservices**.
+A **single FastAPI process** with a **dual-layer architecture**:
+
+- **Business layer (traditional MVC)** lives in `backend/app/`: `api/routers/*` → `services/*` → `models/*`, wired via `register_business_routes(app)`.
+- **AI capability layer (Sisyphus event-driven)** lives in `backend/agents/`. Exactly **2 Agents** (`recommendation_agent`, `analysis_agent`) are registered by `SisyphusOrchestrator` and communicate over an in-process **synchronous** `EventBus`. No message queue, no microservices.
 
 **Entrypoint**: `backend/main.py`
-**Agent registration**: `backend/agents/__init__.py` → `register_all_agents(orchestrator)`
-**Route-to-Agent map**: `backend/kernel/sisyphus/gateway.py`
+**Business route registration**: `backend/app/api/__init__.py` → `register_business_routes(app)`
+**AI agent registration**: `backend/agents/__init__.py` → `register_ai_agents(orchestrator)`
 
-## Directory layout (backend)
+> ⚠️ Historic AGENTS.md/README described 13 Agents all registered via Sisyphus. The business modules were since migrated to `backend/app/` as MVC. **Only 2 AI Agents are registered via Sisyphus today.** Verify against source before trusting old docs.
+
+## Directory layout
 
 ```
-backend/
-├── kernel/common/       # Shared infra: config, db, auth, llm_service, event bus, exceptions
-├── kernel/sisyphus/      # Orchestrator + gateway + workflow
-├── agents/{agent}/       # 13 agents, each with agent.py, router.py, handler.py, models.py, events.py
-├── scripts/              # init_db, generate/load example data — run from project ROOT, not backend/
-├── main.py
-└── .env                  # DATABASE_URL, LLM_PROVIDER, AUTH_SECRET_KEY
+Supply_Chain_Management/
+├── backend/
+│   ├── main.py                  # FastAPI entrypoint (registers all routes on startup)
+│   ├── app/                     # Business layer (MVC)
+│   │   ├── api/routers/         # HTTP boundary: validate, call Service, wrap response
+│   │   ├── services/            # business rules, transactions, state flow
+│   │   ├── models/              # SQLAlchemy ORM models
+│   │   ├── schemas/             # HTTP request/response schemas
+│   │   └── core/                # re-exports kernel/ (keeps singletons unique)
+│   ├── agents/                  # AI capability layer (Sisyphus event-driven)
+│   │   ├── recommendation_agent/
+│   │   └── analysis_agent/
+│   ├── kernel/
+│   │   ├── common/              # config, database, auth, event, llm_service, base_agent, response, exceptions, query_service
+│   │   └── sisyphus/            # SisyphusOrchestrator + workflow + gateway
+│   ├── schema/                  # runtime DB files (supply_chain.db, test_suite.db)
+│   ├── requirements.txt         # authoritative backend deps
+│   └── .env.example
+├── scripts/                     # init_db, generate/load example data — run from PROJECT ROOT, not backend/
+├── example/                     # generated example JSON
+├── schema/                      # auto-exported schema.sql / seed.sql / supply_chain.db
+├── frontend/                    # static, served at /ui, no build step
+│   ├── index.html / app.js / api.js / style.css
+├── docs/api_contract.md         # single authoritative API contract
+└── AGENTS.md
 ```
 
-## Startup commands (all from backend/)
+## Startup commands
+
+DB init scripts run from **project root** (they reference `backend/` paths); the server runs from `backend/`.
 
 ```powershell
-backend/.venv/Scripts/Activate.ps1
-pip install -r requirements.txt
+# virtual env + deps (from root)
+python -m venv backend\.venv
+backend\.venv\Scripts\Activate.ps1
+python -m pip install -r backend\requirements.txt
+Copy-Item backend\.env.example backend\.env
 
-# DB init scripts run from PROJECT ROOT (not backend/):
-# cd ..
-python scripts/init_db.py --rebuild
-python scripts/generate_example_data.py
-python scripts/load_example_data.py
+# DB init — MUST run from PROJECT ROOT
+python scripts\init_db.py --rebuild
+python scripts\generate_example_data.py
+python scripts\load_example_data.py
 
-# Start dev server (from backend/):
+# dev server — run from backend/
 cd backend
 uvicorn main:app --reload --port 8000
 ```
 
-**Gotcha**: `init_db.py` etc. reference `backend/` paths — they MUST run from the project root directory, not from `backend/`.
+**Gotcha**: `init_db.py` etc. reference `backend/` paths — they MUST run from the project root, not `backend/`.
 
-## Architecture rules
+## Dev commands
 
-### Agent isolation
-- Agent A's `handler.py` MUST NOT import Agent B's `handler.py` directly.
-- Cross-Agent data access goes through `kernel/common/query_service.py` (lazy imports inside functions).
-- Cross-Agent **logic** goes through `event_bus.publish(Event(...))`.
-- Exception: `recommendation_agent` still directly imports other agents' models (historical, not yet fully isolated).
-- All `from agents.other_agent.models import ...` must be inside a function (lazy import), never at module top level.
+All commands run from `backend/` with `.venv` activated, except the scripts above.
 
-### Each Agent must implement (see `kernel/common/base_agent.py`)
-- `info` → `AgentInfo(name, description, owns_tables)`
-- `register_routes()` → list of `APIRouter`
-- `register_subscriptions()` → `{event_type: handler}` dict
+| Action | Command |
+|---|---|
+| Start dev server | `uvicorn main:app --reload --port 8000` |
+| Init/reset DB | (root) `python scripts/init_db.py --rebuild` |
+| Run tests | `pytest` (from `backend/`) |
+| Access URLs | Demo `/demo`, UI `/ui/`, API docs `/docs`, Health `/api/health`, Agents `/api/system/agents` |
 
-### Event bus behavior
+## Layer rules
+
+- **Business layer**: normal flow is `Router -> Service -> Model/Database`; `schemas/` define the HTTP boundary. Routers must NOT implement inventory deduction, replenishment approval, or other transaction rules directly. Services must NOT construct FastAPI responses or depend on frontend behavior. ORM models must NOT be accepted/returned as public API schemas.
+- **AI capability layer**: an Agent is a `BaseAgent` subclass (`kernel/common/base_agent.py`) implementing `info`, `register_routes()`, `register_subscriptions()` (+ optional `on_startup`/`on_shutdown`). A `SisyphusOrchestrator.register_agent()` mounts its routers, registers event subscriptions, and records metadata.
+- **Agent isolation**: cross-Agent data access goes through `kernel/common/query_service.py` (lazy imports inside functions). Cross-Agent **logic** goes through `event_bus.publish(Event(...))`. Any `from agents.other_agent...` import must be inside a function (lazy), never module top-level.
+  - ⚠️ Known violation: `analysis_agent/handler.py:_run_restock_risk_analysis` still directly imports `recommendation_agent.handler.generate_recommendations` (top-level of a function). Not yet fully isolated.
+- **`backend/app/core/`** currently re-exports `kernel/` (see `app/core/database.py`, `app/core/config.py`) to keep `engine/SessionLocal/get_settings` singletons unique. The business layer still references `kernel/` directly in places; the re-export is a facade. Changing a kernel symbol's signature must update both the `kernel/` def and the `app/core/` re-export.
+
+## Event bus behavior
+
 - Synchronous, in-process. All subscribers run before `publish()` returns.
-- If a subscriber fails, other subscribers still run; the publisher is not affected (error logged, not raised).
-- Events carry `_db` key when the subscriber needs to reuse the publisher's DB session.
+- If a subscriber fails, other subscribers still run; the publisher is unaffected (error logged, not raised).
+- Events carry a `_db` key when a subscriber should reuse the publisher's session.
+- `inventory_agent`/`transaction`/`analysis` subscribe to stock change events (`inventory.stock.increased`/`decreased`, `procurement.inbound.completed`, etc.).
 
-### All API responses
+## All API responses
+
 ```json
 {"success": true, "message": "ok", "data": ...}
 {"success": false, "message": "error string", "data": null}
 ```
-Errors are handled by exception handlers in `main.py`: `BusinessException → 400`, `RequestValidationError → 422`, `IntegrityError → 400`, unhandled → 500.
 
-## 13 Agents at a glance
+Errors handled in `backend/main.py`: `BusinessException → 400`, `RequestValidationError → 422`, `IntegrityError → 400`, unhandled → 500. `docs/api_contract.md` is the only authoritative API contract.
 
-| Route prefix | Agent | Owned tables | Key events |
+## Business modules (`backend/app/api/routers/`)
+
+| Router | Tables/domain | Notes |
+|---|---|---|
+| `users` | users, auth | login accepts `employee_no` (e.g. `A1001`) or `username` in the `username` field |
+| `products` | products, categories | publishes `product.created` |
+| `suppliers` | suppliers, supplier_products, supplier_score_snapshots | LLM `evaluate_supplier()` scoring |
+| `procurement` | purchase_orders, inbound_orders | publishes `procurement.inbound.completed` |
+| `inventory` | inventory | warnings/summary/adjust |
+| `warehouses` | warehouses | — |
+| `stores` | stores | — |
+| `fulfillment` | replenishment_requests, outbound_orders, outbound_items | outbound.shipped / outbound.signed |
+| `transactions` | stock_transactions | subscribes to stock changes |
+| `analytics` | (read-only) | dashboard/rankings |
+| `monitoring` | — | /api/health, /api/llm/status |
+
+## AI Agents (`backend/agents/`) — exactly 2, registered via Sisyphus
+
+| Agent | Owned tables | Subscribes to | Routes |
 |---|---|---|---|
-| `/api/users` | user_agent | users | publishes `user.logged_in` |
-| `/api/products`, `/api/categories` | product_agent | products, categories | publishes `product.created` |
-| `/api/suppliers` | supplier_agent | suppliers, supplier_products, supplier_score_snapshots | publishes `supplier.scored` |
-| `/api/purchase-orders`, `/api/inbound-orders` | procurement_agent | purchase_orders, inbound_orders | publishes `procurement.inbound.completed` |
-| `/api/inventory` | inventory_agent | inventory | subscribes to inbound/shipped/signed events |
-| `/api/warehouses` | warehouse_agent | warehouses | — |
-| `/api/stores` | store_agent | stores | — |
-| `/api/replenishment-requests`, `/api/outbound-orders` | fulfillment_agent | replenishment_requests, outbound_orders, outbound_items | publishes `outbound.shipped`, `outbound.signed` |
-| `/api/transactions` | transaction_agent | stock_transactions | subscribes to stock changes |
-| `/api/analytics` | analytics_agent | (read-only via query_service) | — |
-| `/api/recommendations` | recommendation_agent | ai_recommendations, monthly_sales_facts, promotions | — |
-| `/api/health`, `/api/llm`, `/api/example` | monitoring_agent | none | — |
-| `/api/analysis` | analysis_agent | inventory_warning_analyses, restock_risk_analyses | subscribes to stock changes (LLM analysis) |
+| `recommendation_agent` | `ai_recommendations`, `monthly_sales_facts`, `promotions` | — | `/api/recommendations*` |
+| `analysis_agent` | `inventory_warning_analyses`, `restock_risk_analyses` | `inventory.stock.increased`, `inventory.stock.decreased` | `/api/analysis*` |
 
-Note: `analysis_agent` is the 13th agent, added after the original 12.
+`GET /api/system/agents` lists exactly these 2 agents.
 
-## LLM Integration (DeepSeek)
+## LLM integration
 
-All external LLM calls go through `kernel/common/llm_service.py`. There are **4 entry points**:
+All external LLM calls go through `kernel/common/llm_service.py` (providers: `deepseek` / `ollama` / `rule`). Default `LLM_PROVIDER=deepseek`, falls back to `rule` when no key configured.
 
 | Method | Called by | Purpose |
 |---|---|---|
-| `enhance_reason()` | `recommendation_agent/handler.py` — `_batch_evaluate_risk_and_enhance()` | Generate natural-language replenishment reason text + compute risk level via `evaluate_restock_risk()` |
-| `evaluate_supplier()` | `supplier_agent/handler.py` — `recalculate_scores()` | Score suppliers 0-100 |
-| `analyze_inventory_risk()` | `analysis_agent/handler.py` — `_run_inventory_warning_analysis()` | Classify stock as critical_stockout/stockout/overstock/none |
-| `evaluate_restock_risk()` | `analysis_agent/handler.py` — `_run_restock_risk_analysis()` | Classify restock risk as high/medium/low |
+| `enhance_reason()` | recommendation_agent | natural-language replenishment reason text |
+| `evaluate_restock_risk()` | recommendation_agent + analysis_agent | risk high/medium/low |
+| `evaluate_supplier()` | supplier scoring (business) | score suppliers 0-100 |
+| `analyze_inventory_risk()` | analysis_agent | classify stock critical_stockout/stockout/overstock/none |
 
-- `DeepseekProvider` uses `httpx.Client` with connection pooling (reused across calls, not per-request).
-- All calls use `ThreadPoolExecutor(max_workers=10)` for concurrency (in `recommendation_agent` and `supplier_agent`).
+- `DeepseekProvider` uses a shared `httpx.Client` connection pool.
+- Concurrency via `ThreadPoolExecutor(max_workers=10)` in recommendation/supplier; `ThreadPoolExecutor(max_workers=2)` in analysis_agent's background thread.
 - Failure fallback: `RuleProvider` (hardcoded thresholds) — no external dependency required.
-- Config: `LLM_PROVIDER=deepseek`, `DEEPSEEK_API_KEY_FILE=./.deepseek_api_key`
-- Check status: `GET /api/llm/status` returns `{"provider":"deepseek","available":true}`
-
-### Key LLM latency facts
-- Single DeepSeek call: ~1.5-3s
-- Supplier scoring (12 suppliers, concurrent): ~8s
-- Generate recommendations (200 recs, concurrent 10 workers): ~30s
-- **Frontend fetch timeout** for these long operations is set in `frontend/api.js` `TIMEOUTS` map: generate=120s, recalculate scores=60s, default=15s.
+- **Core replenishment quantity and risk thresholds are ALWAYS rule-computed; LLM only enhances text/analysis, never decides inventory business.**
+- Check status: `GET /api/llm/status`.
 
 ## Database
 
-- Default: SQLite at `backend/schema/supply_chain.db`
-- Optional: OceanBase/MySQL via `DATABASE_URL=mysql+pymysql://...`
-- Auto-fallback: if MySQL connection fails at import time, SQLite is used.
+- Default: SQLite at `backend/schema/supply_chain.db`. Auto-exported `schema/` (root) mirrors `schema.sql`/`seed.sql`.
+- Optional OceanBase/MySQL via `DATABASE_URL=mysql+pymysql://...`; auto-fallback to `SQLITE_FALLBACK_URL` if the primary connection fails at import time.
 - Table creation: `Base.metadata.create_all()` on startup (no Alembic).
-- Scripts use the same SQLAlchemy models as the app — they must load all models before creating tables.
+- Scripts use the same SQLAlchemy models as the app; init loads all models before creating tables.
 
 ## Authentication
 
-- JWT Bearer tokens. Login accepts `employee_no` (e.g. `A1001`) or `username` (e.g. `admin`) in the `username` field.
-- Demo accounts: `admin`/`admin123`, `buyer`/`buyer123`, `warehouse`/`warehouse123`, `store`/`store123`, `manager`/`manager123`
-- All business routes require `Depends(get_current_user)`.
-- Verification codes are returned in plaintext in dev mode (`APP_ENV=dev`).
+- JWT Bearer tokens via `kernel/common/auth.py` (`get_current_user` dependency). All business routes require `Depends(get_current_user)`.
+- Login accepts `employee_no` (e.g. `A1001`) or `username` (e.g. `admin`) in the `username` field.
+- Demo accounts: `admin`/`admin123`, `buyer`/`buyer123`, `warehouse`/`warehouse123`, `store`/`store123`, `manager`/`manager123`.
+- Dev mode (`APP_ENV=dev`) returns verification codes in plaintext for course demos.
 
 ## Frontend
 
-- Static files in `frontend/`, served by FastAPI at `/ui/`.
-- No build step. No npm. Plain HTML + JS + ECharts.
-- All backend calls through `frontend/api.js` — single `request()` function with fetch + AbortController.
-- `frontend/app.js` owns all UI logic (DOM manipulation, event handlers, ECharts rendering).
+- Static files in `frontend/`, served by FastAPI at `/ui/`. No build step, no npm. Plain HTML + JS + ECharts.
+- All backend calls through `frontend/api.js` — a single `request()` with fetch + AbortController.
+- `frontend/app.js` owns all UI logic.
+- `__frontend_version__` in `backend/main.py` — increment to force browsers to re-fetch static frontend files.
 
-## Key gotchas and conventions
+## Key gotchas
 
-1. **Scripts run from project root, server runs from `backend/`**. The two use different working directories.
-2. **`generate_no("OUT", ...)` uses `OutboundOrder` count** (not `ReplenishmentRequest` count) — a historical bug was fixed to use the right table per prefix.
-3. **`_batch_enhance_reasons` was renamed to `_batch_evaluate_risk_and_enhance`** — now also calls `evaluate_restock_risk` to compute risk level from LLM.
-4. **`analysis_agent.handler._run_restock_risk_analysis` imports `generate_recommendations` from `recommendation_agent.handler`** at function level — a cross-agent direct import that hasn't been refactored yet.
-5. **`InventoryWarning` vs `Inventory`**: `inventory_agent/handler.py:get_warnings()` does rule-based threshold check for quick in-memory warnings. `analysis_agent` does LLM-based analysis stored in `inventory_warning_analyses` table. They coexist for different purposes.
-6. **`__frontend_version__`** in `backend/main.py:5` — increment this string to force browsers to re-fetch static frontend files.
-7. **`.deepseek_api_key`** in `backend/` is git-ignored (listed in `.gitignore`). Never hardcode API keys.
+1. Scripts run from project root, server runs from `backend/` — different working dirs.
+2. `app/core/database.py` and `app/core/config.py` are **re-export facades** over `kernel/common/`. Change the kernel definition first, then keep the facade in sync.
+3. Only 2 agents are registered via Sisyphus today; the 13-agent table in old docs is stale.
+4. `backend/tests/` currently contains only compiled artifacts; Python test sources are not in the tree yet.
+5. `.deepseek_api_key` and `backend/.env` are git-ignored; never commit secrets.

@@ -1,26 +1,12 @@
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
-from kernel.common.database import get_db, Session
-from kernel.common.response import success_response, page_response
-from kernel.common.auth import get_current_user
+from app.core.database import get_db, Session
+from app.core.response import success_response, page_response
+from app.core.auth import get_current_user
 from app.models.user import User
+from app.schemas.suppliers import SupplierCreate, SupplierProductBind
 from app.services.supplier_service import list_suppliers, create_supplier, get_supplier, get_supplier_products, get_ranking, get_supplier_score, recalculate_scores, bind_supplier_product
 
 router = APIRouter(prefix="/api", tags=["suppliers"])
-
-
-class SupplierCreate(BaseModel):
-    name: str; contact_person: str | None = None; phone: str | None = None
-    email: str | None = None; address: str | None = None; supplier_level: str | None = None
-
-
-class SupplierProductBind(BaseModel):
-    product_id: int
-    supply_price: float | None = None
-    lead_time_days: int | None = None
-    on_time_rate: float | None = None
-    quality_score: float | None = None
-    is_preferred: bool = False
 
 
 @router.get("/suppliers")

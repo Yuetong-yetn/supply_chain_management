@@ -1,24 +1,14 @@
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy import func, select
-from kernel.common.database import get_db, Session
-from kernel.common.response import success_response, page_response
-from kernel.common.auth import get_current_user
+from app.core.database import get_db, Session
+from app.core.response import success_response, page_response
+from app.core.auth import get_current_user
 from app.models.user import User
+from app.schemas.fulfillment import ReplenishCreate, OutboundCreate
 from app.services.fulfillment_service import create_request, approve_request, reject_request, convert_to_outbound, generate_no, ship_order, sign_order, cancel_order
 from app.models.fulfillment import ReplenishmentRequest, OutboundOrder
 
 router = APIRouter(prefix="/api", tags=["fulfillment"])
-
-
-class ReplenishCreate(BaseModel):
-    store_id: int; product_id: int; request_quantity: int
-    request_reason: str | None = None; created_by: int | None = None
-
-
-class OutboundCreate(BaseModel):
-    source_warehouse_id: int; target_store_id: int; handled_by: int | None = None
-    source_request_id: int | None = None; remark: str | None = None
 
 
 @router.post("/replenishment-requests")

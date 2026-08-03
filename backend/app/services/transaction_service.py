@@ -1,7 +1,7 @@
 """库存流水业务逻辑 — 从 agents/transaction_agent/handler.py 迁移。"""
 
 from sqlalchemy import func, select
-from kernel.common.database import Session
+from app.core.database import Session
 from app.models.transaction import StockTransaction
 
 

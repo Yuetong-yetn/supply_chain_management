@@ -1,8 +1,8 @@
 """门店业务逻辑 — 从 agents/store_agent/handler.py 迁移。"""
 
 from sqlalchemy import func, select
-from kernel.common.database import Session
-from kernel.common.exceptions import BusinessException
+from app.core.database import Session
+from app.core.exceptions import BusinessException
 from app.models.store import Store
 
 

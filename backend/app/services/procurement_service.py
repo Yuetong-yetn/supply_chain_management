@@ -2,9 +2,9 @@
 
 from datetime import datetime
 from sqlalchemy import func, select
-from kernel.common.database import Session
-from kernel.common.exceptions import BusinessException
-from kernel.common.event import Event, event_bus
+from app.core.database import Session
+from app.core.exceptions import BusinessException
+from app.core.event import Event, event_bus
 from app.models.procurement import PurchaseOrder, PurchaseOrderItem, InboundOrder, InboundItem
 
 EVENT_INBOUND_COMPLETED = "procurement.inbound.completed"

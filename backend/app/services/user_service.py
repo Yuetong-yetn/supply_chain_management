@@ -2,9 +2,9 @@
 
 import logging
 from sqlalchemy import or_, select, func
-from kernel.common.database import Session
-from kernel.common.exceptions import BusinessException
-from kernel.common.auth import create_access_token
+from app.core.database import Session
+from app.core.exceptions import BusinessException
+from app.core.auth import create_access_token
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def login(db: Session, username: str, password: str) -> dict:
     """验证用户名密码，返回用户信息和 token。"""
-    from kernel.common.hash_utils import verify_password
+    from app.utils.hash_utils import verify_password
 
     normalized_username = username.strip()
     normalized_employee_no = normalized_username.upper()
@@ -102,7 +102,7 @@ def register_user(
     verification_code: str, password: str,
 ) -> dict:
     """用户注册/激活：验证码校验 + 密码设置。"""
-    from kernel.common.hash_utils import hash_password, verify_password
+    from app.utils.hash_utils import hash_password, verify_password
 
     user = db.scalar(select(User).where(User.employee_no == employee_no))
     if not user:

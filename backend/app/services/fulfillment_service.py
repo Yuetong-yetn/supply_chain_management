@@ -2,9 +2,9 @@
 
 from datetime import datetime, timezone
 from sqlalchemy import func, select
-from kernel.common.database import Session
-from kernel.common.exceptions import BusinessException
-from kernel.common.event import Event, event_bus
+from app.core.database import Session
+from app.core.exceptions import BusinessException
+from app.core.event import Event, event_bus
 from app.models.fulfillment import ReplenishmentRequest, OutboundOrder, OutboundItem
 
 EVENT_REPLENISHMENT_APPROVED = "fulfillment.replenishment.approved"
@@ -66,7 +66,7 @@ def convert_to_outbound(db: Session, rid: int, source_warehouse_id: int | None =
     if r.generated_outbound_order_id:
         raise BusinessException("already converted")
     if source_warehouse_id is None:
-        from kernel.common.query_service import find_warehouse_with_available_stock
+        from app.core.query import find_warehouse_with_available_stock
         source_warehouse_id = find_warehouse_with_available_stock(db, r.product_id, r.request_quantity)
         if not source_warehouse_id:
             raise BusinessException("no warehouse has enough available inventory")
