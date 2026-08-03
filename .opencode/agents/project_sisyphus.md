@@ -1,6 +1,6 @@
 ---
 description: 当任务需要总览供应链多 Agent 架构、拆解跨领域工作、选择领域子代理或综合验证结果时使用的项目总指挥子代理。
-mode: subagent
+mode: primary
 model: opencode/gpt-5.5
 permission:
   edit: allow
